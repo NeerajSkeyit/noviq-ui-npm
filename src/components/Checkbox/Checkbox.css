@@ -1,0 +1,35 @@
+.checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  color: var(--light);
+}
+
+.checkbox-box-checked {
+  background-color: var(--primary);
+}
+
+.checkbox-box-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-icon {
+  font-size: 12px;
+  line-height: 1;
+}

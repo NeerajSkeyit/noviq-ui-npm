@@ -1,0 +1,128 @@
+import React, { useEffect } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { X } from "lucide-react";
+import Button from "../Button/Button";
+import "./Modal.css";
+
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "auto";
+
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  subtitle?: string;
+  children?: React.ReactNode;
+  footer?: React.ReactNode;
+  closeOnOutside?: boolean;
+  size?: ModalSize;
+}
+
+const backdropVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
+
+const modalVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.95,
+    y: 40,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    y: 40,
+    transition: {
+      duration: 0.15,
+      ease: "easeIn",
+    },
+  },
+};
+
+function Modal({
+  isOpen,
+  onClose,
+  title = "",
+  subtitle = "",
+  children,
+  footer,
+  closeOnOutside = true,
+  size = "md",
+}: ModalProps) {
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isOpen, onClose]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="modal-overlay">
+          <motion.div
+            className="modal-backdrop"
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            onClick={() => {
+              if (closeOnOutside) onClose();
+            }}
+          />
+
+          <motion.div
+            className={`modal-content modal-${size}`}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div>
+                <h2 className="modal-title">{title}</h2>
+                {subtitle && <p className="modal-subtitle">{subtitle}</p>}
+              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="modal-close"
+                onClick={() => onClose()}
+              >
+                <X size={16} />
+              </Button>
+            </div>
+
+            <div className="modal-body">{children}</div>
+
+            {footer && <div className="modal-footer">{footer}</div>}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+export default Modal;

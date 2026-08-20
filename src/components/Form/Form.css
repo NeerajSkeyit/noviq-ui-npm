@@ -1,0 +1,61 @@
+.form-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* colSpan is "how many fields sit on this row", not "how many of 3 grid
+   columns this field spans" — colSpan:1 is a field alone on its own row,
+   colSpan:2 is one of two fields sharing a row (each 50%), colSpan:3 is one
+   of three sharing a row (each ~33%). Two fields both set to colSpan:2 will
+   sit side by side; mismatched pairs (e.g. colSpan:2 next to colSpan:1) will
+   wrap rather than fill the row exactly, so pick matching spans for fields
+   meant to share a row. */
+.col-span-1 {
+  width: 100%;
+}
+
+.col-span-2 {
+  width: calc(50% - 5px);
+}
+
+.col-span-3 {
+  width: calc(33.33% - 10px);
+}
+
+.col-span-2:has(> .upload-section),
+.col-span-3:has(> .upload-section) {
+  width: 100%;
+}
+
+.col-span-2:has(> .upload-section):has(+ .col-span-2 > .upload-section),
+.col-span-2:has(> .upload-section) + .col-span-2:has(> .upload-section) {
+  width: calc(50% - 5px);
+}
+
+@media (max-width: 640px) {
+  .col-span-2,
+  .col-span-3 {
+    width: 100%;
+  }
+}
+
+.info-section {
+  border-bottom: 1px solid var(--border-color);
+  margin: 12px 0;
+}
+
+.info-section-title {
+  font-size: var(--font-size);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--heading);
+}
+
+.info-section-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}

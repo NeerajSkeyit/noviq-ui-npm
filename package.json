@@ -1,0 +1,80 @@
+{
+  "name": "noviq-ui",
+  "private": false,
+  "version": "2.5.1",
+  "description": "Lightweight React component library — forms, data tables, drawers, and modals — for the Noviq product suite.",
+  "keywords": [
+    "react",
+    "react-components",
+    "component-library",
+    "ui-library",
+    "ui-kit",
+    "design-system",
+    "typescript",
+    "form",
+    "form-components",
+    "data-table",
+    "react-table",
+    "table",
+    "drawer",
+    "modal",
+    "dropdown",
+    "dashboard",
+    "admin-dashboard",
+    "formik",
+    "vite"
+  ],
+  "type": "module",
+  "main": "./dist/noviq-ui.mjs",
+  "module": "./dist/noviq-ui.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/noviq-ui.mjs",
+    "./style.css": "./dist/noviq-ui.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.5",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "jsdom": "^29.1.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.56.1",
+    "vite": "^8.0.0",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.101.4",
+    "formik": "^2.4.9",
+    "framer-motion": "^13.1.0",
+    "lucide-react": "^1.33.0",
+    "react-hot-toast": "^2.6.0",
+    "react-hotkeys-hook": "^5.3.3",
+    "react-select": "^5.10.2",
+    "xlsx-js-style": "^1.2.0"
+  }
+}

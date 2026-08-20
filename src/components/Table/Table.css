@@ -1,0 +1,96 @@
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--light);
+  overflow: hidden;
+}
+
+.table-scroll-container {
+  position: relative;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size);
+}
+
+.table-th {
+  text-align: left;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: var(--heading);
+  background: var(--secondary-background);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.table-th-sortable {
+  cursor: pointer;
+}
+
+.table-th-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-sort-icon {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.table-sort-icon-active {
+  color: var(--primary);
+}
+
+.table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--heading);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-row-clickable {
+  cursor: pointer;
+}
+
+.table-row-clickable:hover {
+  background: var(--surface-hover);
+}
+
+.table-align-left {
+  text-align: left;
+}
+
+.table-align-center {
+  text-align: center;
+}
+
+.table-align-right {
+  text-align: right;
+}
+
+.table-cell-sticky {
+  background: var(--light);
+}
+
+.table-th.table-cell-sticky {
+  background: var(--secondary-background);
+}
+
+.table-cell-sticky-boundary-left {
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
+}
+
+.table-cell-sticky-boundary-right {
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.06);
+}
+

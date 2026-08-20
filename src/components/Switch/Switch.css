@@ -1,0 +1,33 @@
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background-color: var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.switch-checked {
+  background-color: var(--primary);
+}
+
+.switch-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.switch-thumb {
+  width: 20px;
+  height: 20px;
+  background-color: var(--light);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.switch-checked .switch-thumb {
+  transform: translateX(20px);
+}

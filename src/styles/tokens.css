@@ -1,0 +1,24 @@
+:root {
+  --font-size: 14px;
+
+  --text-color: #6b6b6b;
+  --primary: #02699b;
+  --primary-hover: #025a85;
+  --light: #ffffff;
+  --danger: #ff0000;
+  --danger-hover: #e60000;
+  --heading: #272727;
+  --secondary-background: #f2f2f2;
+
+  --muted: #6b7280;
+  --muted-hover: #4b5563;
+  --surface-hover: #e6f1fe;
+  --border-color: #e0e5eb;
+
+  --radius: 6px;
+  --radius-sm: 4px;
+  --shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+
+  --z-overlay: 1200;
+}

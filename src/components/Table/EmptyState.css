@@ -1,0 +1,14 @@
+.table-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--muted);
+}
+
+.table-empty-state p {
+  margin: 0;
+  font-size: var(--font-size);
+}
