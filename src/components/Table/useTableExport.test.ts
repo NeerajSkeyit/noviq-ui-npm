@@ -4,9 +4,20 @@ import useTableExport from "./useTableExport";
 import { CELL_TYPE } from "./constants";
 import type { TableColumn } from "./Table";
 import { DEFAULT_REQUEST_PARAMS } from "../../config/types";
-import type { ResponseFormatPaths } from "../../config/types";
+import type { ResponseFormatPaths, TableRequestParamNames } from "../../config/types";
 
 const FLAT_RESPONSE_FORMAT: ResponseFormatPaths = { rowsPath: "result", totalPath: "totalCount" };
+
+const NESTED_RESPONSE_FORMAT: ResponseFormatPaths = {
+  rowsPath: "data.items",
+  totalPath: "data.meta.total",
+};
+
+const RENAMED_REQUEST_PARAMS: Required<TableRequestParamNames> = {
+  search: "q",
+  page: "pageNumber",
+  pageSize: "perPage",
+};
 
 const aoaToSheet = vi.fn((aoa: unknown[][]) => ({ __aoa: aoa }) as any);
 const encodeCell = vi.fn(({ r, c }: { r: number; c: number }) => `cell-${r}-${c}`);
@@ -98,6 +109,45 @@ describe("useTableExport", () => {
     });
 
     expect(apiFunction.mock.calls[0][0].rows_per_page).toBeGreaterThan(1000);
+  });
+
+  it("uses non-default requestParams keys and a nested responseFormat to build the export fetch", async () => {
+    const apiFunction = vi.fn().mockResolvedValue({ data: { items: rows, meta: { total: rows.length } } });
+    const { result } = renderHook(() =>
+      useTableExport({
+        apiFunction,
+        responseFormat: NESTED_RESPONSE_FORMAT,
+        requestParams: RENAMED_REQUEST_PARAMS,
+        usingPreFetched: false,
+        preFetchedData: [],
+        columns,
+        search: "ali",
+        filterParams: { department: "eng" },
+        apiParams: { tenant: "acme" },
+        totalItems: 42,
+      })
+    );
+
+    await act(async () => {
+      await result.current.exportToExcel();
+    });
+
+    // Would fail if fetchRows fell back to hardcoded search/page_no/rows_per_page keys.
+    expect(apiFunction).toHaveBeenCalledWith({
+      tenant: "acme",
+      department: "eng",
+      q: "ali",
+      pageNumber: 1,
+      perPage: 42,
+    });
+
+    // Would fail if fetchRows fell back to hardcoded `.result` extraction (raw has no
+    // top-level `result` key here, so that would yield an empty rows array).
+    expect(aoaToSheet).toHaveBeenCalledWith([
+      ["Name", "Department"],
+      ["Alice", "Engineering"],
+      ["Bob", "Sales"],
+    ]);
   });
 
   it("skips the fetch entirely and exports the given array when usingPreFetched", async () => {
