@@ -13,6 +13,7 @@ export { default as Form } from "./components/Form/Form";
 export { default as Badge } from "./components/Badge/Badge";
 export { DropdownMenu, DropdownMenuItem } from "./components/Dropdown/Dropdown";
 export { default as Table } from "./components/Table/Table";
+export { NoviqUIConfigProvider, useNoviqUIConfig } from "./config/NoviqUIConfigProvider";
 export {
   default as TableCell,
   formatTableCellValues,
@@ -48,8 +49,15 @@ export type {
   TableProps,
   TableColumn,
   TableQueryParams,
-  TableQueryResult,
 } from "./components/Table/Table";
+export type {
+  NoviqUIConfig,
+  NoviqUITableConfig,
+  TableResponseFormat,
+  ResponseFormatPaths,
+  ResponseFormatFns,
+  TableRequestParamNames,
+} from "./config/types";
 export type { TableCellProps, CellFormatOptions } from "./components/Table/TableCell";
 export type { TablePaginationProps, TablePaginationState } from "./components/Table/TablePagination";
 export type { CellType } from "./components/Table/constants";
