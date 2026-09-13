@@ -3,6 +3,10 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import useTableExport from "./useTableExport";
 import { CELL_TYPE } from "./constants";
 import type { TableColumn } from "./Table";
+import { DEFAULT_REQUEST_PARAMS } from "../../config/types";
+import type { ResponseFormatPaths } from "../../config/types";
+
+const FLAT_RESPONSE_FORMAT: ResponseFormatPaths = { rowsPath: "result", totalPath: "totalCount" };
 
 const aoaToSheet = vi.fn((aoa: unknown[][]) => ({ __aoa: aoa }) as any);
 const encodeCell = vi.fn(({ r, c }: { r: number; c: number }) => `cell-${r}-${c}`);
@@ -48,6 +52,8 @@ describe("useTableExport", () => {
     const { result } = renderHook(() =>
       useTableExport({
         apiFunction,
+        responseFormat: FLAT_RESPONSE_FORMAT,
+        requestParams: DEFAULT_REQUEST_PARAMS,
         usingPreFetched: false,
         preFetchedData: [],
         columns,
@@ -76,6 +82,8 @@ describe("useTableExport", () => {
     const { result } = renderHook(() =>
       useTableExport({
         apiFunction,
+        responseFormat: FLAT_RESPONSE_FORMAT,
+        requestParams: DEFAULT_REQUEST_PARAMS,
         usingPreFetched: false,
         preFetchedData: [],
         columns,
@@ -220,6 +228,8 @@ describe("useTableExport", () => {
     const { result } = renderHook(() =>
       useTableExport({
         apiFunction,
+        responseFormat: FLAT_RESPONSE_FORMAT,
+        requestParams: DEFAULT_REQUEST_PARAMS,
         usingPreFetched: false,
         preFetchedData: [],
         columns,

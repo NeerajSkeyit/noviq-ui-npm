@@ -4,6 +4,10 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Table, { type TableColumn } from "./Table";
 import { FILTER_TYPE, type FilterConfig } from "./buildActiveFilter";
+import { NoviqUIConfigProvider } from "../../config/NoviqUIConfigProvider";
+import type { ResponseFormatPaths } from "../../config/types";
+
+const FLAT_RESPONSE_FORMAT: ResponseFormatPaths = { rowsPath: "result", totalPath: "totalCount" };
 
 interface Row {
   id: number;
@@ -48,7 +52,12 @@ describe("Table", () => {
   it("calls apiFunction with the expected params shape and renders the response", async () => {
     const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
     render(
-      <Table columns={columns} apiFunction={apiFunction} apiParams={{ department: "eng" }} />
+      <Table
+        columns={columns}
+        apiFunction={apiFunction}
+        apiParams={{ department: "eng" }}
+        responseFormat={FLAT_RESPONSE_FORMAT}
+      />
     );
 
     await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
@@ -71,7 +80,7 @@ describe("Table", () => {
           resolvePromise = resolve;
         })
     );
-    render(<Table columns={columns} apiFunction={apiFunction} />);
+    render(<Table columns={columns} apiFunction={apiFunction} responseFormat={FLAT_RESPONSE_FORMAT} />);
 
     expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
 
@@ -103,7 +112,7 @@ describe("Table", () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const user = userEvent.setup({ delay: null });
     const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
-    render(<Table columns={columns} apiFunction={apiFunction} />);
+    render(<Table columns={columns} apiFunction={apiFunction} responseFormat={FLAT_RESPONSE_FORMAT} />);
 
     await vi.waitFor(() => expect(apiFunction).toHaveBeenCalledTimes(1));
 
@@ -325,7 +334,14 @@ describe("Table", () => {
         options: [{ value: "eng", label: "Engineering" }],
       },
     ];
-    render(<Table columns={columns} apiFunction={apiFunction} filterConfigs={filterConfigs} />);
+    render(
+      <Table
+        columns={columns}
+        apiFunction={apiFunction}
+        filterConfigs={filterConfigs}
+        responseFormat={FLAT_RESPONSE_FORMAT}
+      />
+    );
     await waitFor(() => expect(apiFunction).toHaveBeenCalled());
 
     await user.click(screen.getByRole("button", { name: /Filters/ }));
@@ -345,7 +361,14 @@ describe("Table", () => {
     const filterConfigs: FilterConfig[] = [
       { id: "q", label: "Query", type: FILTER_TYPE.SEARCH, defaultValue: "engineering" },
     ];
-    render(<Table columns={columns} apiFunction={apiFunction} filterConfigs={filterConfigs} />);
+    render(
+      <Table
+        columns={columns}
+        apiFunction={apiFunction}
+        filterConfigs={filterConfigs}
+        responseFormat={FLAT_RESPONSE_FORMAT}
+      />
+    );
     await waitFor(() =>
       expect(apiFunction).toHaveBeenLastCalledWith(expect.objectContaining({ q: "engineering" }))
     );
@@ -367,5 +390,43 @@ describe("Table", () => {
   it("hides the Export button when isExportHidden", () => {
     render(<Table columns={columns} preFetchedData={rows} isPaginationHidden isExportHidden />);
     expect(screen.queryByRole("button", { name: /Export/ })).not.toBeInTheDocument();
+  });
+
+  it("throws when apiFunction is used without a responseFormat prop or NoviqUIConfigProvider", () => {
+    const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => render(<Table columns={columns} apiFunction={apiFunction} />)).toThrow(
+      /needs a response format/
+    );
+    consoleError.mockRestore();
+  });
+
+  it("resolves rows via a NoviqUIConfigProvider ancestor when no responseFormat prop is given", async () => {
+    const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
+    render(
+      <NoviqUIConfigProvider config={{ table: { responseFormat: FLAT_RESPONSE_FORMAT } }}>
+        <Table columns={columns} apiFunction={apiFunction} />
+      </NoviqUIConfigProvider>
+    );
+    await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
+  });
+
+  it("a responseFormat prop overrides the NoviqUIConfigProvider's format", async () => {
+    const apiFunction = vi.fn().mockResolvedValue({ data: { items: rows, count: rows.length } });
+    render(
+      <NoviqUIConfigProvider config={{ table: { responseFormat: FLAT_RESPONSE_FORMAT } }}>
+        <Table
+          columns={columns}
+          apiFunction={apiFunction}
+          responseFormat={{ rowsPath: "data.items", totalPath: "data.count" }}
+        />
+      </NoviqUIConfigProvider>
+    );
+    await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
+  });
+
+  it("does not throw for a hidden table with apiFunction set but no responseFormat configured", () => {
+    const apiFunction = vi.fn();
+    expect(() => render(<Table columns={columns} apiFunction={apiFunction} hidden />)).not.toThrow();
   });
 });

@@ -18,6 +18,9 @@ import { buildActiveFilter, type FilterConfig, type ActiveFilter } from "./build
 import { useTableColumnSettings } from "./useTableColumnSettings";
 import { CELL_TYPE, NO_TEXT_PLACEHOLDER, type CellType } from "./constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
+import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
+import { extractRows, extractTotal } from "../../config/responseFormat";
+import { DEFAULT_REQUEST_PARAMS, type TableResponseFormat } from "../../config/types";
 import "./Table.css";
 
 const DEFAULT_COLUMN_WIDTH = 140;
@@ -63,17 +66,7 @@ export interface TableColumn<T = any> {
   exportValue?: (row: T) => string | number;
 }
 
-export interface TableQueryParams {
-  search: string;
-  page_no: number;
-  rows_per_page: number;
-  [key: string]: unknown;
-}
-
-export interface TableQueryResult<T> {
-  result: T[];
-  totalCount: number;
-}
+export type TableQueryParams = Record<string, unknown>;
 
 export interface TableProps<T = any> {
   columns: TableColumn<T>[];
@@ -82,7 +75,9 @@ export interface TableProps<T = any> {
   id?: string;
   isColumnSettingHidden?: boolean;
   /** Consumer-supplied fetcher. Ignored when `preFetchedData` is non-empty. */
-  apiFunction?: (params: TableQueryParams) => Promise<TableQueryResult<T>>;
+  apiFunction?: (params: TableQueryParams) => Promise<unknown>;
+  /** Overrides the NoviqUIConfigProvider's table.responseFormat for this instance only. */
+  responseFormat?: TableResponseFormat<T>;
   /** Fully-controlled mode: skip fetching, render this array directly. */
   preFetchedData?: T[];
   isPrefetchedDataLoading?: boolean;
@@ -124,6 +119,7 @@ function TableInner<T extends Record<string, any> = any>({
   id,
   isColumnSettingHidden = false,
   apiFunction,
+  responseFormat: responseFormatProp,
   preFetchedData = [],
   isPrefetchedDataLoading = false,
   apiParams,
@@ -270,7 +266,19 @@ function TableInner<T extends Record<string, any> = any>({
     return () => clearTimeout(timer);
   }, [searchValue]);
 
+  const noviqConfig = useNoviqUIConfig();
+  const responseFormat = responseFormatProp ?? noviqConfig?.table?.responseFormat;
+  const requestParamNames = { ...DEFAULT_REQUEST_PARAMS, ...noviqConfig?.table?.requestParams };
+
   const isUsingApiFunction = !!apiFunction && preFetchedData.length === 0 && !hidden;
+
+  if (isUsingApiFunction && !responseFormat) {
+    throw new Error(
+      "noviq-ui: <Table> needs a response format. Wrap your app in " +
+        '<NoviqUIConfigProvider config={{ table: { responseFormat: {...} } }}> or pass a ' +
+        '"responseFormat" prop directly to this <Table>.'
+    );
+  }
 
   const queryKey = useMemo(
     () => ["noviq-ui-table", pagination, debouncedSearch, apiParams, updateList, activeFilters],
@@ -283,17 +291,25 @@ function TableInner<T extends Record<string, any> = any>({
       apiFunction!({
         ...(apiParams as Record<string, unknown>),
         ...getFilterParams(),
-        search: debouncedSearch,
-        page_no: pagination.page,
-        rows_per_page: pagination.pageSize,
+        [requestParamNames.search]: debouncedSearch,
+        [requestParamNames.page]: pagination.page,
+        [requestParamNames.pageSize]: pagination.pageSize,
       }),
     enabled: isUsingApiFunction,
     retry: 3,
   });
 
   const usingPreFetched = preFetchedData.length > 0;
-  const data: T[] = usingPreFetched ? preFetchedData : queryResult?.result ?? [];
-  const totalItems = usingPreFetched ? preFetchedData.length : queryResult?.totalCount ?? 0;
+  const data: T[] = usingPreFetched
+    ? preFetchedData
+    : responseFormat
+      ? extractRows<T>(queryResult, responseFormat)
+      : [];
+  const totalItems = usingPreFetched
+    ? preFetchedData.length
+    : responseFormat
+      ? extractTotal(queryResult, responseFormat)
+      : 0;
   const isLoading = usingPreFetched ? isPrefetchedDataLoading : isQueryLoading;
 
   const getRenderValue = useCallback(
@@ -328,6 +344,8 @@ function TableInner<T extends Record<string, any> = any>({
 
   const { exportToExcel, exportToCSV, exporting } = useTableExport({
     apiFunction,
+    responseFormat,
+    requestParams: requestParamNames,
     usingPreFetched,
     preFetchedData: sortedData,
     columns: displayColumns,

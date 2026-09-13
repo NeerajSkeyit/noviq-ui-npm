@@ -1,15 +1,19 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import type { TableColumn, TableQueryParams, TableQueryResult } from "./Table";
+import type { TableColumn, TableQueryParams } from "./Table";
 import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "./constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { formatTableCellValues, formatStatusLabel } from "./TableCell";
+import { extractRows } from "../../config/responseFormat";
+import type { TableRequestParamNames, TableResponseFormat } from "../../config/types";
 
 const FALLBACK_ROWS_PER_PAGE = 100000;
 const HEADER_FILL = "02699B";
 
 export interface UseTableExportArgs<T> {
-  apiFunction?: (params: TableQueryParams) => Promise<TableQueryResult<T>>;
+  apiFunction?: (params: TableQueryParams) => Promise<unknown>;
+  responseFormat?: TableResponseFormat<T>;
+  requestParams?: Required<TableRequestParamNames>;
   usingPreFetched: boolean;
   /** The already client-sorted array, used directly (no fetch) when `usingPreFetched`. */
   preFetchedData: T[];
@@ -40,6 +44,8 @@ function getExportCellValue<T>(row: T, column: TableColumn<T>): string | number 
 
 function useTableExport<T>({
   apiFunction,
+  responseFormat,
+  requestParams,
   usingPreFetched,
   preFetchedData,
   columns,
@@ -54,15 +60,15 @@ function useTableExport<T>({
 
   const fetchRows = async (): Promise<T[]> => {
     if (usingPreFetched) return preFetchedData;
-    if (!apiFunction) return [];
-    const { result } = await apiFunction({
+    if (!apiFunction || !responseFormat || !requestParams) return [];
+    const raw = await apiFunction({
       ...(apiParams as Record<string, unknown>),
       ...filterParams,
-      search,
-      page_no: 1,
-      rows_per_page: totalItems > 0 ? totalItems : FALLBACK_ROWS_PER_PAGE,
+      [requestParams.search]: search,
+      [requestParams.page]: 1,
+      [requestParams.pageSize]: totalItems > 0 ? totalItems : FALLBACK_ROWS_PER_PAGE,
     });
-    return result;
+    return extractRows(raw, responseFormat);
   };
 
   const buildAoa = (rows: T[]): unknown[][] => {
