@@ -17,7 +17,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
      call: the native inputs are better on mobile and the custom ones are consistent across
      browsers/locales. `design/form/FormSidebar.jsx`/`ProgressBar.jsx`/`SingleStepForm.jsx`
      (multi-step wizard shell) also remain deferred here.
-   - Note: `INPUT_TYPE.DATE_RANGE` is declared in `Input` but has no render branch (an unknown type
+   - Note: `INPUT_TYPE.DATE_RANGE` is declared in `src/constants.ts` but `Input` has no render branch (an unknown type
      falls through to the "Worng input type provided" text) — HRMS itself only ever had a comment
      for it, never an implementation.
 4. **Phase 3 — Table**, split into sub-phases:
@@ -438,7 +438,27 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Guards: `src/packaging.test.ts` now fails if `formik`/`react-hot-toast` reappear under
         `dependencies`/`peerDependencies` or are imported (even as a type) by shipped source.
         Verified the dependency guards fail against the pre-change `package.json`.
-  - [x] Test suite 293 (up from 224 at 3.0.0). Main bundle 131.6 → 128.1 kB gzip.
+  - [x] **Constants consolidated into `src/constants.ts`** (standing convention from the user: *every
+        fixed value lives in constants, never as a bare literal*). Before this only `INPUT_TYPE`,
+        `CELL_TYPE` and `FILTER_TYPE` existed; variants, sizes, sides, button `type`, sort direction,
+        sticky side, row/bulk action kinds, keyboard keys, hotkeys, column ids, defaults, the storage
+        prefix and export strings were bare literals scattered through ~25 files. Now ~35 named
+        groups (public ones exported from the package root, `@internal` ones not), types derived
+        from them, and `src/constants.test.ts` (60 tests) scans shipped source and fails on a bare
+        literal for any covered value. Behavior-neutral: the existing 293 tests passed unchanged,
+        and the constants hold the exact strings the props always took, so no consumer migration.
+        Guards verified to fail: a probe file with 11 kinds of planted violation tripped every
+        one, then was removed. The sweep also found a literal the pattern guards can't express
+        (`"PM"`/`"AM"` in `Table/dateFormat.ts`), fixed and then added to the guard's value list.
+        Deliberately **not** moved: native HTML/ARIA/CSS vocabulary, third-party prop values
+        (react-select's `menuPlacement`), and user-facing copy (that's localisation — the spec's
+        `config.i18n` roadmap item; offered as a follow-up).
+  - [x] Demo now uses the public constants throughout (`ROW_ACTION_VARIANT.REJECT`,
+        `COL_SPAN.HALF`, `INPUT_TYPE.*`, `NOTIFY_KIND.ERROR`, …), so the demo's `tsc -b` doubles as a
+        typecheck of the constants as consumers see them via the packed types.
+  - [x] Test suite 353 (up from 224 at 3.0.0). Main bundle 131.6 → 129.4 kB gzip (net of the
+        removed dependencies; the named constant objects cost ~1.2 kB because bundlers can't
+        inline object property values).
   - [x] Verified in a real browser: opening centres the selected hour/minute, keyboard flow
         produces the expected value, flips above near the viewport bottom and follows its trigger
         on scroll; inside the demo's Add/Edit drawer it renders above the drawer and a picked time
@@ -490,7 +510,10 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - New `config.notify`; `config.table` is now optional.
   - Fix: `3.0.0` warned on every initial `Table` load and called `getRows`/`getTotal` with
     `undefined` while loading.
-  - Gate: `tsc` clean, 293/293 tests, build, `npm pack` (45 files), tarball has no `formik`/
+  - Constants: every fixed value now has a named constant in `src/constants.ts`, exported from
+    the package root (`BUTTON_VARIANT`, `DRAWER_SIDE`, `SORT_DIRECTION`, …); purely additive —
+    plain literals keep working.
+  - Gate: `tsc` clean, 353/353 tests, build, `npm pack` (45 files), tarball has no `formik`/
     `react-hot-toast`, demo typecheck + build against the packed tarball, live run with a clean
     console, export toast routed through `notify`, 12-hour picker verified in the Edit drawer
     (backend stores 24-hour). Awaiting explicit go-ahead to run `npm publish`.

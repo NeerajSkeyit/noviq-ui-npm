@@ -98,11 +98,14 @@ swapping a consumer frontend over to it is explicitly deferred to a later phase.
 ```
 noviq-ui/
 ├── src/
-│   ├── index.ts                     # public API — all components + their prop types
+│   ├── index.ts                     # public API — all components + their prop types + constants
+│   ├── constants.ts                 # EVERY fixed vocabulary (variants, sizes, keys, ids, defaults)
+│   ├── constants.test.ts            # guard: fails on a bare literal for a value that has a constant
 │   ├── styles/tokens.css            # shared :root design tokens, single source of truth
 │   ├── config/                      # NoviqUIConfigProvider + types + response-format extraction
 │   ├── packaging.test.ts            # guards the package.json exports `types` condition
 │   ├── test/setup.ts                # jest-dom matchers for Vitest
+│   ├── test/sourceFiles.ts          # shippedSourceFiles()/stripComments() for the guard tests
 │   └── components/
 │       ├── Input/                   # Input.tsx + .css + .test.tsx (18 field types)
 │       ├── Button/                  # Button.tsx + .css + .test.tsx
@@ -122,7 +125,7 @@ noviq-ui/
 │                                     #   RowActionsMenu/RejectAction/BulkActionsBar/
 │                                     #   FilterDrawer/FilterChips/Export +
 │                                     #   useTableColumnSettings.ts + buildActiveFilter.ts +
-│                                     #   useTableExport.ts + cellValue.ts + constants.ts +
+│                                     #   useTableExport.ts + cellValue.ts +
 │                                     #   dateFormat.ts + textTransforms.ts + .test.tsx per piece
 ├── dev/playground.tsx               # manual visual-testing harness, not published
 ├── index.html                       # dev-server entry point, not published
@@ -493,6 +496,31 @@ messages from earlier server lifetimes, e.g. Vite HMR errors from before a depen
 `npx tsc --noEmit` there checks nothing and always "passes." Use `npx tsc -p tsconfig.app.json
 --noEmit` or `npm run build` (which runs `tsc -b`). That vacuous check is why the missing `types`
 export condition (fixed in `3.0.0`) went unnoticed through five published releases.
+
+## Constants — the standing convention
+**Every fixed value goes in `src/constants.ts`; component code never repeats it as a bare
+literal.** That covers variants/sizes/sides/types (`BUTTON_VARIANT`, `DRAWER_SIDE`, `MODAL_SIZE`,
+`SORT_DIRECTION`, `ROW_ACTION_TYPE`…), keyboard keys (`KEY`), hotkey specs (`HOTKEY`), the special
+column ids (`TABLE_COLUMN_ID`), defaults (`DEFAULT_PAGE_SIZE_OPTIONS`, `DEFAULT_COLUMN_WIDTH`,
+`SEARCH_DEBOUNCE_MS`), storage-key prefix, export file/MIME/sheet strings and notify messages.
+- One file, not per-component, so there is exactly one place to look (and to grep). It has no
+  imports, so nothing can form a cycle through it.
+- **Public vs `@internal`**: public groups are re-exported from `src/index.ts` (consumers write
+  `variant={BUTTON_VARIANT.OUTLINE}`); `@internal` ones aren't. Types are derived from the
+  constants (`type ButtonVariant = ValueOf<typeof BUTTON_VARIANT>`) so a value can't exist in the
+  type and not in the object. Values are the exact strings the props always took, so plain
+  literals from consumers keep working — adding a constant is never a breaking change.
+- **Enforced** by `src/constants.test.ts`, which scans shipped source and fails on a bare literal
+  for a covered value (`variant="outline"`, `e.key === "Enter"`, `case "Escape"`,
+  `direction === "asc"`, a hand-written `"a" | "b"` union, `useHotkeys("esc")`, the storage
+  prefix…). The probe-file check proving each guard can fail is in the 4.0.0 "Done" notes.
+  **When you add a new fixed value or a new variant/kind/type, add it to `constants.ts` first.**
+- **Deliberately stays inline**: web-platform vocabulary the browser owns — native `<input
+  type="date">`, `role=`/`aria-*`, CSS class names, third-party props like react-select's
+  `menuPlacement="auto"` — and **user-facing copy** ("Cancel", "Select time", "Export as CSV"…).
+  Copy is a separate concern (localisation, the spec roadmap's `config.i18n`) and was not moved.
+- `INPUT_TYPE`, `CELL_TYPE` and `FILTER_TYPE` used to live in `Input.tsx`, `Table/constants.ts`
+  and `Table/buildActiveFilter.ts`; they moved here and are still exported from the package root.
 
 ## Config provider (`NoviqUIConfigProvider`, `3.0.0`; `notify` added in `4.0.0`)
 Spec: `docs/superpowers/specs/2026-09-04-config-provider-design.md`; plan:

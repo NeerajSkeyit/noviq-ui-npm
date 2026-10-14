@@ -73,6 +73,37 @@ depended on `noviq-ui`.
   >
 ```
 
+## Constants
+
+Every fixed value the components accept has a named constant, so your code doesn't repeat
+stringly-typed literals:
+
+```javascript
+import { Button, Drawer, BUTTON_VARIANT, BUTTON_SIZE, BUTTON_TYPE, DRAWER_SIDE } from "noviq-ui";
+
+<Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} type={BUTTON_TYPE.SUBMIT}>Save</Button>
+<Drawer isOpen={open} onClose={close} side={DRAWER_SIDE.LEFT} />
+```
+
+The constants hold the same strings the props have always accepted, so plain literals
+(`variant="outline"`) keep working and nothing needs migrating. Each group also has a derived
+type (`ButtonVariant`, `DrawerSide`, …).
+
+| Constant | Used by |
+| --- | --- |
+| `INPUT_TYPE`, `FORM_FIELD_TYPE`, `COL_SPAN` | `Input` / `Form` field `type`s and `colSpan` |
+| `BUTTON_VARIANT`, `BUTTON_SIZE`, `BUTTON_TYPE` | `Button` (`BUTTON_TYPE` is the native `type` attribute) |
+| `BADGE_VARIANT` | `Badge` |
+| `DRAWER_SIDE`, `DRAWER_SIZE`, `MODAL_SIZE` | `Drawer`, `Modal` |
+| `HOUR_CYCLE`, `TIME_PERIOD` | `TimePicker` |
+| `CELL_TYPE`, `FILTER_TYPE` | `Table` column `type`, `filterConfigs` |
+| `SORT_DIRECTION`, `STICKY_POSITION`, `COLUMN_ALIGN` | `Table` columns |
+| `TABLE_COLUMN_ID` | ids of the auto-injected `select` / `actions` columns |
+| `ACTION_ID` | `Table` toolbar `actions` (`ACTION_ID.ADD` is the primary action) |
+| `ROW_ACTION_TYPE`, `ROW_ACTION_VARIANT`, `BULK_ACTION_VARIANT` | `rowActions`, `bulkActions` |
+| `NOTIFY_KIND` | the `kind` passed to `config.notify` |
+| `NO_TEXT_PLACEHOLDER` | what an empty table cell shows |
+
 ## Usage/Examples
 
 ```javascript
