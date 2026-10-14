@@ -38,7 +38,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
    exercises it against a real backend over HTTP. ✅ done — see its own README for details. This
    is also what surfaced the `2.5.1` fix (see below): it was never visible
    through `noviq-ui`'s own local-source dev playground.
-6. **Config provider — `NoviqUIConfigProvider`, `3.0.0` (breaking)** ✅ done, staged — Table's
+6. **Config provider — `NoviqUIConfigProvider`, `3.0.0` (breaking)** ✅ done, **published as `3.0.0`** — Table's
    response/request shape is declared once per app instead of being hard-wired to HRMS's
    envelope. Also fixes the `types` export condition and `Form`'s `formik` typing. See the
    `3.0.0` "Done" entry below.
@@ -337,7 +337,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] `npm test` (202/202), `npm run build`, `npm pack --dry-run` all verified clean — both
         changes are additive CSS properties, no behavior/API change.
 - [x] **`3.0.0` — breaking: `NoviqUIConfigProvider`, plus two typing/packaging fixes found while
-      verifying it** (staged, see "Ready to publish"). Design spec and implementation plan live in
+      verifying it** (published). Design spec and implementation plan live in
       `docs/superpowers/specs/2026-09-04-config-provider-design.md` and
       `docs/superpowers/plans/2026-09-04-config-provider-implementation.md`.
   - [x] **Why**: `Table`'s `apiFunction` had to resolve to exactly `{ result: T[], totalCount:
@@ -410,17 +410,19 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   contained/shrinks instead of spilling past the drawer's boundary on a full-width window.
   Patch release, no API/behavior change.
 
+- `3.0.0` — live on npm (confirmed via `npm view`; `latest` tag). **Breaking change**:
+  `Table`'s `apiFunction` now resolves to the raw backend response instead of a fixed
+  `{ result, totalCount }` shape; `TableQueryResult` is removed. Every app declares its backend's
+  response format once via the new `NoviqUIConfigProvider` (`config.table.responseFormat`), and can
+  rename the `search`/`page_no`/`rows_per_page` request keys via `config.table.requestParams`.
+  Also fixes the missing `types` export condition (typed consumers previously got implicit `any`
+  for the whole library) and `Form`'s `formik` prop typing. See the `3.0.0` "Done" entry above and
+  the design spec in `docs/superpowers/`. Migration is a one-time wrap of the app root in
+  `NoviqUIConfigProvider` plus returning the raw response from `apiFunction`. `noviq-ui-demo/web`
+  now depends on `^3.0.0` from the registry (typecheck, build and a live run all verified).
+
 ## Ready to publish
-- `3.0.0` — **breaking change**: `Table`'s `apiFunction` now resolves to the raw backend
-  response instead of a fixed `{ result, totalCount }` shape; `TableQueryResult` is removed.
-  Every app declares its backend's response format once via the new `NoviqUIConfigProvider`
-  (`config.table.responseFormat`), and can rename the `search`/`page_no`/`rows_per_page` request
-  keys via `config.table.requestParams`. Also fixes the missing `types` export condition (typed
-  consumers previously got implicit `any` for the whole library) and `Form`'s `formik` prop
-  typing. See the `3.0.0` "Done" entry above and the design spec in `docs/superpowers/`.
-  Migration is a one-time wrap of the app root in `NoviqUIConfigProvider` plus returning the raw
-  response from `apiFunction`. Build + test + pack sanity checks all pass; awaiting explicit
-  go-ahead to run `npm publish`.
+_Nothing staged._
 
 ## Not started
 - [ ] Phase 2b (rich Date/Time/Month pickers).
@@ -494,15 +496,13 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
 ## Suggested next steps
-1. Publish `3.0.0` when ready (staged; see "Ready to publish"), then point
-   `noviq-ui-demo/web` at the registry version (`^3.0.0`) instead of the local tarball.
-2. Add `eslint.config.js` so `npm run lint` actually runs — still not done, still cheap.
-3. Initialize git for `noviq-ui-demo` (the only repo here still without one).
-4. Real-frontend adoption: Table (3a-3d) and the config provider are done and published, and
+1. Add `eslint.config.js` so `npm run lint` actually runs — still not done, still cheap.
+2. Initialize git for `noviq-ui-demo` (the only repo here still without one).
+3. Real-frontend adoption: Table (3a-3d) and the config provider are done and published, and
    `noviq-ui-demo` proves the package works for a typed Vite consumer against a real backend.
    Swapping `noviq-ui` into `noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
    `asset-management-system/apps/web` is the next real adoption milestone — the provider is what
    makes the three non-HRMS backends practical, since none share HRMS's response envelope.
-5. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.
-6. Consider a typecheck gate for tests (a `tsconfig.test.json` + script, or Vitest's typecheck
+4. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.
+5. Consider a typecheck gate for tests (a `tsconfig.test.json` + script, or Vitest's typecheck
    mode) so type-level regressions are caught by `npm test` rather than only by the demo build.
