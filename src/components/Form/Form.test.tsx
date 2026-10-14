@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useFormik } from "formik";
 import Form, { type FormFieldConfig } from "./Form";
 
@@ -159,5 +160,25 @@ describe("Form without formik", () => {
       />
     );
     expect(screen.getByLabelText("Name")).toBeInTheDocument();
+  });
+
+  it("drives a picker field: reads the value and writes it back through setFieldValue", async () => {
+    const user = userEvent.setup();
+    const controller = makeController({ values: { joinDate: "2024-03-05", shift: "09:00" } });
+    render(
+      <Form
+        inputList={[
+          { inputKey: "joinDate", type: "datePicker", label: "Join date" },
+          { inputKey: "shift", type: "timePicker", label: "Shift", hourCycle: 12 },
+        ]}
+        formik={controller}
+      />
+    );
+    expect(screen.getByLabelText("Join date")).toHaveTextContent("05/03/2024");
+    expect(screen.getByLabelText("Shift")).toHaveTextContent("09:00 AM");
+
+    await user.click(screen.getByLabelText("Join date"));
+    await user.click(screen.getByRole("gridcell", { name: "12/03/2024" }));
+    expect(controller.setFieldValue).toHaveBeenCalledWith("joinDate", "2024-03-12");
   });
 });

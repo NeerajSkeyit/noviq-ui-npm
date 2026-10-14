@@ -1,5 +1,5 @@
 import { formatDatePart } from "./dateFormat";
-import { FILTER_PAYLOAD_KEY, FILTER_TYPE, type FilterType } from "../../constants";
+import { FILTER_PAYLOAD_KEY, FILTER_TYPE, MONTH_NAMES, type FilterType } from "../../constants";
 
 export interface FilterOption {
   value: string;
@@ -35,11 +35,6 @@ export interface DateRangeValue {
   from?: string;
   to?: string;
 }
-
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 
 function isBlank(value: unknown): boolean {
   return value === undefined || value === null || value === "";

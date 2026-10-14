@@ -1,7 +1,8 @@
-import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Clock, X } from "lucide-react";
 import ScrollArea from "../ScrollArea/ScrollArea";
+import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import {
   BUTTON_TYPE,
   DEFAULT_MINUTE_STEP,
@@ -96,7 +97,6 @@ function TimePicker({
   const [open, setOpen] = useState(false);
   const [activeColumn, setActiveColumn] = useState<Column>(TIME_COLUMN.HOUR);
   const [focusedIndex, setFocusedIndex] = useState(0);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
 
   const is12 = hourCycle === HOUR_CYCLE.H12;
 
@@ -156,52 +156,15 @@ function TimePicker({
 
   const closePicker = () => setOpen(false);
 
-  // Close on a mousedown anywhere outside the trigger wrapper and the portaled dropdown.
-  useEffect(() => {
-    if (!open) return;
-    function handleMouseDown(e: MouseEvent) {
-      const target = e.target as Node;
-      if (wrapperRef.current?.contains(target) || dropdownRef.current?.contains(target)) return;
-      setOpen(false);
-    }
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [open]);
-
-  // Keep the fixed-position dropdown pinned under (or, near the viewport bottom, above) the trigger.
-  useLayoutEffect(() => {
-    if (!open) return;
-
-    function updatePosition() {
-      const triggerEl = triggerRef.current;
-      const dropdownEl = dropdownRef.current;
-      if (!triggerEl || !dropdownEl) return;
-
-      const triggerRect = triggerEl.getBoundingClientRect();
-      const dropdownRect = dropdownEl.getBoundingClientRect();
-
-      let top = triggerRect.bottom + 4;
-      if (top + dropdownRect.height > window.innerHeight) {
-        top = Math.max(8, triggerRect.top - dropdownRect.height - 4);
-      }
-
-      let left = triggerRect.left;
-      if (left + dropdownRect.width > window.innerWidth) {
-        left = window.innerWidth - dropdownRect.width - 8;
-      }
-      if (left < 8) left = 8;
-
-      setPosition({ top, left });
-    }
-
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [open, is12]);
+  const closePickerCallback = useCallback(() => setOpen(false), []);
+  const position = useFloatingPanel({
+    open,
+    onOutsideClick: closePickerCallback,
+    anchorRef: triggerRef,
+    panelRef: dropdownRef,
+    containerRef: wrapperRef,
+    remeasureKey: is12,
+  });
 
   // Scroll each column so its selected option sits in the middle when the dropdown opens or the
   // value changes. Scoped to *this* dropdown — the HRMS source used a global `document.querySelector`,

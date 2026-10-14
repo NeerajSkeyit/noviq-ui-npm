@@ -42,6 +42,12 @@ export const INPUT_TYPE = {
   NUMBER: "number",
   EXCEL_UPLOAD: "excelUpload",
   SWITCH: "switch",
+  /** Custom calendar dropdown (value `"YYYY-MM-DD"`); `DATE` is the browser's native input. */
+  DATE_PICKER: "datePicker",
+  /** Custom hour/minute dropdown (value `"HH:mm"`, 24-hour); `TIME` is the native input. */
+  TIME_PICKER: "timePicker",
+  /** Custom month grid (value `"YYYY-MM"`); `MONTH` is the native input. */
+  MONTH_PICKER: "monthPicker",
 } as const;
 export type InputType = ValueOf<typeof INPUT_TYPE>;
 
@@ -127,6 +133,13 @@ export const DRAWER_HEIGHT_BY_SIZE: Record<DrawerSize, number> = {
   [DRAWER_SIZE.LG]: 620,
 };
 
+// ─── Floating panels (picker dropdowns) ────────────────────────────────────────────────────────
+
+/** @internal Px between a picker's trigger and its dropdown. */
+export const FLOATING_PANEL_GAP = 4;
+/** @internal Px a dropdown keeps clear of the viewport edge when it has to be pulled back in. */
+export const FLOATING_PANEL_VIEWPORT_MARGIN = 8;
+
 // ─── TimePicker ────────────────────────────────────────────────────────────────────────────────
 
 /** 24-hour (hours 00–23) or 12-hour (hours 12, 01…11 plus an AM/PM column). */
@@ -154,6 +167,33 @@ export type TimeColumn = ValueOf<typeof TIME_COLUMN>;
 export const DEFAULT_MINUTE_STEP = 5;
 /** @internal Height in px of each scrollable column in the time picker's dropdown. */
 export const TIME_PICKER_COLUMN_HEIGHT = 180;
+
+// ─── DatePicker / MonthPicker ──────────────────────────────────────────────────────────────────
+
+/** @internal Full month names, January first. Also used for a `month` filter's chip text. */
+export const MONTH_NAMES: readonly string[] = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+/** @internal */
+export const MONTH_NAMES_SHORT: readonly string[] = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+/** @internal Sunday first, matching `Date#getDay()`. */
+export const WEEKDAY_LABELS: readonly string[] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+/** @internal `0` = Sunday. */
+export const WEEK_START = 0;
+/** @internal */
+export const DAYS_IN_WEEK = 7;
+/** @internal A calendar always shows six weeks, so it never changes height between months. */
+export const CALENDAR_WEEKS = 6;
+/** @internal Month-picker grid: months per row. */
+export const MONTH_GRID_COLUMNS = 3;
+/** @internal Earliest year the year select offers when there is no `minDate`. */
+export const DEFAULT_MIN_YEAR = 1900;
+/** @internal How many years past today the year select reaches when there is no `maxDate`. */
+export const DEFAULT_YEARS_AHEAD = 100;
 
 // ─── Table ─────────────────────────────────────────────────────────────────────────────────────
 
@@ -324,6 +364,10 @@ export const KEY = {
   ARROW_DOWN: "ArrowDown",
   ARROW_LEFT: "ArrowLeft",
   ARROW_RIGHT: "ArrowRight",
+  PAGE_UP: "PageUp",
+  PAGE_DOWN: "PageDown",
+  HOME: "Home",
+  END: "End",
 } as const;
 
 /** @internal Key specs in `react-hotkeys-hook`'s own syntax (not `KeyboardEvent.key`). */

@@ -10,6 +10,8 @@ import {
   Label,
   Switch,
   TimePicker,
+  DatePicker,
+  MonthPicker,
   FormFooter,
   Form,
   Table,
@@ -140,6 +142,9 @@ function Playground() {
   useAutoClear(notice, () => setNotice(null));
   const [startTime, setStartTime] = useState("09:30");
   const [endTime, setEndTime] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [bookedDate, setBookedDate] = useState("2024-03-05");
+  const [period, setPeriod] = useState("");
 
   const fruitOptions = [
     { label: "Apple", value: "apple" },
@@ -391,6 +396,49 @@ function Playground() {
           </div>
           <p style={{ color: "#6b7280", margin: 0 }} data-testid="time-values">
             start = {JSON.stringify(startTime)}, end = {JSON.stringify(endTime)}
+          </p>
+        </div>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>DatePicker / MonthPicker</h2>
+        <div style={{ display: "grid", gap: 16, maxWidth: 520 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <Label>Due date (empty, any date)</Label>
+              <DatePicker id="pg-due" value={dueDate} onChange={setDueDate} />
+            </div>
+            <div>
+              <Label>Booked (2024-03-05, 1–20 Mar only)</Label>
+              <DatePicker
+                id="pg-booked"
+                value={bookedDate}
+                onChange={setBookedDate}
+                minDate="2024-03-01"
+                maxDate="2024-03-20"
+              />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <Label>Billing month</Label>
+              <MonthPicker id="pg-period" value={period} onChange={setPeriod} />
+            </div>
+            <div>
+              <Label>Disabled / error</Label>
+              <DatePicker value="2024-02-29" disabled />
+            </div>
+          </div>
+          <Input
+            type="datePicker"
+            label="Via Input (datePicker)"
+            value={dueDate}
+            onChange={setDueDate}
+            error={dueDate ? undefined : "Required"}
+          />
+          <p style={{ color: "#6b7280", margin: 0 }} data-testid="date-values">
+            due = {JSON.stringify(dueDate)}, booked = {JSON.stringify(bookedDate)}, period ={" "}
+            {JSON.stringify(period)}
           </p>
         </div>
       </section>

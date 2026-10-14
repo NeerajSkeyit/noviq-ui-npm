@@ -180,4 +180,101 @@ describe("Input", () => {
     render(<Input type="unknownType" value="" onChange={vi.fn()} />);
     expect(screen.getByTitle("Please confirm input type attribute")).toBeInTheDocument();
   });
+
+  describe("picker types", () => {
+    const triggerOf = () => screen.getAllByRole("combobox").find((el) => el.tagName === "BUTTON")!;
+
+    it("datePicker: is labelled, shows DD/MM/YYYY, and emits YYYY-MM-DD", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Input type="datePicker" label="Join date" value="2024-03-05" onChange={onChange} />);
+      expect(screen.getByLabelText("Join date")).toHaveTextContent("05/03/2024");
+
+      await user.click(triggerOf());
+      await user.click(screen.getByRole("gridcell", { name: "20/03/2024" }));
+      expect(onChange).toHaveBeenCalledWith("2024-03-20");
+    });
+
+    it("datePicker: minDate / maxDate disable days", async () => {
+      const user = userEvent.setup();
+      render(
+        <Input type="datePicker" label="D" value="2024-03-15" minDate="2024-03-10" maxDate="2024-03-20" onChange={() => {}} />
+      );
+      await user.click(triggerOf());
+      expect(screen.getByRole("gridcell", { name: "09/03/2024" })).toHaveAttribute("aria-disabled", "true");
+      expect(screen.getByRole("gridcell", { name: "10/03/2024" })).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("timePicker: emits 24-hour HH:mm and honours hourCycle / minuteStep", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <Input type="timePicker" label="Start" value="14:30" hourCycle={12} minuteStep={15} onChange={onChange} />
+      );
+      expect(screen.getByLabelText("Start")).toHaveTextContent("02:30 PM");
+
+      await user.click(triggerOf());
+      expect(screen.getAllByRole("option", { name: /^(00|15|30|45)$/ })).toHaveLength(4);
+      await user.click(screen.getByRole("option", { name: "PM" }));
+      await user.click(screen.getByRole("option", { name: "05" }));
+      expect(onChange).toHaveBeenLastCalledWith("17:30");
+    });
+
+    it("monthPicker: shows MM/YYYY and emits YYYY-MM; minDate/maxDate bound the months", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <Input type="monthPicker" label="Period" value="2024-03" minDate="2024-02-01" maxDate="2024-09-30" onChange={onChange} />
+      );
+      expect(screen.getByLabelText("Period")).toHaveTextContent("03/2024");
+
+      await user.click(triggerOf());
+      expect(screen.getByRole("gridcell", { name: "January 2024" })).toHaveAttribute("aria-disabled", "true");
+      await user.click(screen.getByRole("gridcell", { name: "June 2024" }));
+      expect(onChange).toHaveBeenCalledWith("2024-06");
+    });
+
+    const VALID_VALUE: [string, string][] = [
+      ["datePicker", "2024-03-05"],
+      ["timePicker", "09:30"],
+      ["monthPicker", "2024-03"],
+    ];
+    const clearButton = () => screen.queryByRole("button", { name: /^Clear / });
+
+    it.each(VALID_VALUE)("%s: shows the error text and flags the control invalid", (type, value) => {
+      render(<Input type={type} label="F" value={value} error="Required" onChange={() => {}} />);
+      expect(screen.getByText("Required")).toBeInTheDocument();
+      expect(triggerOf()).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it.each(VALID_VALUE)("%s: offers a clear button, hidden by hideClearIcon", (type, value) => {
+      const { rerender } = render(<Input type={type} label="F" value={value} onChange={() => {}} />);
+      expect(clearButton()).toBeInTheDocument();
+
+      rerender(<Input type={type} label="F" value={value} hideClearIcon onChange={() => {}} />);
+      expect(clearButton()).not.toBeInTheDocument();
+    });
+
+    it.each(["datePicker", "timePicker", "monthPicker"])("%s: respects disabled", async (type) => {
+      const user = userEvent.setup();
+      render(<Input type={type} label="F" value="" disabled onChange={() => {}} />);
+      expect(triggerOf()).toBeDisabled();
+      await user.click(triggerOf());
+      expect(screen.queryByRole("grid")).not.toBeInTheDocument();
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    });
+
+    it("leaves the native date / time / month types alone", () => {
+      render(
+        <div>
+          <Input type="date" label="Native date" value="2024-03-05" onChange={() => {}} />
+          <Input type="time" label="Native time" value="09:30" onChange={() => {}} />
+          <Input type="month" label="Native month" value="2024-03" onChange={() => {}} />
+        </div>
+      );
+      expect((screen.getByLabelText("Native date") as HTMLInputElement).type).toBe("date");
+      expect((screen.getByLabelText("Native time") as HTMLInputElement).type).toBe("time");
+      expect((screen.getByLabelText("Native month") as HTMLInputElement).type).toBe("month");
+    });
+  });
 });

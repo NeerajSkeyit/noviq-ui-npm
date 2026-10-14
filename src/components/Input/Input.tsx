@@ -3,7 +3,10 @@ import ReactSelect, { type StylesConfig } from "react-select";
 import { Eye, EyeOff, FileText, Trash2, Upload, X } from "lucide-react";
 import Label from "../Label/Label";
 import Switch from "../Switch/Switch";
-import { BUTTON_TYPE, INPUT_TYPE } from "../../constants";
+import DatePicker from "../DatePicker/DatePicker";
+import MonthPicker from "../MonthPicker/MonthPicker";
+import TimePicker from "../TimePicker/TimePicker";
+import { BUTTON_TYPE, INPUT_TYPE, type HourCycle } from "../../constants";
 import "./Input.css";
 
 export interface InputOption {
@@ -30,8 +33,14 @@ export interface InputProps {
   accept?: string;
   noOptionsMessage?: () => string;
   disabled?: boolean;
+  /** Earliest value, for `date`, `month`, `datePicker` and `monthPicker`. */
   minDate?: string;
+  /** Latest value, for `date`, `month`, `datePicker` and `monthPicker`. */
   maxDate?: string;
+  /** `timePicker` only: 24-hour (default) or 12-hour with AM/PM. The value stays 24-hour `"HH:mm"`. */
+  hourCycle?: HourCycle;
+  /** `timePicker` only: minute column granularity. Defaults to 5. */
+  minuteStep?: number;
   maxLength?: number;
   autoFocus?: boolean;
   hideClearIcon?: boolean;
@@ -165,6 +174,8 @@ function Input({
   disabled = false,
   minDate = "",
   maxDate = "",
+  hourCycle,
+  minuteStep,
   maxLength,
   autoFocus = false,
   hideClearIcon = false,
@@ -267,6 +278,54 @@ function Input({
           min={minDate}
           max={maxDate}
           disabled={disabled}
+        />
+      </InputContainer>
+    );
+  } else if (type === INPUT_TYPE.DATE_PICKER) {
+    return (
+      <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
+        <DatePicker
+          id={uniqueInputId}
+          value={value || ""}
+          onChange={onChange}
+          minDate={minDate || undefined}
+          maxDate={maxDate || undefined}
+          placeholder={placeholder || undefined}
+          disabled={disabled}
+          error={!!error}
+          clearable={!hideClearIcon}
+        />
+      </InputContainer>
+    );
+  } else if (type === INPUT_TYPE.TIME_PICKER) {
+    return (
+      <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
+        <TimePicker
+          id={uniqueInputId}
+          value={value || ""}
+          onChange={onChange}
+          hourCycle={hourCycle}
+          minuteStep={minuteStep}
+          placeholder={placeholder || undefined}
+          disabled={disabled}
+          error={!!error}
+          clearable={!hideClearIcon}
+        />
+      </InputContainer>
+    );
+  } else if (type === INPUT_TYPE.MONTH_PICKER) {
+    return (
+      <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
+        <MonthPicker
+          id={uniqueInputId}
+          value={value || ""}
+          onChange={onChange}
+          minMonth={minDate || undefined}
+          maxMonth={maxDate || undefined}
+          placeholder={placeholder || undefined}
+          disabled={disabled}
+          error={!!error}
+          clearable={!hideClearIcon}
         />
       </InputContainer>
     );
