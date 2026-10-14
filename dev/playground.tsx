@@ -12,6 +12,7 @@ import {
   TimePicker,
   DatePicker,
   MonthPicker,
+  FullPageSection,
   FormFooter,
   Form,
   Table,
@@ -143,6 +144,7 @@ function Playground() {
   const [startTime, setStartTime] = useState("09:30");
   const [endTime, setEndTime] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [pageOpen, setPageOpen] = useState(false);
   const [bookedDate, setBookedDate] = useState("2024-03-05");
   const [period, setPeriod] = useState("");
 
@@ -398,6 +400,23 @@ function Playground() {
             start = {JSON.stringify(startTime)}, end = {JSON.stringify(endTime)}
           </p>
         </div>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>FullPageSection</h2>
+        <Button onClick={() => setPageOpen(true)}>Open a full-page form</Button>
+        {pageOpen && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 3000, overflow: "auto", background: "#fff" }}>
+            <FullPageSection
+              title="Add location"
+              subtitle="A full-page layout for a form too big for a drawer"
+              onBack={() => setPageOpen(false)}
+              onSubmit={() => setPageOpen(false)}
+            >
+              <Input type="text" label="Location name" value="" onChange={() => {}} />
+            </FullPageSection>
+          </div>
+        )}
       </section>
 
       <section style={{ marginBottom: 40 }}>
