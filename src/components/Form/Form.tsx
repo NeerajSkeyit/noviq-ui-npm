@@ -21,7 +21,11 @@ export interface FormFieldConfig
 
 export interface FormProps {
   inputList?: FormFieldConfig[];
-  formik: FormikProps<Record<string, any>>;
+  /** Any `useFormik<Values>()` instance. Typed as `FormikProps<any>` rather than
+   * `FormikProps<Record<string, any>>` because Formik's helper methods (`setValues`, etc.) are
+   * contravariant in the values type, so a concretely-typed instance isn't assignable to the
+   * `Record<string, any>` form — which made `<Form formik={typedFormik} />` a type error. */
+  formik: FormikProps<any>;
 }
 
 function Form({ inputList = [], formik }: FormProps) {

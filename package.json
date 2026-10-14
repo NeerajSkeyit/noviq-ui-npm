@@ -29,7 +29,11 @@
   "module": "./dist/noviq-ui.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/noviq-ui.mjs",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/noviq-ui.mjs",
+      "default": "./dist/noviq-ui.mjs"
+    },
     "./style.css": "./dist/noviq-ui.css"
   },
   "files": [
