@@ -12,8 +12,9 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
      dependency (the `react-datepicker`/`moment`/`react-i18next` stack HRMS used was not adopted).
    - **2b-iii — wired into `Input`** ✅ done, staged as `4.1.0`, as **new opt-in types**
      (`datePicker`, `timePicker`, `monthPicker`); native `date`/`time`/`month` are unchanged.
-   - Still deferred: `design/form/FormSidebar.jsx`/`ProgressBar.jsx`/`SingleStepForm.jsx` (the
-     multi-step wizard shell).
+   - The multi-step wizard shell (`FullPageForm`/`SingleStepForm`/`FormSidebar`) is **dropped, not
+     deferred**: `FullPageForm` has zero importers in HRMS. Its single-step sibling
+     `FullPageSection` (8 call sites) was ported instead — see `4.2.0`.
    - Note: `INPUT_TYPE.DATE_RANGE` is declared in `src/constants.ts` but `Input` has no render
      branch (an unknown type falls through to the "Worng input type provided" text) — HRMS itself
      only ever had a comment for it, never an implementation.
@@ -495,6 +496,19 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Test suite 473 (up from 353). Main bundle 129.4 → 132.8 kB gzip (+3.4 kB for two pickers,
         the hook and the constants), CSS 4.3 → 4.7 kB.
 
+- [x] **`4.2.0` — `FullPageSection`** (staged, see "Ready to publish"):
+  - [x] Surveyed HRMS before porting: the multi-step wizard (`FullPageForm`) has **0 importers**
+        — dead code, so not ported (same call as `ViewModeToggle`). The single-step layout
+        `FullPageSection` has 8 real pages, all passing their own `onBack`/`onCancel`.
+  - [x] `FullPageSection` built router-free (default back is `window.history.back()`), default
+        footer reuses `FormFooter`, `loading` disables it and swaps the submit label. 10 tests,
+        mutation-checked (5 deliberate breaks; one mutant I wrote turned out to be behaviourally
+        equivalent, so I re-ran it as a real one — caught).
+  - [x] Demo: an "Add (full page)" toolbar action swaps the table for the same form in
+        `FullPageSection`. Verified in a browser: heading, subtitle, six fields, sticky footer,
+        Back returns to the table, and a real submit (date via the calendar) created the row.
+  - [x] Test suite 483 (up from 473). Main bundle 132.8 → 133.1 kB gzip.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -536,19 +550,18 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   no longer dependencies; new `config.notify` (export feedback — the table no longer toasts by
   itself); fix for the spurious dev warning. **Does not include the constants** (see `4.1.0`).
 
+- `4.1.0` — live on npm (confirmed with `npm view`; the registry bundle is byte-identical to the
+  staged tarball). Additive: `DatePicker`, `MonthPicker`, the `datePicker`/`timePicker`/
+  `monthPicker` `Input` types, and `src/constants.ts` (every fixed value a named, exported
+  constant). `noviq-ui-demo/web` now depends on `^4.1.0` from the registry.
+
 ## Ready to publish
-- `4.1.0` — **additive, no breaking changes.**
-  - New `DatePicker` and `MonthPicker` (standalone, hand-built, no new dependency).
-  - `Input` gains `datePicker` / `timePicker` / `monthPicker` types (and `hourCycle` /
-    `minuteStep` props), usable from `Form`'s `inputList`.
-  - Every fixed value is a named constant in `src/constants.ts`, exported from the package root
-    (`BUTTON_VARIANT`, `DRAWER_SIDE`, `SORT_DIRECTION`, `INPUT_TYPE.DATE_PICKER`, …); plain literals
-    keep working. A test fails if a bare literal comes back.
-  - Gate: `tsc` clean, 473/473 tests, build, `npm pack` (50 files), demo typecheck + build against
-    the packed tarball, live run with a clean console. Awaiting explicit go-ahead to `npm publish`.
+- `4.2.0` — **additive, no breaking changes.** New `FullPageSection` (page-level single-step form
+  layout; router-free). Gate: `tsc` clean, 483/483 tests, build, `npm pack` (51 files), demo
+  typecheck + build against the packed tarball, live run incl. a real submit. Awaiting explicit
+  go-ahead to `npm publish`.
 
 ## Not started
-- [ ] Multi-step form wizard shell (`FormSidebar`/`ProgressBar`/`SingleStepForm`) — the last deferred Phase 2b item.
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
       indefinitely, confirmed near-dead in HRMS (1 real working call site out of 97). Not part of
       Table 3a-3d at all; revisit only if a real consumer needs it.

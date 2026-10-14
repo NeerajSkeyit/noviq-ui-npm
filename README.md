@@ -317,6 +317,35 @@ import { MonthPicker } from "noviq-ui";
 - Form field: `<Input type="monthPicker" minDate=... maxDate=... />` (the same `minDate`/`maxDate`
   props as the other date fields). `<Input type="month" />` is unchanged.
 
+### FullPageSection
+
+A full-page layout for a single-step form that has too many fields for a `Drawer` or `Modal`: a
+back arrow with the title (and optional subtitle), the form inside a card, and a sticky footer.
+
+```javascript
+import { FullPageSection, Form } from "noviq-ui";
+
+function AddLocationPage() {
+  return (
+    <FullPageSection
+      title="Add location"
+      subtitle="Where your people work"
+      onBack={() => navigate("/locations")}
+      onSubmit={formik.submitForm}
+      loading={formik.isSubmitting}
+    >
+      <Form inputList={fields} formik={formik} />
+    </FullPageSection>
+  );
+}
+```
+
+- **No router dependency.** `onBack` does the navigating; without one the back arrow calls
+  `window.history.back()`. Cancel calls `onCancel`, falling back to `onBack`.
+- The default footer is Cancel + Submit (`cancelLabel`, `submitLabel`). `loading` disables both and
+  shows `loadingLabel` ("Saving...") on the submit button. Pass `footer` to replace it entirely.
+- It's a single-step layout, not a multi-step wizard.
+
 ### Table
 
 `Table` needs to know your backend's response shape once, via `NoviqUIConfigProvider` wrapped
@@ -529,6 +558,7 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - `<DatePicker />` — calendar dropdown for a date, with min/max and keyboard support (see above)
 - `<MonthPicker />` — month/year grid (see above)
 - `<FormFooter />` — Cancel/Save button row for a form
+- `<FullPageSection />` — full-page form layout: back arrow + title, card, sticky footer (see above)
 - `<Form />` — config-driven form renderer (`inputList` + a Formik instance, or any object with
   the `FormController` shape)
 - `<Badge />` — small status/label pill (variants: `default`, `secondary`, `destructive`, `outline`)

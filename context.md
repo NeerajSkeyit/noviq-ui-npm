@@ -128,6 +128,7 @@ noviq-ui/
 │       ├── DatePicker/              # DatePicker.tsx + .css + .test.tsx + dateParts.ts (pure date math)
 │       ├── MonthPicker/             # MonthPicker.tsx + .css + .test.tsx
 │       ├── PickerField/             # internal trigger shell shared by DatePicker/MonthPicker
+│       ├── FullPageSection/         # FullPageSection.tsx + .css + .test.tsx (page-level form layout)
 │       └── Table/                   # Table.tsx + ActionBar/TableCell/TablePagination/
 │                                     #   ColumnSelector/EmptyState/LoadingOverlay/
 │                                     #   RowActionsMenu/RejectAction/BulkActionsBar/
@@ -236,6 +237,19 @@ Ported from `noviq-hrms-ui/src/components/common/DateInput.js` + `DatePickerHead
   (native is better on mobile). `INPUT_TYPE.DATE_PICKER`/`TIME_PICKER`/`MONTH_PICKER`.
 - Shared plumbing: `hooks/useFloatingPanel` (also now used by `TimePicker`) and the internal
   `PickerField` trigger shell (used by Date/MonthPicker; `TimePicker` keeps its own markup).
+
+### `FullPageSection`
+Ported from `noviq-hrms-ui/src/components/design/form/FullPageSection.jsx` (8 real call sites).
+Back arrow + title/subtitle header, children in a card, sticky footer. **What was decided:**
+- **The router coupling is gone**: the source called react-router's `useNavigate` for its default
+  back; all 8 callers pass their own `onBack`, so the port defaults to `window.history.back()`
+  (equivalent for browser history) and the library stays router-agnostic.
+- The default footer reuses the existing `FormFooter` rather than duplicating Cancel/Submit.
+- Source had a no-op `marinLeft` style typo (dropped) and CSS from `design.module.css` that
+  referenced HRMS-only tokens (`--background`, `--color-text-muted`) — mapped to noviq-ui tokens.
+- **Not ported, on purpose**: HRMS's `FullPageForm` / `SingleStepForm` / `FormSidebar` (the
+  multi-step wizard). `FullPageForm` has **zero importers** in HRMS (dead code) — same call as
+  `ViewModeToggle`. `FullPageFormFooter` and `ProgressBar` only serve that wizard.
 
 ### `FormFooter`
 Ported from `noviq-hrms-ui/src/components/design/form/FormFooter.jsx`. Cancel/Save/extra-buttons
