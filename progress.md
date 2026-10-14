@@ -6,12 +6,19 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 1. **Phase 1 — Drawer + Modal + primitives** ✅ done, **published as `1.1.0`**.
 2. **Phase 2 — Form/Input system** ✅ done, **published as `2.0.0`** (breaking: `Input`'s
    `onChange` signature changed).
-3. **Phase 2b — rich Date/Time/Month pickers** (future, not scheduled). `common/DateInput.js` +
-   `common/DatePickerHeader.jsx` (188 lines, `react-datepicker`-based) and `common/TimeInput.jsx`
-   (239 lines, fully hand-rolled hour/minute scrollable dropdown, currently uses
-   `simplebar-react` — could be replaced with noviq-ui's own `ScrollArea` instead of adding a
-   fourth CSS/scroll dependency). `design/form/FormSidebar.jsx`/`ProgressBar.jsx`/
-   `SingleStepForm.jsx` (multi-step wizard shell) also deferred here.
+3. **Phase 2b — rich Date/Time/Month pickers**, split into sub-phases:
+   - **2b-i — `TimePicker`** ✅ done, staged as `3.1.0` (see "Ready to publish"). Standalone
+     component, hand-rolled (no picker library); `Input type="time"` is not rewired yet.
+   - **2b-ii — date picker / month picker** — not started. HRMS's `common/DateInput.js` +
+     `DatePickerHeader.jsx` sit on `react-datepicker` + `moment` + `react-i18next`, so this needs a
+     dependency decision first: adopt `react-datepicker` (+ `date-fns`) or build a small calendar.
+   - **2b-iii — wire the pickers into `Input`** (`type: date | time | month`) — blocked on a product
+     call: the native inputs are better on mobile and the custom ones are consistent across
+     browsers/locales. `design/form/FormSidebar.jsx`/`ProgressBar.jsx`/`SingleStepForm.jsx`
+     (multi-step wizard shell) also remain deferred here.
+   - Note: `INPUT_TYPE.DATE_RANGE` is declared in `Input` but has no render branch (an unknown type
+     falls through to the "Worng input type provided" text) — HRMS itself only ever had a comment
+     for it, never an implementation.
 4. **Phase 3 — Table**, split into sub-phases:
    - **3a — Core table** ✅ done, **published as `2.1.0`**. Sortable/searchable/paginated table,
      `apiFunction`/`preFetchedData` data sources, `date`/`dateRange`/`dateTime`/`time`/`duration`/
@@ -385,6 +392,32 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         (483 KB binary, now in pushed history); untracked it and added `*.tgz` to `.gitignore`.
         History was not rewritten.
 
+- [x] **`3.1.0` — `TimePicker` (Phase 2b-i), plus a fix for a spurious dev warning shipped in
+      `3.0.0`** (staged, see "Ready to publish"):
+  - [x] **`TimePicker` built** (`src/components/TimePicker/`), ported from HRMS's hand-rolled
+        `common/TimeInput.jsx`. Standalone, additive: `<TimePicker value="09:30" onChange={...}
+        minuteStep={15} />`. Fixes vs. the source: placeholder instead of a fake `00:00` when empty;
+        opens on click/ArrowDown/Enter rather than on bare focus; scroll-to-selected is scoped to
+        its own dropdown (the source's global `document.querySelector` scrolled the wrong picker
+        when two were on a page); repositions on scroll/resize and flips above near the viewport
+        bottom; ARIA combobox/listbox + `aria-activedescendant`; optional clear button; built on
+        the library's `ScrollArea` instead of `simplebar-react`. `Input type="time"` is **not**
+        rewired — still the native input (see Phase 2b-iii).
+  - [x] **Found while verifying it: `3.0.0` warned on every initial load.** `Table` ran
+        `extractRows`/`extractTotal` on every render, including while the query result was still
+        `undefined`, so (a) the dev-only "responseFormat.rowsPath … did not resolve" warning fired
+        on every initial load of every Table, and (b) a consumer's `getRows`/`getTotal` function
+        was called with `undefined` and had to null-guard. Missed in the 3.0.0 verification because
+        the demo's console was only read with `onlyErrors`. Fixed: extraction only runs once a
+        response exists, and is memoized so a genuine mismatch warns once rather than per render.
+        3 regression tests added (verified failing before the fix, 12 warnings vs 6 expected).
+  - [x] Test suite 257 (up from 224): 30 for `TimePicker`, 3 for the Table fix. Mutation-checked
+        the TimePicker tests (5 deliberate breaks, each caught).
+  - [x] Verified in a real browser: opening centres the selected hour/minute, keyboard flow
+        produces the expected value, flips above near the viewport bottom and follows its trigger
+        on scroll; inside the demo's Add/Edit drawer it renders above the drawer and a picked time
+        round-trips through the real backend (`shiftStart` field added to the demo).
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -422,10 +455,15 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   now depends on `^3.0.0` from the registry (typecheck, build and a live run all verified).
 
 ## Ready to publish
-_Nothing staged._
+- `3.1.0` — **additive, no breaking changes.** New standalone `TimePicker` component (exported with
+  its `TimePickerProps` type), plus a fix for a spurious dev-only console warning that `3.0.0`
+  emitted on every initial `Table` load and for `getRows`/`getTotal` being called with
+  `undefined` while loading. See the `3.1.0` "Done" entry above. Gate passed: `tsc` clean, 257/257
+  tests, build, `npm pack` (45 files, `TimePicker.d.ts` present), demo typecheck + build against the
+  packed tarball, live run with a clean console. Awaiting explicit go-ahead to run `npm publish`.
 
 ## Not started
-- [ ] Phase 2b (rich Date/Time/Month pickers).
+- [ ] Phase 2b-ii/iii (date picker, month picker, wiring pickers into `Input`) — see the roadmap.
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
       indefinitely, confirmed near-dead in HRMS (1 real working call site out of 97). Not part of
       Table 3a-3d at all; revisit only if a real consumer needs it.
@@ -503,6 +541,7 @@ _Nothing staged._
    Swapping `noviq-ui` into `noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
    `asset-management-system/apps/web` is the next real adoption milestone — the provider is what
    makes the three non-HRMS backends practical, since none share HRMS's response envelope.
-4. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.
+4. Phase 2b-ii/iii: date + month pickers (needs the `react-datepicker`-vs-hand-built decision)
+   and deciding whether `Input`'s `date`/`time`/`month` types switch to the custom pickers.
 5. Consider a typecheck gate for tests (a `tsconfig.test.json` + script, or Vitest's typecheck
    mode) so type-level regressions are caught by `npm test` rather than only by the demo build.

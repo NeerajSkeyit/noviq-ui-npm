@@ -3,13 +3,14 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v3.0.0** on npm (`1.1.0` shipped
+**v3.0.0** on npm, with **v3.1.0 built/tested/staged but not yet published** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
 second, related overflow bug found in Edge on a full-width window; `3.0.0` is the breaking
 `NoviqUIConfigProvider` release plus the `types` export-condition fix — see "Config provider"
-below). The `2.5.x` fixes were found via `noviq-ui-demo`, a standalone sibling project that
+below; `3.1.0` adds `TimePicker`, the first piece of Phase 2b, plus a fix for a spurious dev
+warning in 3.0.0's response-format handling). The `2.5.x` fixes were found via `noviq-ui-demo`, a standalone sibling project that
 installs the real published package against a real backend. See `progress.md` for the
 phase-by-phase history. Intended to be installed as a dependency
 (`npm install noviq-ui`) by the other frontends in the suite
@@ -113,6 +114,7 @@ noviq-ui/
 │       ├── Badge/                   # Badge.tsx + .css + .test.tsx
 │       ├── Dropdown/                # Dropdown.tsx + .css (DropdownMenu, DropdownMenuItem)
 │       ├── Checkbox/                # Checkbox.tsx + .css + .test.tsx
+│       ├── TimePicker/              # TimePicker.tsx + .css + .test.tsx (standalone, portal)
 │       └── Table/                   # Table.tsx + ActionBar/TableCell/TablePagination/
 │                                     #   ColumnSelector/EmptyState/LoadingOverlay/
 │                                     #   RowActionsMenu/RejectAction/BulkActionsBar/
@@ -181,6 +183,19 @@ Ported from `noviq-hrms-ui/src/components/design/ui/Switch.jsx`. Toggle switch, 
 for `Input`'s `switch` type and exported standalone. Accessibility improvement vs. source: added
 `role="switch"`, `aria-checked`, keyboard support (Enter/Space) — source was mouse-only with no
 ARIA at all.
+
+### `TimePicker`
+Ported from `noviq-hrms-ui/src/components/common/TimeInput.jsx` (hand-rolled, no picker library).
+Standalone — **`Input type="time"` still renders the native `<input type="time">`**; wiring it in
+is a pending product decision (native is better on mobile, the custom one is consistent across
+browsers/locales). `"HH:mm"` 24-hour strings in, `onChange(value)` out, `""` on clear. Differences
+from the source, all deliberate: the empty state shows a placeholder instead of `00:00`; opens on
+click / ArrowDown / Enter, **not on bare focus** (tabbing through a form no longer pops pickers);
+the scroll-to-selected lookup is scoped to its own dropdown instead of a global
+`document.querySelector` (two pickers on a page scrolled the wrong one); the dropdown repositions
+on scroll/resize and flips above near the viewport bottom; ARIA combobox/listbox roles with
+`aria-activedescendant`; uses the library's own `ScrollArea` instead of `simplebar-react`. The
+source's `minDate`/`maxDate` props were accepted but ignored, so they aren't ported.
 
 ### `FormFooter`
 Ported from `noviq-hrms-ui/src/components/design/form/FormFooter.jsx`. Cancel/Save/extra-buttons
@@ -452,6 +467,12 @@ release, installing a fresh `npm pack` tarball into `noviq-ui-demo/web` (or `npm
 clearing `node_modules/.vite` in the demo, since Vite's dependency pre-bundle cache goes stale
 across a link swap) is a fast way to verify a fix against a real consumer before publishing —
 this is how the `2.5.x`/`3.0.0` changes were verified.
+
+**Checking the demo's console — read warnings, not just errors.** `read_console_messages` with
+`onlyErrors` hid a spurious dev-only `[noviq-ui] responseFormat.rowsPath … did not resolve`
+warning that 3.0.0 emitted on every initial load (the response format ran against the still-
+`undefined` query result). Look at the full console on a **fresh tab** (a reused tab keeps stale
+messages from earlier server lifetimes, e.g. Vite HMR errors from before a dependency swap).
 
 **Typechecking the demo — a trap**: the Vite template's root `tsconfig.json` has `files: []`, so
 `npx tsc --noEmit` there checks nothing and always "passes." Use `npx tsc -p tsconfig.app.json
