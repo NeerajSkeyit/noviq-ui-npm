@@ -31,6 +31,12 @@ const hourOption = (h: string) =>
   within(screen.getByRole("listbox", { name: "Hours" })).getByRole("option", { name: h });
 const minuteOption = (m: string) =>
   within(screen.getByRole("listbox", { name: "Minutes" })).getByRole("option", { name: m });
+const periodOption = (p: "AM" | "PM") =>
+  within(screen.getByRole("listbox", { name: "AM/PM" })).getByRole("option", { name: p });
+const optionTexts = (listName: string) =>
+  within(screen.getByRole("listbox", { name: listName }))
+    .getAllByRole("option")
+    .map((o) => o.textContent);
 
 describe("TimePicker", () => {
   describe("display", () => {
@@ -299,6 +305,196 @@ describe("TimePicker", () => {
       render(<TimePicker value="" error />);
       expect(trigger()).toHaveAttribute("aria-invalid", "true");
       expect(trigger()).toHaveClass("time-picker-error");
+    });
+  });
+
+  describe("12-hour clock", () => {
+    it("shows the time with an AM/PM suffix", () => {
+      const cases: [string, string][] = [
+        ["00:00", "12:00 AM"], // midnight
+        ["09:05", "09:05 AM"],
+        ["12:15", "12:15 PM"], // noon
+        ["14:30", "02:30 PM"],
+        ["23:59", "11:59 PM"],
+      ];
+      for (const [value, shown] of cases) {
+        const { unmount } = render(<TimePicker value={value} hourCycle={12} />);
+        expect(trigger()).toHaveTextContent(shown);
+        unmount();
+      }
+    });
+
+    it("still shows plain 24-hour time by default", () => {
+      render(<TimePicker value="14:30" />);
+      expect(trigger()).toHaveTextContent("14:30");
+      expect(trigger()).not.toHaveTextContent("PM");
+    });
+
+    it("lists hours as 12, 01 … 11 and adds an AM/PM column", async () => {
+      const user = userEvent.setup();
+      render(<TimePicker value="" hourCycle={12} />);
+      await user.click(trigger());
+      expect(optionTexts("Hours")).toEqual([
+        "12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+      ]);
+      expect(optionTexts("AM/PM")).toEqual(["AM", "PM"]);
+    });
+
+    it("has no AM/PM column in 24-hour mode", async () => {
+      const user = userEvent.setup();
+      render(<TimePicker value="" />);
+      await user.click(trigger());
+      expect(screen.queryByRole("listbox", { name: "AM/PM" })).not.toBeInTheDocument();
+      expect(optionTexts("Hours")).toHaveLength(24);
+    });
+
+    it("marks the matching hour, minute and period as selected", async () => {
+      const user = userEvent.setup();
+      render(<TimePicker value="14:35" hourCycle={12} />);
+      await user.click(trigger());
+      expect(hourOption("02")).toHaveAttribute("aria-selected", "true");
+      expect(minuteOption("35")).toHaveAttribute("aria-selected", "true");
+      expect(periodOption("PM")).toHaveAttribute("aria-selected", "true");
+      expect(periodOption("AM")).toHaveAttribute("aria-selected", "false");
+    });
+
+    it("treats 00:xx as 12 AM", async () => {
+      const user = userEvent.setup();
+      render(<TimePicker value="00:10" hourCycle={12} />);
+      await user.click(trigger());
+      expect(hourOption("12")).toHaveAttribute("aria-selected", "true");
+      expect(periodOption("AM")).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("picking an hour keeps the current AM/PM and always emits 24-hour time", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled initial="14:30" hourCycle={12} onChange={onChange} />);
+      await user.click(trigger());
+
+      await user.click(hourOption("05"));
+      expect(onChange).toHaveBeenLastCalledWith("17:30"); // 5 PM
+
+      await user.click(hourOption("12"));
+      expect(onChange).toHaveBeenLastCalledWith("12:30"); // 12 PM is noon, not 24:30
+    });
+
+    it("picking 12 while AM gives hour 00", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled initial="09:30" hourCycle={12} onChange={onChange} />);
+      await user.click(trigger());
+      await user.click(hourOption("12"));
+      expect(onChange).toHaveBeenLastCalledWith("00:30");
+    });
+
+    it("picking PM then AM flips the half of the day and keeps hour and minute", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled initial="09:30" hourCycle={12} onChange={onChange} />);
+      await user.click(trigger());
+
+      await user.click(periodOption("PM"));
+      expect(onChange).toHaveBeenLastCalledWith("21:30");
+      expect(trigger()).toHaveTextContent("09:30 PM");
+
+      await user.click(periodOption("AM"));
+      expect(onChange).toHaveBeenLastCalledWith("09:30");
+    });
+
+    it("handles the 12 o'clock boundaries when switching AM/PM", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled initial="00:15" hourCycle={12} onChange={onChange} />);
+      await user.click(trigger());
+
+      await user.click(periodOption("PM"));
+      expect(onChange).toHaveBeenLastCalledWith("12:15"); // 12:15 AM → 12:15 PM
+
+      await user.click(periodOption("AM"));
+      expect(onChange).toHaveBeenLastCalledWith("00:15"); // and back
+    });
+
+    it("builds a time from an empty field, defaulting the unset parts to 12:00 AM", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled hourCycle={12} onChange={onChange} />);
+      await user.click(trigger());
+
+      await user.click(hourOption("03"));
+      expect(onChange).toHaveBeenLastCalledWith("03:00");
+
+      await user.click(periodOption("PM"));
+      expect(onChange).toHaveBeenLastCalledWith("15:00");
+    });
+
+    it("picking PM first on an empty field gives noon", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled hourCycle={12} onChange={onChange} />);
+      await user.click(trigger());
+      await user.click(periodOption("PM"));
+      expect(onChange).toHaveBeenLastCalledWith("12:00");
+    });
+
+    it("walks hour → minute → AM/PM with Enter and closes after the period", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled hourCycle={12} minuteStep={15} onChange={onChange} />);
+      trigger().focus();
+      await user.keyboard("{ArrowDown}"); // open, focus on "12"
+      await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{Enter}"); // 12 → 01 → 02 → 03
+      expect(onChange).toHaveBeenLastCalledWith("03:00");
+
+      await user.keyboard("{ArrowDown}{ArrowDown}{Enter}"); // 00 → 15 → 30
+      expect(onChange).toHaveBeenLastCalledWith("03:30");
+      // Enter on the minute column does not close in 12-hour mode: AM/PM is still to come.
+      expect(screen.getByRole("listbox", { name: "AM/PM" })).toBeInTheDocument();
+
+      await user.keyboard("{ArrowDown}{Enter}"); // AM → PM
+      expect(onChange).toHaveBeenLastCalledWith("15:30");
+      expect(screen.queryByRole("listbox", { name: "Hours" })).not.toBeInTheDocument();
+    });
+
+    it("ArrowRight reaches the AM/PM column and goes no further", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled initial="09:00" hourCycle={12} onChange={onChange} />);
+      trigger().focus();
+      await user.keyboard("{ArrowDown}{ArrowRight}{ArrowRight}{ArrowRight}");
+      expect(trigger()).toHaveAttribute("aria-activedescendant", periodOption("AM").id);
+      await user.keyboard("{ArrowDown}{Enter}");
+      expect(onChange).toHaveBeenLastCalledWith("21:00");
+    });
+
+    it("does not let ArrowRight leave the minute column in 24-hour mode", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Controlled initial="09:00" onChange={onChange} />);
+      trigger().focus();
+      await user.keyboard("{ArrowDown}{ArrowRight}{ArrowRight}{ArrowDown}{Enter}");
+      expect(onChange).toHaveBeenLastCalledWith("09:05");
+      expect(screen.queryByRole("listbox", { name: "Hours" })).not.toBeInTheDocument();
+    });
+
+    it("controls all three lists from the trigger via aria-controls", async () => {
+      const user = userEvent.setup();
+      render(<TimePicker value="" hourCycle={12} />);
+      await user.click(trigger());
+      const controlled = trigger().getAttribute("aria-controls")!.split(" ");
+      expect(controlled).toHaveLength(3);
+      expect(controlled).toEqual(
+        ["Hours", "Minutes", "AM/PM"].map(
+          (name) => screen.getByRole("listbox", { name }).id
+        )
+      );
+    });
+
+    it("switches presentation when hourCycle changes, without changing the value", () => {
+      const { rerender } = render(<TimePicker value="18:45" />);
+      expect(trigger()).toHaveTextContent("18:45");
+      rerender(<TimePicker value="18:45" hourCycle={12} />);
+      expect(trigger()).toHaveTextContent("06:45 PM");
     });
   });
 

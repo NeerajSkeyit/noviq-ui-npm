@@ -5,10 +5,17 @@ import ScrollArea from "../ScrollArea/ScrollArea";
 import "./TimePicker.css";
 
 export interface TimePickerProps {
-  /** Current value as `"HH:mm"` (24-hour). Empty string / undefined means "no time chosen". */
+  /** Current value as `"HH:mm"` (24-hour, always — also in 12-hour mode). Empty string /
+   * undefined means "no time chosen". */
   value?: string;
-  /** Called with the new `"HH:mm"` value, or `""` when cleared. */
+  /** Called with the new `"HH:mm"` 24-hour value, or `""` when cleared. */
   onChange?: (value: string) => void;
+  /**
+   * How the time is displayed and picked. `24` (default): hours 00–23. `12`: hours 12, 01–11 with
+   * an AM/PM column. Only presentation changes — `value`/`onChange` stay 24-hour `"HH:mm"`, which
+   * is what forms and backends exchange.
+   */
+  hourCycle?: 12 | 24;
   /** Minute-column granularity. Defaults to 5. */
   minuteStep?: number;
   placeholder?: string;
@@ -37,7 +44,10 @@ function parseTime(value?: string): { hour: string; minute: string } | null {
   return { hour: pad(h), minute: pad(m) };
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => pad(i));
+const HOURS_24 = Array.from({ length: 24 }, (_, i) => pad(i));
+// 12, 01 … 11 (not 01 … 12): the index equals `hour24 % 12`, and 12 AM — midnight — sits first.
+const HOURS_12 = ["12", ...Array.from({ length: 11 }, (_, i) => pad(i + 1))];
+const PERIODS = ["AM", "PM"];
 
 function buildMinutes(step: number) {
   const safeStep = Number.isInteger(step) && step >= 1 && step <= 60 ? step : 5;
@@ -46,11 +56,12 @@ function buildMinutes(step: number) {
   return minutes;
 }
 
-type Column = "hour" | "minute";
+type Column = "hour" | "minute" | "period";
 
 function TimePicker({
   value = "",
   onChange,
+  hourCycle = 24,
   minuteStep = 5,
   placeholder = "Select time",
   disabled = false,
@@ -62,8 +73,11 @@ function TimePicker({
   "aria-label": ariaLabel,
 }: TimePickerProps) {
   const baseId = useId();
-  const hourListId = `${baseId}-hours`;
-  const minuteListId = `${baseId}-minutes`;
+  const listId: Record<Column, string> = {
+    hour: `${baseId}-hours`,
+    minute: `${baseId}-minutes`,
+    period: `${baseId}-period`,
+  };
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -74,27 +88,53 @@ function TimePicker({
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
+  const is12 = hourCycle === 12;
+
   const parsed = parseTime(value);
   const hasValue = parsed !== null;
-  const hour = parsed?.hour ?? "00";
+  const hour24 = parsed ? Number(parsed.hour) : 0;
   const minute = parsed?.minute ?? "00";
+  const period = hour24 >= 12 ? "PM" : "AM";
 
   const minutes = useMemo(() => buildMinutes(minuteStep), [minuteStep]);
-  const columns: Record<Column, string[]> = { hour: HOURS, minute: minutes };
+  const hourItems = is12 ? HOURS_12 : HOURS_24;
+  const hourIndex = is12 ? hour24 % 12 : hour24;
+  const hourLabel = hourItems[hourIndex];
+
+  // Left-to-right, which is also the order ArrowLeft/ArrowRight and Enter walk through.
+  const columnOrder: Column[] = is12 ? ["hour", "minute", "period"] : ["hour", "minute"];
+  const items: Record<Column, string[]> = { hour: hourItems, minute: minutes, period: PERIODS };
 
   // Minute not on the step grid (e.g. "09:32" with step 5) → land on the closest lower slot.
-  const indexOfHour = HOURS.indexOf(hour);
-  const indexOfMinute = Math.max(
+  const minuteIndex = Math.max(
     0,
     minutes.reduce((best, m, i) => (Number(m) <= Number(minute) ? i : best), 0)
   );
+  const currentIndex: Record<Column, number> = {
+    hour: hourIndex,
+    minute: minuteIndex,
+    period: period === "PM" ? 1 : 0,
+  };
 
-  const emit = (h: string, m: string) => onChange?.(`${h}:${m}`);
+  const emit = (h24: number, m: string) => onChange?.(`${pad(h24)}:${m}`);
+
+  // Turns "the user picked `item` in `column`" into a new 24-hour value. In 12-hour mode a picked
+  // hour keeps the current AM/PM, and a picked AM/PM keeps the current hour-of-12.
+  const commit = (column: Column, item: string) => {
+    if (column === "minute") {
+      emit(hour24, item);
+    } else if (column === "hour") {
+      const picked = Number(item);
+      emit(is12 ? (picked % 12) + (period === "PM" ? 12 : 0) : picked, minute);
+    } else {
+      emit((hour24 % 12) + (item === "PM" ? 12 : 0), minute);
+    }
+  };
 
   const openPicker = () => {
     if (disabled || open) return;
     setActiveColumn("hour");
-    setFocusedIndex(indexOfHour);
+    setFocusedIndex(currentIndex.hour);
     setOpen(true);
   };
 
@@ -145,7 +185,7 @@ function TimePicker({
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [open]);
+  }, [open, is12]);
 
   // Scroll each column so its selected option sits in the middle when the dropdown opens or the
   // value changes. Scoped to *this* dropdown — the HRMS source used a global `document.querySelector`,
@@ -155,7 +195,7 @@ function TimePicker({
     dropdownRef.current
       ?.querySelectorAll<HTMLElement>("[role=option][aria-selected=true]")
       .forEach((el) => centerInParent(el));
-  }, [open, hour, minute]);
+  }, [open, hour24, minute, is12]);
 
   // Keep the keyboard-focused option visible as the arrow keys move it.
   useLayoutEffect(() => {
@@ -163,6 +203,11 @@ function TimePicker({
     const el = dropdownRef.current?.querySelector<HTMLElement>("[data-focused=true]");
     if (el) revealInParent(el);
   }, [open, focusedIndex, activeColumn]);
+
+  const goToColumn = (column: Column) => {
+    setActiveColumn(column);
+    setFocusedIndex(currentIndex[column]);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return;
@@ -176,7 +221,8 @@ function TimePicker({
       return;
     }
 
-    const list = columns[activeColumn];
+    const list = items[activeColumn];
+    const columnPosition = columnOrder.indexOf(activeColumn);
 
     switch (e.key) {
       case "ArrowDown":
@@ -189,29 +235,19 @@ function TimePicker({
         break;
       case "ArrowRight":
         e.preventDefault();
-        if (activeColumn === "hour") {
-          setActiveColumn("minute");
-          setFocusedIndex(indexOfMinute);
-        }
+        if (columnPosition < columnOrder.length - 1) goToColumn(columnOrder[columnPosition + 1]);
         break;
       case "ArrowLeft":
         e.preventDefault();
-        if (activeColumn === "minute") {
-          setActiveColumn("hour");
-          setFocusedIndex(indexOfHour);
-        }
+        if (columnPosition > 0) goToColumn(columnOrder[columnPosition - 1]);
         break;
       case "Enter":
       case " ":
         e.preventDefault();
-        if (activeColumn === "hour") {
-          emit(list[focusedIndex], minute);
-          setActiveColumn("minute");
-          setFocusedIndex(indexOfMinute);
-        } else {
-          emit(hour, list[focusedIndex]);
-          closePicker();
-        }
+        commit(activeColumn, list[focusedIndex]);
+        // Walk left to right; committing the last column closes the picker.
+        if (columnPosition < columnOrder.length - 1) goToColumn(columnOrder[columnPosition + 1]);
+        else closePicker();
         break;
       case "Escape":
         e.preventDefault();
@@ -226,13 +262,20 @@ function TimePicker({
   const optionId = (column: Column, i: number) => `${baseId}-${column}-${i}`;
   const activeDescendant = open ? optionId(activeColumn, focusedIndex) : undefined;
 
-  const renderColumn = (column: Column, label: string, listId: string, selected: string) => (
-    <div className="time-picker-column">
-      <div className="time-picker-column-label">{label}</div>
+  const selectedItem: Record<Column, string> = { hour: hourLabel, minute, period };
+  const columnMeta: Record<Column, { heading: string; ariaLabel: string }> = {
+    hour: { heading: "HH", ariaLabel: "Hours" },
+    minute: { heading: "MM", ariaLabel: "Minutes" },
+    period: { heading: "AM/PM", ariaLabel: "AM/PM" },
+  };
+
+  const renderColumn = (column: Column) => (
+    <div className="time-picker-column" key={column}>
+      <div className="time-picker-column-label">{columnMeta[column].heading}</div>
       <ScrollArea style={{ height: COLUMN_HEIGHT }}>
-        <div id={listId} role="listbox" aria-label={label === "HH" ? "Hours" : "Minutes"}>
-          {columns[column].map((item, i) => {
-            const isSelected = hasValue && item === selected;
+        <div id={listId[column]} role="listbox" aria-label={columnMeta[column].ariaLabel}>
+          {items[column].map((item, i) => {
+            const isSelected = hasValue && item === selectedItem[column];
             const isFocused = activeColumn === column && focusedIndex === i;
             return (
               <div
@@ -245,8 +288,7 @@ function TimePicker({
                   isFocused ? " is-focused" : ""
                 }`}
                 onClick={() => {
-                  if (column === "hour") emit(item, minute);
-                  else emit(hour, item);
+                  commit(column, item);
                   setActiveColumn(column);
                   setFocusedIndex(i);
                   triggerRef.current?.focus();
@@ -261,6 +303,12 @@ function TimePicker({
     </div>
   );
 
+  const displayValue = hasValue
+    ? is12
+      ? `${hourLabel}:${minute} ${period}`
+      : `${hourLabel}:${minute}`
+    : placeholder;
+
   return (
     <div ref={wrapperRef} className={`time-picker ${className}`}>
       <button
@@ -271,7 +319,7 @@ function TimePicker({
         role="combobox"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-controls={open ? `${hourListId} ${minuteListId}` : undefined}
+        aria-controls={open ? columnOrder.map((c) => listId[c]).join(" ") : undefined}
         aria-activedescendant={activeDescendant}
         aria-label={ariaLabel}
         aria-invalid={error || undefined}
@@ -281,7 +329,7 @@ function TimePicker({
         onKeyDown={handleKeyDown}
       >
         <span className={`time-picker-value${hasValue ? "" : " is-placeholder"}`}>
-          {hasValue ? `${hour}:${minute}` : placeholder}
+          {displayValue}
         </span>
         {!disabled && <Clock size={14} strokeWidth={2.5} aria-hidden />}
       </button>
@@ -307,8 +355,7 @@ function TimePicker({
             className="time-picker-dropdown"
             style={{ position: "fixed", top: position.top, left: position.left }}
           >
-            {renderColumn("hour", "HH", hourListId, hour)}
-            {renderColumn("minute", "MM", minuteListId, minute)}
+            {columnOrder.map(renderColumn)}
           </div>,
           document.body
         )}
