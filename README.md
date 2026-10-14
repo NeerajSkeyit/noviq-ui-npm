@@ -160,6 +160,37 @@ function Example() {
 each). Fields meant to sit on the same row need the *same* `colSpan` value (as `firstName`/
 `lastName` do above); a `2` next to a `1` won't fill the row evenly, they'll just wrap.
 
+### TimePicker
+
+A 24-hour time field with scrollable hour/minute columns — a consistent alternative to the
+browser's native `<input type="time">`, whose look and 12/24-hour behavior vary by browser and
+OS locale.
+
+```javascript
+import { useState } from "react";
+import { TimePicker } from "noviq-ui";
+
+function Example() {
+  const [start, setStart] = useState("09:30");
+  return <TimePicker value={start} onChange={setStart} minuteStep={15} />;
+}
+```
+
+- `value` / `onChange` use `"HH:mm"` strings; clearing calls `onChange("")`. An empty (or
+  unparseable) value shows the placeholder — never a misleading `00:00`. A value with seconds
+  (`"09:30:45"`) is accepted and displayed as `09:30`; the picker emits `HH:mm` only.
+- `minuteStep` sets the minute column's granularity (default `5`). A value that isn't on the grid
+  (`"09:32"` with a step of 5) is still displayed as-is.
+- Opens on click, or `ArrowDown`/`ArrowUp`/`Enter`/`Space` from the keyboard — not on bare focus, so
+  tabbing through a form doesn't pop pickers open. Inside: `ArrowUp`/`ArrowDown` move within a
+  column, `ArrowLeft`/`ArrowRight` switch column, `Enter` commits the hour (then moves to minutes)
+  and then the minute (and closes), `Escape`/`Tab` close without changing the value.
+- Props: `value`, `onChange`, `minuteStep`, `placeholder`, `disabled`, `error`, `clearable`
+  (default `true`), `id`, `name`, `className`, `aria-label`.
+- Selecting an hour on an empty field starts the minute at `00` (and a minute first starts the hour
+  at `00`).
+- It is a standalone component. `<Input type="time" />` still renders the native input.
+
 ### Table
 
 `Table` needs to know your backend's response shape once, via `NoviqUIConfigProvider` wrapped
@@ -203,9 +234,10 @@ function Example() {
 `NoviqUIConfigProvider` is mandatory for any `Table` using `apiFunction` — rendering one without
 either a `Provider` ancestor or a per-instance `responseFormat` prop throws immediately with an
 actionable error message. For a response shape a dot-path can't express, use a `getRows`/
-`getTotal` function pair instead of `rowsPath`/`totalPath`. A specific `<Table>` can override
-the app-wide format with its own `responseFormat` prop — e.g. one screen calling a third-party
-API with a different shape than the rest of the app.
+`getTotal` function pair instead of `rowsPath`/`totalPath` — they're only ever called with a
+response that has actually arrived (never `undefined` while loading), so they don't need to
+null-guard. A specific `<Table>` can override the app-wide format with its own `responseFormat`
+prop — e.g. one screen calling a third-party API with a different shape than the rest of the app.
 
 Pass `preFetchedData` instead of `apiFunction` for a fully client-controlled table (no fetching,
 no `@tanstack/react-query`, and no `NoviqUIConfigProvider` requirement — you own the array).
@@ -360,6 +392,7 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - `<Modal />` — portal-based centered modal with enter/exit animation (sizes `sm`/`md`/`lg`/`xl`/`auto`)
 - `<Label />` — styled `<label>` wrapper
 - `<Switch />` — toggle switch, keyboard accessible
+- `<TimePicker />` — 24-hour time field with scrollable hour/minute columns (see above)
 - `<FormFooter />` — Cancel/Save button row for a form
 - `<Form />` — config-driven form renderer (`inputList` + a Formik instance)
 - `<Badge />` — small status/label pill (variants: `default`, `secondary`, `destructive`, `outline`)
@@ -392,7 +425,7 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - `<Export />` — "Export" dropdown (Excel/CSV, or a plain link when `responseSheetUrl` is set);
   used internally by `Table`, also exported standalone alongside the `useTableExport` hook.
 
-More components will be added in future releases (rich date/time pickers).
+More components will be added in future releases (a rich date picker and month picker).
 
 ## Theming
 

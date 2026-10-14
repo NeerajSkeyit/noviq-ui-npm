@@ -10,6 +10,7 @@ import {
   Input,
   Label,
   Switch,
+  TimePicker,
   FormFooter,
   Form,
   Table,
@@ -105,6 +106,10 @@ const employeeColumns: TableColumn<Employee>[] = [
   },
 ];
 
+// Set on <body>, not a wrapper div: portaled content (dropdowns, pickers, modals) renders under
+// <body>, so a wrapper-level font would leave those in the browser's default serif.
+document.body.style.fontFamily = "sans-serif";
+
 function Playground() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerSide, setDrawerSide] = useState<DrawerSide>("right");
@@ -120,6 +125,8 @@ function Playground() {
   const [agree, setAgree] = useState(false);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null);
+  const [startTime, setStartTime] = useState("09:30");
+  const [endTime, setEndTime] = useState("");
 
   const fruitOptions = [
     { label: "Apple", value: "apple" },
@@ -159,7 +166,7 @@ function Playground() {
     <NoviqUIConfigProvider
       config={{ table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } } }}
     >
-      <div style={{ padding: 32, fontFamily: "sans-serif", maxWidth: 960 }}>
+      <div style={{ padding: 32, maxWidth: 960 }}>
         {/* Table's export feature uses react-hot-toast for loading/success/error feedback;
             consumers must mount their own <Toaster/> (documented in README.md). */}
         <Toaster position="top-right" />
@@ -323,6 +330,35 @@ function Playground() {
         <div style={{ marginTop: 8 }}>
           <Label>Standalone Label</Label>{" "}
           <Switch checked={notifyEnabled} onChange={setNotifyEnabled} />
+        </div>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>TimePicker</h2>
+        <div style={{ display: "grid", gap: 16, maxWidth: 520 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <Label>Start (preset 09:30, step 5)</Label>
+              <TimePicker id="pg-start" value={startTime} onChange={setStartTime} />
+            </div>
+            <div>
+              <Label>End (empty, step 15)</Label>
+              <TimePicker id="pg-end" value={endTime} onChange={setEndTime} minuteStep={15} />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <Label>Disabled</Label>
+              <TimePicker value="18:00" disabled />
+            </div>
+            <div>
+              <Label>Error</Label>
+              <TimePicker value="" error />
+            </div>
+          </div>
+          <p style={{ color: "#6b7280", margin: 0 }} data-testid="time-values">
+            start = {JSON.stringify(startTime)}, end = {JSON.stringify(endTime)}
+          </p>
         </div>
       </section>
 
