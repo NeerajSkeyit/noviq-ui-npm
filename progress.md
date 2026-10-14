@@ -6,20 +6,17 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 1. **Phase 1 — Drawer + Modal + primitives** ✅ done, **published as `1.1.0`**.
 2. **Phase 2 — Form/Input system** ✅ done, **published as `2.0.0`** (breaking: `Input`'s
    `onChange` signature changed).
-3. **Phase 2b — rich Date/Time/Month pickers**, split into sub-phases:
-   - **2b-i — `TimePicker`** ✅ done, staged as `4.0.0` (see "Ready to publish"). Standalone
-     component, hand-rolled (no picker library), 24-hour or 12-hour with AM/PM; `Input
-     type="time"` is not rewired yet.
-   - **2b-ii — date picker / month picker** — not started. HRMS's `common/DateInput.js` +
-     `DatePickerHeader.jsx` sit on `react-datepicker` + `moment` + `react-i18next`, so this needs a
-     dependency decision first: adopt `react-datepicker` (+ `date-fns`) or build a small calendar.
-   - **2b-iii — wire the pickers into `Input`** (`type: date | time | month`) — blocked on a product
-     call: the native inputs are better on mobile and the custom ones are consistent across
-     browsers/locales. `design/form/FormSidebar.jsx`/`ProgressBar.jsx`/`SingleStepForm.jsx`
-     (multi-step wizard shell) also remain deferred here.
-   - Note: `INPUT_TYPE.DATE_RANGE` is declared in `src/constants.ts` but `Input` has no render branch (an unknown type
-     falls through to the "Worng input type provided" text) — HRMS itself only ever had a comment
-     for it, never an implementation.
+3. **Phase 2b — rich Date/Time/Month pickers** ✅ done.
+   - **2b-i — `TimePicker`** ✅ published as `4.0.0` (24-hour or 12-hour with AM/PM).
+   - **2b-ii — `DatePicker` + `MonthPicker`** ✅ done, staged as `4.1.0`. Hand-built, no new
+     dependency (the `react-datepicker`/`moment`/`react-i18next` stack HRMS used was not adopted).
+   - **2b-iii — wired into `Input`** ✅ done, staged as `4.1.0`, as **new opt-in types**
+     (`datePicker`, `timePicker`, `monthPicker`); native `date`/`time`/`month` are unchanged.
+   - Still deferred: `design/form/FormSidebar.jsx`/`ProgressBar.jsx`/`SingleStepForm.jsx` (the
+     multi-step wizard shell).
+   - Note: `INPUT_TYPE.DATE_RANGE` is declared in `src/constants.ts` but `Input` has no render
+     branch (an unknown type falls through to the "Worng input type provided" text) — HRMS itself
+     only ever had a comment for it, never an implementation.
 4. **Phase 3 — Table**, split into sub-phases:
    - **3a — Core table** ✅ done, **published as `2.1.0`**. Sortable/searchable/paginated table,
      `apiFunction`/`preFetchedData` data sources, `date`/`dateRange`/`dateTime`/`time`/`duration`/
@@ -464,6 +461,40 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         on scroll; inside the demo's Add/Edit drawer it renders above the drawer and a picked time
         round-trips through the real backend (`shiftStart` field added to the demo).
 
+- [x] **`4.1.0` — `DatePicker`, `MonthPicker`, picker types in `Input`, and the constants
+      consolidation** (staged, see "Ready to publish"):
+  - [x] **Found first: the published `4.0.0` predates the constants refactor.** I had told the user
+        the version was "still 4.0.0" without checking the registry; they had already published it.
+        Verified by byte-comparing the registry bundle with a build of `05f8c61` (identical) and
+        with `main` (different). So the constants ship as 4.1.0 — additive, no behavior change.
+  - [x] `DatePicker` — calendar dropdown: month/year selects, six-week grid with neighbouring days,
+        Today, inclusive min/max (disabled days, month arrows stop at bounds, month/year options
+        limited), full keyboard (arrows, PageUp/Down ±month, Shift ±year, Home/End, Enter, Esc).
+        Pure date math in `dateParts.ts` (38 tests); component 42 tests, mutation-checked
+        (6 deliberate breaks, all caught).
+  - [x] `MonthPicker` — year header + 3×4 month grid, bounds, keyboard. 25 tests, mutation-checked
+        (4 breaks, all caught).
+  - [x] `Input` gained `datePicker` / `timePicker` / `monthPicker` (+ `hourCycle`, `minuteStep`
+        props) so `Form` configs can use them; `hideClearIcon` → `clearable`, `error` → invalid
+        state. Native types untouched (a test asserts it).
+  - [x] Shared `hooks/useFloatingPanel` extracted from `TimePicker` (its 47 tests unchanged and
+        green) and an internal `PickerField` trigger shell for the two new pickers.
+  - [x] Constants guard caught a hand-written ARIA union in the new `PickerField` on its first run
+        — now `React.AriaAttributes["aria-haspopup"]`. `MONTH_NAMES` was also de-duplicated into
+        `constants.ts` (it was a private array in `buildActiveFilter.ts`).
+  - [x] **Found while verifying in the demo — a bug in the demo, not the library:** its Add/Edit
+        form kept `department`/`status` as `{ label, value }` objects, but `Input`'s select
+        compares and emits the option's *string* value, so the selects never showed the current
+        value and `values.department?.value` was `undefined` after picking one (Add would have sent
+        no department). Latent since Phase 4. Fixed and verified with real clicks: choosing Design
+        stores `Design`.
+  - [x] Verified in a real browser (demo + playground): calendar opens on the right month in front
+        of the drawer and 4px under its trigger, keyboard selection, leap day (29 Feb 2024) via the
+        month/year selects, disabled days not selectable, MonthPicker year stepping, round-trip
+        through the real backend (`joinDate: "2024-02-29"`).
+  - [x] Test suite 473 (up from 353). Main bundle 129.4 → 132.8 kB gzip (+3.4 kB for two pickers,
+        the hook and the constants), CSS 4.3 → 4.7 kB.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -500,26 +531,24 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   `NoviqUIConfigProvider` plus returning the raw response from `apiFunction`. `noviq-ui-demo/web`
   now depends on `^3.0.0` from the registry (typecheck, build and a live run all verified).
 
+- `4.0.0` — live on npm (confirmed with `npm view`; bundle byte-identical to a build of commit
+  `05f8c61`). Breaking (behavior): `TimePicker` with a 12-hour mode; `formik` and `react-hot-toast`
+  no longer dependencies; new `config.notify` (export feedback — the table no longer toasts by
+  itself); fix for the spurious dev warning. **Does not include the constants** (see `4.1.0`).
+
 ## Ready to publish
-- `4.0.0` — **breaking (behavior), no API removals.**
-  - New standalone `TimePicker` with 24-hour and 12-hour (AM/PM) modes.
-  - `formik` and `react-hot-toast` are no longer dependencies. Apps that import `formik` directly
-    must install it themselves; apps that relied on the table's built-in export toasts must set
-    `notify` on `NoviqUIConfigProvider` (otherwise export is silent). `Form` accepts any
-    `FormController`-shaped object, not just a Formik instance.
-  - New `config.notify`; `config.table` is now optional.
-  - Fix: `3.0.0` warned on every initial `Table` load and called `getRows`/`getTotal` with
-    `undefined` while loading.
-  - Constants: every fixed value now has a named constant in `src/constants.ts`, exported from
-    the package root (`BUTTON_VARIANT`, `DRAWER_SIDE`, `SORT_DIRECTION`, …); purely additive —
-    plain literals keep working.
-  - Gate: `tsc` clean, 353/353 tests, build, `npm pack` (45 files), tarball has no `formik`/
-    `react-hot-toast`, demo typecheck + build against the packed tarball, live run with a clean
-    console, export toast routed through `notify`, 12-hour picker verified in the Edit drawer
-    (backend stores 24-hour). Awaiting explicit go-ahead to run `npm publish`.
+- `4.1.0` — **additive, no breaking changes.**
+  - New `DatePicker` and `MonthPicker` (standalone, hand-built, no new dependency).
+  - `Input` gains `datePicker` / `timePicker` / `monthPicker` types (and `hourCycle` /
+    `minuteStep` props), usable from `Form`'s `inputList`.
+  - Every fixed value is a named constant in `src/constants.ts`, exported from the package root
+    (`BUTTON_VARIANT`, `DRAWER_SIDE`, `SORT_DIRECTION`, `INPUT_TYPE.DATE_PICKER`, …); plain literals
+    keep working. A test fails if a bare literal comes back.
+  - Gate: `tsc` clean, 473/473 tests, build, `npm pack` (50 files), demo typecheck + build against
+    the packed tarball, live run with a clean console. Awaiting explicit go-ahead to `npm publish`.
 
 ## Not started
-- [ ] Phase 2b-ii/iii (date picker, month picker, wiring pickers into `Input`) — see the roadmap.
+- [ ] Multi-step form wizard shell (`FormSidebar`/`ProgressBar`/`SingleStepForm`) — the last deferred Phase 2b item.
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
       indefinitely, confirmed near-dead in HRMS (1 real working call site out of 97). Not part of
       Table 3a-3d at all; revisit only if a real consumer needs it.
@@ -580,8 +609,10 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   built-in inline fallback and no `"loading"` notification kind. Documented in `README.md`.
 - `Form`'s prop is still named `formik` even though it now accepts any `FormController`-shaped
   object — kept to avoid a rename for existing callers.
-- `Input type="time" | "date" | "month"` still render the browser's native inputs; `TimePicker` is
-  standalone (see the Phase 2b roadmap).
+- `Input type="time" | "date" | "month"` still render the browser's native inputs on purpose; the
+  custom pickers are the separate `timePicker` / `datePicker` / `monthPicker` types.
+- `DatePicker` shows dates as `DD/MM/YYYY` and weeks start on Sunday; both are fixed constants, not
+  props (no `displayFormat` / `weekStart` / locale support yet).
 - **A response that doesn't match the declared `responseFormat` fails soft.** If `rowsPath`/
   `totalPath` (or `getRows`/`getTotal`) doesn't resolve against what the backend actually
   returned, `Table` renders "No data found" with total `0` and only `console.warn`s — and only
@@ -601,7 +632,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
    Swapping `noviq-ui` into `noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
    `asset-management-system/apps/web` is the next real adoption milestone — the provider is what
    makes the three non-HRMS backends practical, since none share HRMS's response envelope.
-4. Phase 2b-ii/iii: date + month pickers (needs the `react-datepicker`-vs-hand-built decision)
-   and deciding whether `Input`'s `date`/`time`/`month` types switch to the custom pickers.
+4. Multi-step form wizard shell (the last deferred Phase 2b item), or user-facing copy → constants /
+   `config.i18n` (offered, not started), or a `DatePicker` `displayFormat`/`weekStart`.
 5. Consider a typecheck gate for tests (a `tsconfig.test.json` + script, or Vitest's typecheck
    mode) so type-level regressions are caught by `npm test` rather than only by the demo build.

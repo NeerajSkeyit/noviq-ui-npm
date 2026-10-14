@@ -91,7 +91,7 @@ type (`ButtonVariant`, `DrawerSide`, …).
 
 | Constant | Used by |
 | --- | --- |
-| `INPUT_TYPE`, `FORM_FIELD_TYPE`, `COL_SPAN` | `Input` / `Form` field `type`s and `colSpan` |
+| `INPUT_TYPE`, `FORM_FIELD_TYPE`, `COL_SPAN` | `Input` / `Form` field `type`s (incl. `DATE_PICKER`, `TIME_PICKER`, `MONTH_PICKER`) and `colSpan` |
 | `BUTTON_VARIANT`, `BUTTON_SIZE`, `BUTTON_TYPE` | `Button` (`BUTTON_TYPE` is the native `type` attribute) |
 | `BADGE_VARIANT` | `Badge` |
 | `DRAWER_SIDE`, `DRAWER_SIZE`, `MODAL_SIZE` | `Drawer`, `Modal` |
@@ -262,7 +262,60 @@ function Example() {
   `clearable` (default `true`), `id`, `name`, `className`, `aria-label`.
 - Selecting an hour on an empty field starts the minute at `00` (a minute first starts the hour at
   `00`, i.e. 12 AM; AM/PM first on an empty field gives `12:00`, noon, for PM).
-- It is a standalone component. `<Input type="time" />` still renders the native input.
+- Also available as a form field: `<Input type="timePicker" hourCycle={12} minuteStep={15} />` (and
+  in `Form`'s `inputList`). `<Input type="time" />` is unchanged and still the native input.
+
+### DatePicker
+
+A calendar dropdown for a single date — month/year selects, a Today button, min/max limits and full
+keyboard support, with no extra dependency.
+
+```javascript
+import { useState } from "react";
+import { DatePicker } from "noviq-ui";
+
+function Example() {
+  const [joined, setJoined] = useState("2024-03-05");
+  return <DatePicker value={joined} onChange={setJoined} minDate="2020-01-01" maxDate="2030-12-31" />;
+}
+```
+
+- `value` / `onChange` / `minDate` / `maxDate` are `"YYYY-MM-DD"` strings (a trailing time such as
+  `"2024-03-05 09:30"` is accepted and ignored). Clearing calls `onChange("")`. The field *displays*
+  `DD/MM/YYYY`. A value that isn't a real calendar date (`"2023-02-30"`) shows the placeholder.
+- Dates are handled as plain year/month/day — never through `new Date("YYYY-MM-DD")`, which reads
+  as UTC and shifts the day in some time zones.
+- `minDate` / `maxDate` are inclusive. Days outside them are disabled and can't be picked, month
+  arrows stop at the bounds, and the month/year selects only offer what's allowed. With no bounds
+  the year select spans 1900 to 100 years from now.
+- Days from the neighbouring months are shown (always six weeks, so the height never jumps) and can
+  be picked.
+- Keyboard: opens on click or `ArrowDown`/`ArrowUp`/`Enter`/`Space` (not on bare focus). Inside:
+  arrows move by day/week, `PageUp`/`PageDown` by month (`Shift` for year, clamping 31 Jan → 29
+  Feb), `Home`/`End` to the week's start/end, `Enter`/`Space` chooses, `Escape`/`Tab` close.
+- Props: `value`, `onChange`, `minDate`, `maxDate`, `placeholder`, `disabled`, `error`, `clearable`
+  (default `true`), `id`, `name`, `className`, `aria-label`.
+- Form field: `<Input type="datePicker" minDate=... maxDate=... />`. `<Input type="date" />` is
+  unchanged and still the native input.
+
+### MonthPicker
+
+A month-and-year grid, for fields like a billing period.
+
+```javascript
+import { MonthPicker } from "noviq-ui";
+
+<MonthPicker value="2024-03" onChange={setPeriod} minMonth="2023-01" maxMonth="2024-12" />;
+```
+
+- `value` / `onChange` are `"YYYY-MM"`; `minMonth` / `maxMonth` take `"YYYY-MM"` (or a full
+  `"YYYY-MM-DD"`, whose day is ignored). The field displays `MM/YYYY`.
+- Year arrows step the shown year; months outside the bounds are disabled. Keyboard: arrows move by
+  month (`Up`/`Down` by row of three), `PageUp`/`PageDown` by year, `Home`/`End` to January/December.
+- Props: `value`, `onChange`, `minMonth`, `maxMonth`, `placeholder`, `disabled`, `error`,
+  `clearable`, `id`, `name`, `className`, `aria-label`.
+- Form field: `<Input type="monthPicker" minDate=... maxDate=... />` (the same `minDate`/`maxDate`
+  props as the other date fields). `<Input type="month" />` is unchanged.
 
 ### Table
 
@@ -461,7 +514,8 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 
 - `<Input />` — type-switching input field. Supported `type`s: `text`, `email`, `password`,
   `textArea`, `search`, `number`, `checkbox`, `radio`, `switch`, `select`, `multiSelect`, `date`,
-  `time`, `month`, `color`, `file`, `multipleFile`, `excelUpload`. Supports `label`, `required`,
+  `time`, `month`, `datePicker`, `timePicker`, `monthPicker`, `color`, `file`, `multipleFile`,
+  `excelUpload`. Supports `label`, `required`,
   `helper`, `error`.
 - `<Button />` — variants (`default`, `outline`, `destructive`, `secondary`, `ghost`, `link`) and
   sizes (`sm`, `md`, `lg`, `icon`)
@@ -472,6 +526,8 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - `<Switch />` — toggle switch, keyboard accessible
 - `<TimePicker />` — time field with scrollable hour/minute columns; 24-hour or 12-hour with an
   AM/PM column (see above)
+- `<DatePicker />` — calendar dropdown for a date, with min/max and keyboard support (see above)
+- `<MonthPicker />` — month/year grid (see above)
 - `<FormFooter />` — Cancel/Save button row for a form
 - `<Form />` — config-driven form renderer (`inputList` + a Formik instance, or any object with
   the `FormController` shape)
@@ -505,7 +561,7 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - `<Export />` — "Export" dropdown (Excel/CSV, or a plain link when `responseSheetUrl` is set);
   used internally by `Table`, also exported standalone alongside the `useTableExport` hook.
 
-More components will be added in future releases (a rich date picker and month picker).
+More components will be added in future releases.
 
 ## Theming
 

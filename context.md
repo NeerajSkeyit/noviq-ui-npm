@@ -3,15 +3,19 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v3.0.0** on npm, with **v3.1.0 built/tested/staged but not yet published** (`1.1.0` shipped
+**v4.0.0** on npm, with **v4.1.0 built/tested/staged but not yet published** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
 second, related overflow bug found in Edge on a full-width window; `3.0.0` is the breaking
 `NoviqUIConfigProvider` release plus the `types` export-condition fix — see "Config provider"
-below; `3.1.0` adds `TimePicker`, the first piece of Phase 2b, plus a fix for a spurious dev
-warning in 3.0.0's response-format handling). The `2.5.x` fixes were found via `noviq-ui-demo`, a standalone sibling project that
-installs the real published package against a real backend. See `progress.md` for the
+below; `4.0.0` adds `TimePicker` (24/12-hour), drops the `formik`/`react-hot-toast` dependencies,
+adds `config.notify`, and fixes a spurious dev warning; `4.1.0` adds `DatePicker`/`MonthPicker`,
+the `datePicker`/`timePicker`/`monthPicker` `Input` types, and the `src/constants.ts` consolidation —
+which is **not** in the published 4.0.0 even though the tree said 4.0.0 for a while: verify what is
+on the registry with `npm view` / a bundle hash before assuming). The `2.5.x` fixes were found via
+`noviq-ui-demo`, a standalone sibling project that installs the real published package against a
+real backend. See `progress.md` for the
 phase-by-phase history. Intended to be installed as a dependency
 (`npm install noviq-ui`) by the other frontends in the suite
 (`noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, `asset-management-system/apps/web`)
@@ -103,6 +107,7 @@ noviq-ui/
 │   ├── constants.test.ts            # guard: fails on a bare literal for a value that has a constant
 │   ├── styles/tokens.css            # shared :root design tokens, single source of truth
 │   ├── config/                      # NoviqUIConfigProvider + types + response-format extraction
+│   ├── hooks/useFloatingPanel.ts    # picker dropdown mechanics: outside click, flip, follow scroll
 │   ├── packaging.test.ts            # guards the package.json exports `types` condition
 │   ├── test/setup.ts                # jest-dom matchers for Vitest
 │   ├── test/sourceFiles.ts          # shippedSourceFiles()/stripComments() for the guard tests
@@ -119,7 +124,10 @@ noviq-ui/
 │       ├── Badge/                   # Badge.tsx + .css + .test.tsx
 │       ├── Dropdown/                # Dropdown.tsx + .css (DropdownMenu, DropdownMenuItem)
 │       ├── Checkbox/                # Checkbox.tsx + .css + .test.tsx
-│       ├── TimePicker/              # TimePicker.tsx + .css + .test.tsx (standalone, portal)
+│       ├── TimePicker/              # TimePicker.tsx + .css + .test.tsx (portal; 24h / 12h)
+│       ├── DatePicker/              # DatePicker.tsx + .css + .test.tsx + dateParts.ts (pure date math)
+│       ├── MonthPicker/             # MonthPicker.tsx + .css + .test.tsx
+│       ├── PickerField/             # internal trigger shell shared by DatePicker/MonthPicker
 │       └── Table/                   # Table.tsx + ActionBar/TableCell/TablePagination/
 │                                     #   ColumnSelector/EmptyState/LoadingOverlay/
 │                                     #   RowActionsMenu/RejectAction/BulkActionsBar/
@@ -207,6 +215,27 @@ source's `minDate`/`maxDate` props were accepted but ignored, so they aren't por
 stores doesn't depend on the display. Hours are ordered 12-first so the list index equals
 `hour24 % 12`; `12 AM` is `00`, `12 PM` is `12`. Enter walks hour → minute → (12h) AM/PM and closes
 after the last column.
+
+### `DatePicker` / `MonthPicker`
+Ported from `noviq-hrms-ui/src/components/common/DateInput.js` + `DatePickerHeader.jsx` (and the
+`MONTH` branch of `design/form/Input.jsx`). The source sat on `react-datepicker` + `moment` +
+`react-i18next`; these are **hand-built, no new dependency** (the user had just asked to remove
+`formik`/`react-hot-toast`, so fewer dependencies was the clear direction).
+- **Dates are `{year, month, day}`, never `new Date("YYYY-MM-DD")`** (which reads as UTC and shifts
+  the day for users west of UTC). All the math is in `DatePicker/dateParts.ts` — pure, 38 tests:
+  leap years, month-end clamping (31 Jan + 1 month → 29 Feb), DST-safe day arithmetic, invalid
+  dates (`2023-02-30` → empty rather than rolling over).
+- Values are `"YYYY-MM-DD"` / `"YYYY-MM"`; displayed `DD/MM/YYYY` / `MM/YYYY`. A trailing time on a
+  date is ignored, like the HRMS input did. Bounds are inclusive.
+- Focus stays on the trigger and `aria-activedescendant` names the active day (same model as
+  `TimePicker`); month/year header uses native `<select>`s (the source used styled react-select).
+- Not ported: `react-datepicker`'s `dateFormat` was the buggy `"dd/MM/YYYY"` (`YYYY` is a
+  week-year token), and the source's `isCalenderOpen`/`setIsCalenderOpen` prop-drilling.
+- **Wired into `Input` as new opt-in types** (`datePicker`, `timePicker`, `monthPicker`), so they
+  work in `Form` configs. The native `date`/`time`/`month` types are deliberately unchanged
+  (native is better on mobile). `INPUT_TYPE.DATE_PICKER`/`TIME_PICKER`/`MONTH_PICKER`.
+- Shared plumbing: `hooks/useFloatingPanel` (also now used by `TimePicker`) and the internal
+  `PickerField` trigger shell (used by Date/MonthPicker; `TimePicker` keeps its own markup).
 
 ### `FormFooter`
 Ported from `noviq-hrms-ui/src/components/design/form/FormFooter.jsx`. Cancel/Save/extra-buttons
