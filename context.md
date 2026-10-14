@@ -53,17 +53,19 @@ swapping a consumer frontend over to it is explicitly deferred to a later phase.
   `--danger`, `--heading`, `--border-color`, `--radius`, `--shadow`, `--overlay-bg`, `--muted`,
   `--surface-hover`, etc.
 - Regular (non-peer) `dependencies`: `lucide-react` (icons), `framer-motion` (Modal's enter/exit
-  animation), `react-select` (Input's select/multiSelect, Table's page-size dropdown), `formik`
-  (Form's state management), `react-hotkeys-hook` (ActionBar's `/`-to-focus-search shortcut, also
+  animation), `react-select` (Input's select/multiSelect, Table's page-size dropdown),
+  `react-hotkeys-hook` (ActionBar's `/`-to-focus-search shortcut, also
   reused by `RejectAction`'s Escape-to-close — needs `{ enableOnFormTags: true }` since its reason
   textarea auto-focuses on open), `@tanstack/react-query` (Table's `apiFunction`
   data-fetching/caching/retry), `xlsx-js-style` (Table's export — chosen over plain `xlsx` for its
-  cell-styling support, used to bold+color the exported Excel header row), `react-hot-toast`
-  (Table's export loading/success/error feedback — **the one dependency here that needs a
-  consumer-side mount**: `Table` doesn't render its own `<Toaster/>`, since `toast()` calls
-  broadcast to every mounted `<Toaster/>` and auto-mounting one per `<Table>` would double up with
-  an app's own instance — documented in README) — all bundled so
-  consumers get them for free rather than needing to install/version them themselves. `Table`
+  cell-styling support, used to bold+color the exported Excel header row) — all bundled so
+  consumers get them for free rather than needing to install/version them themselves.
+  **Deliberately not dependencies (as of `4.0.0`): `formik` and `react-hot-toast`.** Both are the
+  consuming app's choice; `Form` is typed structurally (`FormController`) and Table export
+  feedback goes through `config.notify`. `formik` stays a *devDependency* — the `Form` tests and
+  the playground use a real `useFormik()` to keep the structural type honest — and
+  `src/packaging.test.ts` fails if either is re-added to `dependencies` or imported by shipped
+  source. `Table`
   creates and owns its own internal `QueryClient` (one per `<Table>` instance) so consumers never
   need to set up `@tanstack/react-query` themselves or wrap their app in a `QueryClientProvider` —
   it's an implementation detail, not part of the public contract.
@@ -110,7 +112,7 @@ noviq-ui/
 │       ├── Label/                   # Label.tsx + .css + .test.tsx
 │       ├── Switch/                  # Switch.tsx + .css + .test.tsx
 │       ├── FormFooter/              # FormFooter.tsx + .test.tsx (built on Button)
-│       ├── Form/                    # Form.tsx + .css + .test.tsx (config-driven, Formik)
+│       ├── Form/                    # Form.tsx + .css + .test.tsx (config-driven; Formik-compatible)
 │       ├── Badge/                   # Badge.tsx + .css + .test.tsx
 │       ├── Dropdown/                # Dropdown.tsx + .css (DropdownMenu, DropdownMenuItem)
 │       ├── Checkbox/                # Checkbox.tsx + .css + .test.tsx
@@ -128,8 +130,8 @@ noviq-ui/
 ├── vite.config.ts                   # library build config + dev server port (5176)
 ├── vitest.config.ts                 # test runner config
 ├── tsconfig.json / tsconfig.node.json
-└── package.json                     # deps: lucide-react, framer-motion, react-select, formik,
-                                      #   react-hotkeys-hook, @tanstack/react-query
+└── package.json                     # deps: lucide-react, framer-motion, react-select,
+                                      #   react-hotkeys-hook, @tanstack/react-query, xlsx-js-style
 ```
 
 ## Components
@@ -197,6 +199,12 @@ on scroll/resize and flips above near the viewport bottom; ARIA combobox/listbox
 `aria-activedescendant`; uses the library's own `ScrollArea` instead of `simplebar-react`. The
 source's `minDate`/`maxDate` props were accepted but ignored, so they aren't ported.
 
+`hourCycle={12}` (not in the source) shows hours as `12, 01 … 11` plus an AM/PM column. **`value`/
+`onChange` are 24-hour `"HH:mm"` in both modes** — the cycle is presentation only, so what a form
+stores doesn't depend on the display. Hours are ordered 12-first so the list index equals
+`hour24 % 12`; `12 AM` is `00`, `12 PM` is `12`. Enter walks hour → minute → (12h) AM/PM and closes
+after the last column.
+
 ### `FormFooter`
 Ported from `noviq-hrms-ui/src/components/design/form/FormFooter.jsx`. Cancel/Save/extra-buttons
 row, built entirely on `Button`.
@@ -205,8 +213,10 @@ row, built entirely on `Button`.
 Ported from `noviq-hrms-ui/src/components/design/Form.jsx`. Config-driven: an `inputList` array
 of field configs + a Formik instance renders a grid of `Input`s, auto-wiring
 `formik.setFieldValue`/`touched`/`errors`. Supports `colSpan` (1/2/3) grid placement and an
-`"info"` pseudo-type for section headers. Ported as-is with `formik` as a new dependency (not
-generalized away from Formik) — the explicit decision on this component.
+`"info"` pseudo-type for section headers. Originally ported with `formik` as a runtime
+dependency; as of `4.0.0` it isn't one — the `formik` prop is typed as the structural
+`FormController` (`values`, `errors?`, `touched?`, `setFieldValue`), which a `useFormik()` instance
+satisfies as-is. The prop kept its `formik` name to avoid a rename for existing callers.
 
 ### `Badge`
 Ported from `noviq-hrms-ui/src/components/ui/Badge.jsx`. Small pill, variants `default,
@@ -311,8 +321,13 @@ source. Decoupling/fix decisions:
   `col.cell(row, cellValue, row)`): `TableColumn.cell` returns `React.ReactNode`, unsafe/meaningless
   to write into an XLSX cell. A column with `cell` but no `exportValue` falls back to the plain
   accessor value instead — a documented safety-motivated deviation, not a silent gap.
-- **`react-hot-toast`** provides loading/success/error feedback (matches source's UX) — `Table`
-  does not auto-mount its own `<Toaster/>` (see Tech stack above).
+- **Export feedback goes through `config.notify`** (`4.0.0`; it used to be hardcoded
+  `react-hot-toast` calls needing a consumer-mounted `<Toaster/>`). `notify(message, kind)` is
+  called once per export with `"success"`/`"error"`; there is no `"loading"` kind (a loading toast
+  with no id can never be dismissed through a plain callback — the Export button's own
+  "Exporting…" state covers it). No `notify` → silent, except a failed export is still
+  `console.error`ed. `useTableExport` takes an explicit `notify` arg and otherwise reads the
+  provider's.
 - `responseSheetUrl` escape hatch ported as-is: skips the whole export flow, just
   `window.open()`s a pre-generated report link, hides the CSV option — matches source.
 - Column-level `export?: boolean` (default `true`) and `exportValue?: (row) => string | number` —
@@ -479,7 +494,7 @@ messages from earlier server lifetimes, e.g. Vite HMR errors from before a depen
 --noEmit` or `npm run build` (which runs `tsc -b`). That vacuous check is why the missing `types`
 export condition (fixed in `3.0.0`) went unnoticed through five published releases.
 
-## Config provider (`NoviqUIConfigProvider`, `3.0.0`)
+## Config provider (`NoviqUIConfigProvider`, `3.0.0`; `notify` added in `4.0.0`)
 Spec: `docs/superpowers/specs/2026-09-04-config-provider-design.md`; plan:
 `docs/superpowers/plans/2026-09-04-config-provider-implementation.md`. Code in `src/config/`.
 - `Table`'s `apiFunction` resolves to the backend's **raw** response. The app declares once, via
@@ -493,8 +508,12 @@ Spec: `docs/superpowers/specs/2026-09-04-config-provider-design.md`; plan:
 - **Fails soft on a mismatched *response***: a path that doesn't resolve yields an empty table
   and a `console.warn` (dev only), never a throw — deliberate, since one bad response shouldn't
   crash a page, but it makes a wrong path in production look like "No data found."
-- `NoviqUIConfig` is shaped as `{ table }` so future sections (theme/locale/notify — the spec's
-  Roadmap) can be added without another breaking change. None are built.
+- **`notify`** (`4.0.0`): `config.notify?: (message, kind: "success" | "error") => void` receives
+  Table export outcomes — see the Table export notes. `config.table` is **optional** (an app may
+  configure only `notify`); if present it's still validated at mount. A notify-only provider does
+  *not* satisfy an `apiFunction` Table — that still throws, since there's no response format.
+- `NoviqUIConfig` is `{ table?, notify? }` so further sections (theme/locale — the spec's Roadmap)
+  can be added without another breaking change. Those are not built.
 - `TableQueryResult` was removed; `TableQueryParams` is `Record<string, unknown>` since its keys
   are now configurable.
 

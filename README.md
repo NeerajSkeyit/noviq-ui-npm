@@ -48,6 +48,31 @@ once how to read rows/total out of that raw response — see the Table section b
 
 `preFetchedData`-only tables are unaffected — no `NoviqUIConfigProvider` is required for them.
 
+## Breaking change in 4.0.0
+
+`noviq-ui` no longer depends on `formik` or `react-hot-toast`. Which form-state and notification
+libraries an app uses is the app's call, but both were being installed into every app that
+depended on `noviq-ui`.
+
+- **`formik` is no longer installed with noviq-ui.** `<Form />` never needed it at runtime — it is
+  typed against a small `FormController` shape (`values`, `errors`, `touched`,
+  `setFieldValue`), which a `useFormik()` instance satisfies as-is. If your app imports from
+  `"formik"`, add it to *your* `package.json`; nothing else changes.
+- **`react-hot-toast` is no longer installed, and `<Table />` no longer shows its own
+  toasts.** Export outcome is reported through the new `notify` option on
+  `NoviqUIConfigProvider` — see "Export" below. Without it the table stays silent (the
+  "Exporting…" button state still shows, and a failure is still `console.error`ed), and you
+  no longer need to mount a `<Toaster />` for noviq-ui's sake.
+
+```diff
+  <NoviqUIConfigProvider
+    config={{
+      table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } },
++     notify: (message, kind) => (kind === "error" ? toast.error(message) : toast.success(message)),
+    }}
+  >
+```
+
 ## Usage/Examples
 
 ```javascript
@@ -124,7 +149,9 @@ function Example() {
 
 ### Form + Formik
 
-`Form` renders a config-driven list of `Input`s wired to a [Formik](https://formik.org/) instance.
+`Form` renders a config-driven list of `Input`s wired to a [Formik](https://formik.org/) instance
+(or anything with the same small shape — see below). Formik is not a dependency of `noviq-ui`;
+install it yourself if you use it.
 
 ```javascript
 import { useFormik } from "formik";
@@ -155,6 +182,10 @@ function Example() {
 }
 ```
 
+The `formik` prop only needs `{ values, errors?, touched?, setFieldValue(key, value) }` (exported
+as the `FormController` type), so `Form` works just as well with any other form state — an error
+is shown for a field only once its key is also truthy in `touched`.
+
 `colSpan` is **how many fields share a row**, not "columns spanned out of 3" — `1` = alone
 (100% width), `2` = one of two side by side (50% each), `3` = one of three side by side (~33%
 each). Fields meant to sit on the same row need the *same* `colSpan` value (as `firstName`/
@@ -162,33 +193,44 @@ each). Fields meant to sit on the same row need the *same* `colSpan` value (as `
 
 ### TimePicker
 
-A 24-hour time field with scrollable hour/minute columns — a consistent alternative to the
-browser's native `<input type="time">`, whose look and 12/24-hour behavior vary by browser and
-OS locale.
+A time field with scrollable hour/minute columns — a consistent alternative to the browser's
+native `<input type="time">`, whose look and 12/24-hour behavior vary by browser and OS locale.
+Works as a 24-hour clock (default) or a 12-hour clock with an AM/PM column.
 
 ```javascript
 import { useState } from "react";
 import { TimePicker } from "noviq-ui";
 
 function Example() {
-  const [start, setStart] = useState("09:30");
-  return <TimePicker value={start} onChange={setStart} minuteStep={15} />;
+  const [start, setStart] = useState("14:30");
+  return (
+    <>
+      <TimePicker value={start} onChange={setStart} minuteStep={15} />              {/* 14:30 */}
+      <TimePicker value={start} onChange={setStart} hourCycle={12} />               {/* 02:30 PM */}
+    </>
+  );
 }
 ```
 
-- `value` / `onChange` use `"HH:mm"` strings; clearing calls `onChange("")`. An empty (or
-  unparseable) value shows the placeholder — never a misleading `00:00`. A value with seconds
-  (`"09:30:45"`) is accepted and displayed as `09:30`; the picker emits `HH:mm` only.
+- `value` / `onChange` are **always 24-hour `"HH:mm"` strings** — `hourCycle={12}` only changes how
+  the time is shown and picked, so the value you store and send to a backend doesn't depend on
+  the display mode. Clearing calls `onChange("")`. An empty (or unparseable) value shows the
+  placeholder — never a misleading `00:00`. A value with seconds (`"09:30:45"`) is accepted and
+  displayed without them; the picker emits `HH:mm` only.
+- `hourCycle`: `24` (default) lists hours 00–23. `12` lists 12, 01 … 11 and adds an AM/PM
+  column. Picking an hour keeps the current AM/PM; picking AM/PM keeps the hour and minute.
+  `12:xx AM` is `00:xx`, and `12:xx PM` is `12:xx`.
 - `minuteStep` sets the minute column's granularity (default `5`). A value that isn't on the grid
   (`"09:32"` with a step of 5) is still displayed as-is.
 - Opens on click, or `ArrowDown`/`ArrowUp`/`Enter`/`Space` from the keyboard — not on bare focus, so
   tabbing through a form doesn't pop pickers open. Inside: `ArrowUp`/`ArrowDown` move within a
-  column, `ArrowLeft`/`ArrowRight` switch column, `Enter` commits the hour (then moves to minutes)
-  and then the minute (and closes), `Escape`/`Tab` close without changing the value.
-- Props: `value`, `onChange`, `minuteStep`, `placeholder`, `disabled`, `error`, `clearable`
-  (default `true`), `id`, `name`, `className`, `aria-label`.
-- Selecting an hour on an empty field starts the minute at `00` (and a minute first starts the hour
-  at `00`).
+  column, `ArrowLeft`/`ArrowRight` switch column, and `Enter` commits the highlighted option and
+  moves on to the next column — hour, then minute, then (12-hour only) AM/PM, closing after the
+  last. `Escape`/`Tab` close without changing the value.
+- Props: `value`, `onChange`, `hourCycle`, `minuteStep`, `placeholder`, `disabled`, `error`,
+  `clearable` (default `true`), `id`, `name`, `className`, `aria-label`.
+- Selecting an hour on an empty field starts the minute at `00` (a minute first starts the hour at
+  `00`, i.e. 12 AM; AM/PM first on an empty field gives `12:00`, noon, for PM).
 - It is a standalone component. `<Input type="time" />` still renders the native input.
 
 ### Table
@@ -356,21 +398,26 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 />
 ```
 
-- Export needs `react-hot-toast`'s `<Toaster />` mounted once near your app root for its
-  loading/success/error feedback to actually render — `Table` doesn't mount its own (mounting one
-  per `<Table>` would duplicate toasts if your app already has one elsewhere):
+- While an export runs, the Export button shows "Exporting…" and is disabled. The outcome is
+  reported through `notify` on `NoviqUIConfigProvider` — `noviq-ui` has no toast system of its
+  own, so route it into whatever your app already uses:
   ```javascript
-  import { Toaster } from "react-hot-toast";
+  import toast from "react-hot-toast"; // or any snackbar/notification library
+  import { NoviqUIConfigProvider } from "noviq-ui";
 
-  function App() {
-    return (
-      <>
-        <Toaster />
-        {/* ...your app, including any <Table exportFileName=.../> ... */}
-      </>
-    );
-  }
+  <NoviqUIConfigProvider
+    config={{
+      table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } },
+      notify: (message, kind) => (kind === "error" ? toast.error(message) : toast.success(message)),
+    }}
+  >
+    <App />
+  </NoviqUIConfigProvider>
   ```
+  `notify(message, kind)` is called once per export with `kind` `"success"` (`"Export complete"`)
+  or `"error"` (`"Export failed"`). With no `notify` configured nothing is announced; a failed
+  export is still logged with `console.error`. `config.table` is optional when you only want
+  `notify` (e.g. an app whose tables all use `preFetchedData`).
 - Per-column control: set `export: false` on a column to exclude it, or `exportValue={(row) =>
   ...}` for a custom cell value. Only currently-visible columns (per the "Columns" chooser, if
   enabled) are exported — hidden columns are skipped, matching what's on screen.
@@ -392,9 +439,11 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - `<Modal />` — portal-based centered modal with enter/exit animation (sizes `sm`/`md`/`lg`/`xl`/`auto`)
 - `<Label />` — styled `<label>` wrapper
 - `<Switch />` — toggle switch, keyboard accessible
-- `<TimePicker />` — 24-hour time field with scrollable hour/minute columns (see above)
+- `<TimePicker />` — time field with scrollable hour/minute columns; 24-hour or 12-hour with an
+  AM/PM column (see above)
 - `<FormFooter />` — Cancel/Save button row for a form
-- `<Form />` — config-driven form renderer (`inputList` + a Formik instance)
+- `<Form />` — config-driven form renderer (`inputList` + a Formik instance, or any object with
+  the `FormController` shape)
 - `<Badge />` — small status/label pill (variants: `default`, `secondary`, `destructive`, `outline`)
 - `<DropdownMenu />` / `<DropdownMenuItem />` — portal-positioned dropdown menu
 - `<Table />` — sortable, searchable, paginated data table with column management (show/hide/

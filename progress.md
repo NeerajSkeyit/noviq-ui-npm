@@ -7,8 +7,9 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 2. **Phase 2 — Form/Input system** ✅ done, **published as `2.0.0`** (breaking: `Input`'s
    `onChange` signature changed).
 3. **Phase 2b — rich Date/Time/Month pickers**, split into sub-phases:
-   - **2b-i — `TimePicker`** ✅ done, staged as `3.1.0` (see "Ready to publish"). Standalone
-     component, hand-rolled (no picker library); `Input type="time"` is not rewired yet.
+   - **2b-i — `TimePicker`** ✅ done, staged as `4.0.0` (see "Ready to publish"). Standalone
+     component, hand-rolled (no picker library), 24-hour or 12-hour with AM/PM; `Input
+     type="time"` is not rewired yet.
    - **2b-ii — date picker / month picker** — not started. HRMS's `common/DateInput.js` +
      `DatePickerHeader.jsx` sit on `react-datepicker` + `moment` + `react-i18next`, so this needs a
      dependency decision first: adopt `react-datepicker` (+ `date-fns`) or build a small calendar.
@@ -392,8 +393,9 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         (483 KB binary, now in pushed history); untracked it and added `*.tgz` to `.gitignore`.
         History was not rewritten.
 
-- [x] **`3.1.0` — `TimePicker` (Phase 2b-i), plus a fix for a spurious dev warning shipped in
-      `3.0.0`** (staged, see "Ready to publish"):
+- [x] **`4.0.0` — `TimePicker` (Phase 2b-i) with a 12-hour mode, `formik`/`react-hot-toast` removed
+      as dependencies, and a fix for a spurious dev warning shipped in `3.0.0`** (staged, see
+      "Ready to publish"; the briefly-staged `3.1.0` was never published and is folded in here):
   - [x] **`TimePicker` built** (`src/components/TimePicker/`), ported from HRMS's hand-rolled
         `common/TimeInput.jsx`. Standalone, additive: `<TimePicker value="09:30" onChange={...}
         minuteStep={15} />`. Fixes vs. the source: placeholder instead of a fake `00:00` when empty;
@@ -411,8 +413,32 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         the demo's console was only read with `onlyErrors`. Fixed: extraction only runs once a
         response exists, and is memoized so a genuine mismatch warns once rather than per render.
         3 regression tests added (verified failing before the fix, 12 warnings vs 6 expected).
-  - [x] Test suite 257 (up from 224): 30 for `TimePicker`, 3 for the Table fix. Mutation-checked
-        the TimePicker tests (5 deliberate breaks, each caught).
+  - [x] Original 3.1.0 gate: 257 tests, 30 for `TimePicker` (mutation-checked, 5 deliberate breaks
+        each caught), 3 for the Table fix.
+  - [x] **`TimePicker` 12-hour mode** (`hourCycle={12}`): hours `12, 01 … 11` + an AM/PM column.
+        `value`/`onChange` stay 24-hour `"HH:mm"` regardless, so the stored value doesn't depend on
+        the display mode. Picking an hour keeps AM/PM, picking AM/PM keeps hour and minute; `12 AM`
+        is `00`, `12 PM` is `12`. Keyboard: Enter walks hour → minute → AM/PM and closes after the
+        last. 17 new tests (47 total), mutation-checked (5 deliberate breaks of the 12h logic).
+  - [x] **`formik` is no longer a dependency.** It was only ever a *type* import in `Form.tsx`
+        (`FormikProps`); `Form` reads/writes just `values`, `errors`, `touched`, `setFieldValue`. The
+        prop is now typed as a structural `FormController` (exported), which a real `useFormik()`
+        satisfies as-is — verified by the demo's `tsc -b` against the packed tarball. The prop kept
+        its `formik` name. `formik` moved to `devDependencies` (tests + playground still use the real
+        thing). Side effect: `npm audit --omit=dev` went from 1 high (a transitive `lodash` via
+        formik) to 0.
+  - [x] **`react-hot-toast` is no longer a dependency; export feedback goes through
+        `config.notify`.** `NoviqUIConfig` gained `notify?: (message, kind: "success" | "error") =>
+        void` — this is the "`config.notify`" item from the config-provider design spec's roadmap,
+        built. `config.table` became optional so an app can configure only `notify`. A `"loading"`
+        kind was deliberately not added (a callback can't dismiss it); the Export button's
+        "Exporting…" state covers that. Without `notify` the table is silent and a failed export is
+        still `console.error`ed. **This is a behavior change** — anyone who relied on the built-in
+        toasts must now wire `notify` — which is why this release is `4.0.0`, not `3.1.0`.
+  - [x] Guards: `src/packaging.test.ts` now fails if `formik`/`react-hot-toast` reappear under
+        `dependencies`/`peerDependencies` or are imported (even as a type) by shipped source.
+        Verified the dependency guards fail against the pre-change `package.json`.
+  - [x] Test suite 293 (up from 224 at 3.0.0). Main bundle 131.6 → 128.1 kB gzip.
   - [x] Verified in a real browser: opening centres the selected hour/minute, keyboard flow
         produces the expected value, flips above near the viewport bottom and follows its trigger
         on scroll; inside the demo's Add/Edit drawer it renders above the drawer and a picked time
@@ -455,12 +481,19 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   now depends on `^3.0.0` from the registry (typecheck, build and a live run all verified).
 
 ## Ready to publish
-- `3.1.0` — **additive, no breaking changes.** New standalone `TimePicker` component (exported with
-  its `TimePickerProps` type), plus a fix for a spurious dev-only console warning that `3.0.0`
-  emitted on every initial `Table` load and for `getRows`/`getTotal` being called with
-  `undefined` while loading. See the `3.1.0` "Done" entry above. Gate passed: `tsc` clean, 257/257
-  tests, build, `npm pack` (45 files, `TimePicker.d.ts` present), demo typecheck + build against the
-  packed tarball, live run with a clean console. Awaiting explicit go-ahead to run `npm publish`.
+- `4.0.0` — **breaking (behavior), no API removals.**
+  - New standalone `TimePicker` with 24-hour and 12-hour (AM/PM) modes.
+  - `formik` and `react-hot-toast` are no longer dependencies. Apps that import `formik` directly
+    must install it themselves; apps that relied on the table's built-in export toasts must set
+    `notify` on `NoviqUIConfigProvider` (otherwise export is silent). `Form` accepts any
+    `FormController`-shaped object, not just a Formik instance.
+  - New `config.notify`; `config.table` is now optional.
+  - Fix: `3.0.0` warned on every initial `Table` load and called `getRows`/`getTotal` with
+    `undefined` while loading.
+  - Gate: `tsc` clean, 293/293 tests, build, `npm pack` (45 files), tarball has no `formik`/
+    `react-hot-toast`, demo typecheck + build against the packed tarball, live run with a clean
+    console, export toast routed through `notify`, 12-hour picker verified in the Edit drawer
+    (backend stores 24-hour). Awaiting explicit go-ahead to run `npm publish`.
 
 ## Not started
 - [ ] Phase 2b-ii/iii (date picker, month picker, wiring pickers into `Input`) — see the roadmap.
@@ -473,8 +506,8 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - [ ] No consumer integration — not a dependency of any of the four frontend repos yet.
 - [ ] `noviq-ui-demo` is still not a git repository (`noviq-ui` itself now is — remote
       `NeerajSkeyit/noviq-ui-npm`).
-- [ ] Other config sections from the provider's roadmap (theme, locale, notify — see the design
-      spec's Roadmap) are not built; the `NoviqUIConfig` type is shaped so they can be added
+- [ ] Other config sections from the provider's roadmap (theme, locale — see the design spec's
+      Roadmap; `notify` was built in `4.0.0`) are not built; the `NoviqUIConfig` type is shaped so they can be added
       without another breaking change.
 
 ## Known bugs / limitations
@@ -519,9 +552,13 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   the plain accessor value, not the JSX the `cell` function would render — see the 3d-ii "Done"
   notes above for why. Set `exportValue` explicitly on such a column if you need something other
   than the raw value in the exported file.
-- `react-hot-toast`'s `<Toaster />` must be mounted by the consumer for export's loading/success/
-  error feedback to be visible — `Table` intentionally doesn't auto-mount one (would duplicate
-  toasts in apps that already use `react-hot-toast` elsewhere). Documented in `README.md`.
+- Export feedback needs the consumer to wire `config.notify`; without it the table is silent
+  (the button's "Exporting…" state and, on failure, `console.error` are all there is). There is no
+  built-in inline fallback and no `"loading"` notification kind. Documented in `README.md`.
+- `Form`'s prop is still named `formik` even though it now accepts any `FormController`-shaped
+  object — kept to avoid a rename for existing callers.
+- `Input type="time" | "date" | "month"` still render the browser's native inputs; `TimePicker` is
+  standalone (see the Phase 2b roadmap).
 - **A response that doesn't match the declared `responseFormat` fails soft.** If `rowsPath`/
   `totalPath` (or `getRows`/`getTotal`) doesn't resolve against what the backend actually
   returned, `Table` renders "No data found" with total `0` and only `console.warn`s — and only

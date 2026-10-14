@@ -315,7 +315,10 @@ migration to perform — this is scoped to:
 `NoviqUIConfig` is intentionally extensible so these can be added later without another breaking
 change. Prioritized:
 
-1. **`config.notify`** (high priority) — Table's export flow hardcodes `react-hot-toast` calls
+1. **`config.notify`** (high priority) — **built in `4.0.0`** as `notify?: (message, kind:
+   "success" | "error") => void` (no `"loading"` kind), with `react-hot-toast` removed from the
+   package entirely and `config.table` made optional. Original rationale: Table's export flow
+   hardcoded `react-hot-toast` calls
    and requires the consumer to mount a `<Toaster/>`. Same class of problem as this design just
    solved, for notifications instead of data shape: `config.notify?: (message, kind) => void`
    would let a consumer route export feedback through whatever notification system they already
