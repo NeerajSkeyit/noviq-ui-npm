@@ -425,6 +425,61 @@ describe("Table", () => {
     await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
   });
 
+  it("does not run the response format — or warn — before the first response arrives", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    let resolveRequest!: (value: unknown) => void;
+    const apiFunction = vi.fn(
+      () => new Promise((resolve) => (resolveRequest = resolve))
+    );
+    // These would throw / return junk if handed `undefined`, as a typical consumer's would.
+    const getRows = vi.fn((raw: any) => raw.data.items as Row[]);
+    const getTotal = vi.fn((raw: any) => raw.data.count as number);
+
+    render(
+      <Table columns={columns} apiFunction={apiFunction} responseFormat={{ getRows, getTotal }} />
+    );
+    await waitFor(() => expect(apiFunction).toHaveBeenCalled());
+
+    expect(getRows).not.toHaveBeenCalled();
+    expect(getTotal).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+
+    const response = { data: { items: rows, count: rows.length } };
+    resolveRequest(response);
+    await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
+    expect(getRows).toHaveBeenCalledWith(response);
+    expect(getTotal).toHaveBeenCalledWith(response);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("does not warn during the loading phase for a path-based format either", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
+    render(<Table columns={columns} apiFunction={apiFunction} responseFormat={FLAT_RESPONSE_FORMAT} />);
+    await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("warns once per mismatched response, not again on every re-render", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const apiFunction = vi.fn().mockResolvedValue({ somethingElse: [] });
+    // A fresh element each time — re-rendering the *same* element object is a React no-op.
+    const ui = () => (
+      <Table columns={columns} apiFunction={apiFunction} responseFormat={FLAT_RESPONSE_FORMAT} />
+    );
+    const { rerender } = render(ui());
+    await waitFor(() => expect(warn).toHaveBeenCalled());
+    const afterFirstResponse = warn.mock.calls.length;
+
+    rerender(ui());
+    rerender(ui());
+    rerender(ui());
+    expect(warn.mock.calls.length).toBe(afterFirstResponse);
+    warn.mockRestore();
+  });
+
   it("does not throw for a hidden table with apiFunction set but no responseFormat configured", () => {
     const apiFunction = vi.fn();
     expect(() => render(<Table columns={columns} apiFunction={apiFunction} hidden />)).not.toThrow();

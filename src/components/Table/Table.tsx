@@ -300,16 +300,23 @@ function TableInner<T extends Record<string, any> = any>({
   });
 
   const usingPreFetched = preFetchedData.length > 0;
-  const data: T[] = usingPreFetched
-    ? preFetchedData
-    : responseFormat
-      ? extractRows<T>(queryResult, responseFormat)
-      : [];
-  const totalItems = usingPreFetched
-    ? preFetchedData.length
-    : responseFormat
-      ? extractTotal(queryResult, responseFormat)
-      : 0;
+
+  // Run the response format only against a real response. `queryResult` is `undefined` until the
+  // first request resolves; handing that to `getRows`/`getTotal` would force every consumer to
+  // null-guard their own functions, and would make the dev-only "did not resolve" warning fire on
+  // every initial load. Memoized so a genuinely mismatched response warns once, not per render.
+  const extracted = useMemo(() => {
+    if (!responseFormat || queryResult === undefined) {
+      return { rows: [] as T[], total: 0 };
+    }
+    return {
+      rows: extractRows<T>(queryResult, responseFormat),
+      total: extractTotal(queryResult, responseFormat),
+    };
+  }, [queryResult, responseFormat]);
+
+  const data: T[] = usingPreFetched ? preFetchedData : extracted.rows;
+  const totalItems = usingPreFetched ? preFetchedData.length : extracted.total;
   const isLoading = usingPreFetched ? isPrefetchedDataLoading : isQueryLoading;
 
   const getRenderValue = useCallback(
