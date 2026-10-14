@@ -34,6 +34,20 @@ the field (`string` for text-like fields, `boolean` for checkbox/radio/switch, `
 `File[]` for `multipleFile`, an option object for `select`, an array of option objects for
 `multiSelect`).
 
+## Breaking change in 3.0.0
+
+`Table`'s `apiFunction` used to have to resolve to exactly `{ result: T[], totalCount: number }`
+— that shape mirrored one specific consumer's backend rather than being a neutral contract.
+
+`apiFunction` now resolves to your backend's raw, untouched response instead. Every app using
+`apiFunction` must wrap its root (or the relevant subtree) in `NoviqUIConfigProvider`, declaring
+once how to read rows/total out of that raw response — see the Table section below.
+`TableQueryResult` is removed from the public API; `TableQueryParams` is now
+`Record<string, unknown>` since its field names are configurable
+(`config.table.requestParams`) rather than fixed.
+
+`preFetchedData`-only tables are unaffected — no `NoviqUIConfigProvider` is required for them.
+
 ## Usage/Examples
 
 ```javascript
@@ -148,8 +162,29 @@ each). Fields meant to sit on the same row need the *same* `colSpan` value (as `
 
 ### Table
 
+`Table` needs to know your backend's response shape once, via `NoviqUIConfigProvider` wrapped
+around your app root (or wrapped more locally, if different screens hit different backends):
+
 ```javascript
-import { Table } from "noviq-ui";
+import { NoviqUIConfigProvider, Table } from "noviq-ui";
+
+// apiFunction receives { ...apiParams, search, page_no, rows_per_page } (the key names are
+// customizable via config.table.requestParams) and should resolve to your backend's raw,
+// untouched response — Table reads rows/total out of it using config.table.responseFormat.
+function App() {
+  return (
+    <NoviqUIConfigProvider
+      config={{
+        table: {
+          // For a backend returning { result: { result: [...], totalCount: 42 } }:
+          responseFormat: { rowsPath: "result.result", totalPath: "result.totalCount" },
+        },
+      }}
+    >
+      <Example />
+    </NoviqUIConfigProvider>
+  );
+}
 
 function Example() {
   const columns = [
@@ -158,8 +193,6 @@ function Example() {
     { id: "joinDate", heading: "Joined", accessorKey: "joinDate", type: "date" },
   ];
 
-  // apiFunction receives { ...apiParams, search, page_no, rows_per_page } and must
-  // resolve to { result: T[], totalCount: number }
   const fetchEmployees = (params) =>
     fetch(`/api/employees?${new URLSearchParams(params)}`).then((r) => r.json());
 
@@ -167,8 +200,15 @@ function Example() {
 }
 ```
 
+`NoviqUIConfigProvider` is mandatory for any `Table` using `apiFunction` — rendering one without
+either a `Provider` ancestor or a per-instance `responseFormat` prop throws immediately with an
+actionable error message. For a response shape a dot-path can't express, use a `getRows`/
+`getTotal` function pair instead of `rowsPath`/`totalPath`. A specific `<Table>` can override
+the app-wide format with its own `responseFormat` prop — e.g. one screen calling a third-party
+API with a different shape than the rest of the app.
+
 Pass `preFetchedData` instead of `apiFunction` for a fully client-controlled table (no fetching,
-no `@tanstack/react-query` involved — you own the array).
+no `@tanstack/react-query`, and no `NoviqUIConfigProvider` requirement — you own the array).
 
 #### Column management
 
@@ -330,6 +370,9 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
   `preFetchedData` (client-controlled) data sources; `type`-driven cell formatting (`date`,
   `dateRange`, `dateTime`, `time`, `duration`, `currency`, `status`, plus a custom `cell` render
   function).
+- `<NoviqUIConfigProvider />` / `useNoviqUIConfig()` — declares your backend's response shape
+  (and, optionally, the request param names) once for every `Table` below it; required for any
+  `Table` using `apiFunction` (see "Breaking change in 3.0.0" above).
 - `<ColumnSelector />` — the "Columns" chooser panel `Table` uses internally; also exported
   standalone if you're building a custom table shell.
 - `<Checkbox />` — small styled checkbox with full keyboard/ARIA support, used internally by

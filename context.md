@@ -3,17 +3,15 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v2.5.1** on npm, with **v2.5.2 built/tested/staged but not yet published** (`1.1.0` shipped
+**v2.5.2** on npm, with **v3.0.0 built/tested/staged but not yet published** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
-`2.1.0` shipped `Table` sub-phase 3a core table; `2.2.0` shipped sub-phase 3b column show/hide/
-reorder/pin + optional `localStorage` persistence; `2.3.0` shipped sub-phase 3c row
-selection/actions/bulk actions; `2.4.0` shipped sub-phase 3d-i filters; `2.5.0` shipped sub-phase
-3d-ii Excel/CSV export, completing Table's full 3a-3d feature set; `2.5.1` fixes a real `Drawer`
-responsive-breakpoint bug and clarifies `Form`'s `colSpan` docs; `2.5.2` fixes a second, related
-overflow bug the user found in Edge on a full-width window — see below — found via
-`noviq-ui-demo`, a standalone sibling project that installs the real published package against a
-real backend) — see `progress.md` for the phase-by-phase extraction
-history. Intended to be installed as a dependency
+`2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
+filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
+second, related overflow bug found in Edge on a full-width window; `3.0.0` is the breaking
+`NoviqUIConfigProvider` release plus the `types` export-condition fix — see "Config provider"
+below). The `2.5.x` fixes were found via `noviq-ui-demo`, a standalone sibling project that
+installs the real published package against a real backend. See `progress.md` for the
+phase-by-phase history. Intended to be installed as a dependency
 (`npm install noviq-ui`) by the other frontends in the suite
 (`noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, `asset-management-system/apps/web`)
 so they can share UI components instead of each re-implementing them.
@@ -27,13 +25,14 @@ supporting primitives first (done, `1.1.0`), Form/Input system next (done, `2.0.
 the hardest, since the source `DataTable.jsx` is deeply coupled to Redux + react-query + the app's
 axios instance + a permission-gating singleton. Table itself is split into sub-phases, **all now
 done**: 3a core table, 3b column management, 3c row/bulk actions, 3d further split into 3d-i
-filters and 3d-ii export (staged as `2.4.0`/`2.5.0` — see `progress.md`). Table's own
+filters and 3d-ii export (published as `2.4.0`/`2.5.0` — see `progress.md`). Table's own
 `ViewModeToggle`/`ViewComponent` alternate-view escape hatch was deliberately left out of 3d
 entirely (confirmed near-dead in HRMS — 1 real working call site out of 97).
 
-**Not currently a git repo** — there is no `.git` directory in this checkout, unlike the other
-six repos documented in the suite-level `CLAUDE.md`. It also isn't listed in that file's repo
-table. Treat it as a newly-added, ungitted package until it's initialized/cloned properly.
+**Git**: this is a git repo (`main`, remote `NeerajSkeyit/noviq-ui-npm` — a personal-account
+remote, unlike the suite's `itsatellitekey/<repo>` remotes documented in the suite-level
+`CLAUDE.md`, where it also isn't listed). `*.tgz` is gitignored; note an early `noviq-ui-2.5.2.tgz`
+was committed and pushed before that rule existed, so it remains in history.
 
 **Not yet consumed anywhere**: none of the other repos in this directory (`noviq-hrms-ui`,
 `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, `asset-management-system`) list `noviq-ui` as a
@@ -98,6 +97,8 @@ noviq-ui/
 ├── src/
 │   ├── index.ts                     # public API — all components + their prop types
 │   ├── styles/tokens.css            # shared :root design tokens, single source of truth
+│   ├── config/                      # NoviqUIConfigProvider + types + response-format extraction
+│   ├── packaging.test.ts            # guards the package.json exports `types` condition
 │   ├── test/setup.ts                # jest-dom matchers for Vitest
 │   └── components/
 │       ├── Input/                   # Input.tsx + .css + .test.tsx (18 field types)
@@ -311,11 +312,12 @@ biggest and most architecturally different extraction so far — research found 
 usage (`tableDetailsSlice`) was pure persistence with zero real cross-component reads, its
 permission-gating imported the app's Redux **store singleton directly**, and `moment` handled all
 date/duration formatting. Decoupling decisions (confirmed with the user):
-- **Data-fetching contract simplified to just `apiFunction`**: `(params) =>
-  Promise<{result: T[], totalCount: number}>`. The source's second path (`apiEndPoint` +
-  `useGetData` + a shared `axiosInstance` + its own independent Redux permissions check) is
-  dropped entirely — it was only used in 6 of 97 real call sites, `apiFunction` dominates.
-  `preFetchedData` remains as the fully client-controlled alternative.
+- **Data-fetching contract simplified to just `apiFunction`**: `(params) => Promise<unknown>`
+  (as of `3.0.0` — it resolved to a fixed `{result: T[], totalCount: number}` before; see
+  "Config provider" below for how rows/total are read out of the raw response). The source's
+  second path (`apiEndPoint` + `useGetData` + a shared `axiosInstance` + its own independent Redux
+  permissions check) is dropped entirely — it was only used in 6 of 97 real call sites,
+  `apiFunction` dominates. `preFetchedData` remains as the fully client-controlled alternative.
 - **No permission-gating** — the library doesn't know about permissions at all; consumers
   pre-filter whatever `actions`/columns/export config they pass in. (HRMS's own gating imported
   its Redux store singleton directly — not portable, and not something a generic library should
@@ -408,8 +410,6 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
 - **`lint` script still has no config** — ESLint 9 needs flat config, none exists. Confirmed
   still broken; intentionally out of scope across both phases so far.
 - **No CI/CD** — no GitHub Actions/Azure Pipelines config found, unlike `asset-management-system`.
-- Not a git repo in this checkout — nothing here is version-controlled locally yet, now a bigger
-  risk than ever with Table's entire 3a-3d feature set sitting uncommitted.
 - Two duplicate primitive sets still exist in `noviq-hrms-ui` (`ui/` vs `design/ui/` for Button,
   Switch, ScrollArea) that were **not** reconciled there — only resolved on the `noviq-ui` side by
   picking one canonical source per component during extraction.
@@ -447,11 +447,35 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
 against real HTTP calls: `Table` (search/sort/pagination/filters/row+bulk actions/export),
 `Drawer` + `Form`/Formik. It exists specifically to answer "does `npm install noviq-ui` actually
 work for a real consumer," a question neither `noviq-ui`'s own Vitest suite nor its local-source
-dev playground can answer. Not itself a git repo yet, same gap as `noviq-ui` (see above). When
-debugging a `noviq-ui` release, `npm link`ing a fresh local build into `noviq-ui-demo/web` (then
+dev playground can answer. Not itself a git repo yet (`noviq-ui` is). When debugging a `noviq-ui`
+release, installing a fresh `npm pack` tarball into `noviq-ui-demo/web` (or `npm link`, then
 clearing `node_modules/.vite` in the demo, since Vite's dependency pre-bundle cache goes stale
-across a `npm link` swap) is a fast way to verify a fix against a real consumer before publishing —
-this is exactly how the `2.5.1` fixes were verified.
+across a link swap) is a fast way to verify a fix against a real consumer before publishing —
+this is how the `2.5.x`/`3.0.0` changes were verified.
+
+**Typechecking the demo — a trap**: the Vite template's root `tsconfig.json` has `files: []`, so
+`npx tsc --noEmit` there checks nothing and always "passes." Use `npx tsc -p tsconfig.app.json
+--noEmit` or `npm run build` (which runs `tsc -b`). That vacuous check is why the missing `types`
+export condition (fixed in `3.0.0`) went unnoticed through five published releases.
+
+## Config provider (`NoviqUIConfigProvider`, `3.0.0`)
+Spec: `docs/superpowers/specs/2026-09-04-config-provider-design.md`; plan:
+`docs/superpowers/plans/2026-09-04-config-provider-implementation.md`. Code in `src/config/`.
+- `Table`'s `apiFunction` resolves to the backend's **raw** response. The app declares once, via
+  `<NoviqUIConfigProvider config={{ table: { responseFormat } }}>`, how to read rows/total:
+  `{ rowsPath, totalPath }` (dot-paths) **or** `{ getRows, getTotal }` (functions) — exactly one;
+  `config.table.requestParams` renames the `search`/`page_no`/`rows_per_page` keys sent; a
+  `<Table responseFormat>` prop overrides per instance. `useTableExport` resolves the same config.
+- **Mandatory**: `Table` + `apiFunction` with no provider ancestor and no `responseFormat` prop
+  throws on render; a malformed provider config throws at mount. `preFetchedData` tables are
+  exempt. `useNoviqUIConfig()` returns `undefined` outside a provider.
+- **Fails soft on a mismatched *response***: a path that doesn't resolve yields an empty table
+  and a `console.warn` (dev only), never a throw — deliberate, since one bad response shouldn't
+  crash a page, but it makes a wrong path in production look like "No data found."
+- `NoviqUIConfig` is shaped as `{ table }` so future sections (theme/locale/notify — the spec's
+  Roadmap) can be added without another breaking change. None are built.
+- `TableQueryResult` was removed; `TableQueryParams` is `Record<string, unknown>` since its keys
+  are now configurable.
 
 ## How this fits the suite
 Suite-wide, HRMS/LMS/AMS each hand-roll their own form-input, table, and drawer/modal components

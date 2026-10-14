@@ -1,7 +1,6 @@
 # noviq-ui — Progress
 
-_Last updated 2026-08-19, mid-way through the HRMS-component-extraction project (see
-`context.md` for the "how this fits the suite" background)._
+_Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" background)._
 
 ## Extraction roadmap
 1. **Phase 1 — Drawer + Modal + primitives** ✅ done, **published as `1.1.0`**.
@@ -39,6 +38,10 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
    exercises it against a real backend over HTTP. ✅ done — see its own README for details. This
    is also what surfaced the `2.5.1` fix (see below): it was never visible
    through `noviq-ui`'s own local-source dev playground.
+6. **Config provider — `NoviqUIConfigProvider`, `3.0.0` (breaking)** ✅ done, staged — Table's
+   response/request shape is declared once per app instead of being hard-wired to HRMS's
+   envelope. Also fixes the `types` export condition and `Form`'s `formik` typing. See the
+   `3.0.0` "Done" entry below.
 
 ## Done
 - [x] Package scaffolded (Vite + React + TS library mode); 5 versions live on npm, 1.0.1 → 1.0.5.
@@ -301,8 +304,8 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
   - [x] `npm test` (202/202), `npm run build`, `npm pack --dry-run` all verified clean —
         `Drawer.css` changed (additive `@media` rule), `Form.css` unchanged, no behavior/API
         change beyond the JSDoc wording, so no new tests were needed.
-- [x] **`2.5.2` — a second, real overflow bug found in Edge after `2.5.1` shipped** (staged, see
-      "Ready to publish"): the `2.5.1` responsive-breakpoint fix only covered narrow *viewports*
+- [x] **`2.5.2` — a second, real overflow bug found in Edge after `2.5.1` shipped** (published):
+      the `2.5.1` responsive-breakpoint fix only covered narrow *viewports*
       (`< 640px`); it didn't cover a **full-width, maximized** window where a single field's
       native rendering is simply wider than expected in that browser. Diagnosed live with the
       user (real screenshots + a `window.innerWidth`/`getBoundingClientRect()` check pasted from
@@ -333,6 +336,54 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
         ends up oversized in some particular browser.
   - [x] `npm test` (202/202), `npm run build`, `npm pack --dry-run` all verified clean — both
         changes are additive CSS properties, no behavior/API change.
+- [x] **`3.0.0` — breaking: `NoviqUIConfigProvider`, plus two typing/packaging fixes found while
+      verifying it** (staged, see "Ready to publish"). Design spec and implementation plan live in
+      `docs/superpowers/specs/2026-09-04-config-provider-design.md` and
+      `docs/superpowers/plans/2026-09-04-config-provider-implementation.md`.
+  - [x] **Why**: `Table`'s `apiFunction` had to resolve to exactly `{ result: T[], totalCount:
+        number }` — a shape inherited from `noviq-hrms-ui`'s own backend envelope, not a neutral
+        contract, forcing every consumer with a differently-shaped backend to hand-write
+        reshaping code per call site. No frontend depended on `noviq-ui` yet, so this was the
+        cheapest moment to break it.
+  - [x] **What**: `apiFunction` now resolves to the backend's raw response. A consuming app
+        declares the shape once via `<NoviqUIConfigProvider config={{ table: { responseFormat } }}>`
+        — either `{ rowsPath, totalPath }` (dot-paths) or `{ getRows, getTotal }` (functions, for
+        shapes a path can't express). `config.table.requestParams` renames the
+        `search`/`page_no`/`rows_per_page` keys `Table` sends. A single `<Table responseFormat>`
+        prop overrides the app-wide format for one instance. `useTableExport` resolves the same
+        config, so export still fetches every matching row. `TableQueryResult` is removed;
+        `TableQueryParams` is now `Record<string, unknown>`. `preFetchedData` tables need no
+        provider. Implemented in `src/config/` (`types.ts`, `responseFormat.ts`,
+        `NoviqUIConfigProvider.tsx`) + `Table.tsx`/`useTableExport.ts`.
+  - [x] **Mandatory, by design**: a `Table` using `apiFunction` with neither a provider ancestor
+        nor a `responseFormat` prop throws an actionable error on render, rather than silently
+        assuming HRMS's shape. A malformed provider config also throws at mount. (A *response*
+        that doesn't match the declared shape does not throw — it warns in development and
+        renders an empty table; see Known limitations.)
+  - [x] **Found while verifying 3.0.0 against the demo — `exports` had no `types` condition.**
+        Under `moduleResolution: "bundler"` (the Vite default) TypeScript resolves through
+        `exports` and ignores the top-level `types` field, so every typed consumer got the whole
+        library as implicit `any` (TS7016) — affecting *every* version published before 3.0.0.
+        Invisible until now because `noviq-ui`'s own tests/playground import local source, and
+        because the demo's earlier "clean typecheck" was vacuous: the Vite template's root
+        `tsconfig.json` has `files: []`, so a bare `tsc --noEmit` checks nothing — the real check
+        is `tsc -p tsconfig.app.json` (or the demo's `npm run build`, which uses `tsc -b`). Fixed
+        by adding a `types` condition (listed first) to the root export; guarded by
+        `src/packaging.test.ts`.
+  - [x] **Also found: `<Form formik={useFormik<Values>()} />` didn't typecheck.** The prop was
+        typed `FormikProps<Record<string, any>>`; Formik's helpers (`setValues`, …) are
+        contravariant in the values type, so a concretely-typed instance wasn't assignable. Typed
+        as `FormikProps<any>` now. *No automated guard*: `tsconfig.json` excludes `*.test.tsx` and
+        Vitest doesn't typecheck, so the existing `Form` tests (which only ever passed
+        `Record<string, any>`) could never have caught it — the demo's `npm run build` is the
+        real check.
+  - [x] Verified end-to-end in an isolated copy before touching this tree: library `tsc`, 221
+        tests, build, pack, tarball contents; then the demo migrated and built against the packed
+        3.0.0 tarball (`tsc -b && vite build`), and run in a real browser — rows/total extracted
+        through the provider (10 rows, "of 40 results") and Export requesting `rows_per_page=40`.
+  - [x] Housekeeping: `noviq-ui-2.5.2.tgz` had been committed along with the 2.5.2 release
+        (483 KB binary, now in pushed history); untracked it and added `*.tgz` to `.gitignore`.
+        History was not rewritten.
 
 ## Published
 - `1.1.0` — live on npm.
@@ -352,13 +403,24 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
   `FormFieldConfig.colSpan` JSDoc clarification (the CSS itself was already correct — see the
   `2.5.1` "Done" notes above for the full story). Patch release, no API/behavior change.
 
+- `2.5.2` — live on npm (confirmed via the registry API; published tarball is byte-identical to
+  the staged build, no config-provider code in it). Fixes a second, real overflow bug
+  (Edge-specific, found by the user with real DevTools evidence): `.drawer-content` gains
+  `overflow: hidden` and `Form.css`'s `.col-span-*` gain `min-width: 0`, so an oversized field is
+  contained/shrinks instead of spilling past the drawer's boundary on a full-width window.
+  Patch release, no API/behavior change.
+
 ## Ready to publish
-- `2.5.2` — fixes a second, real overflow bug (Edge-specific, found by the user with real
-  DevTools evidence): `.drawer-content` gains `overflow: hidden` and `Form.css`'s `.col-span-*`
-  gain `min-width: 0`, so an oversized field is contained/shrinks instead of visually spilling
-  past the drawer's boundary on a full-width window (a scenario `2.5.1`'s narrow-viewport-only fix
-  didn't cover). Patch release, no API/behavior change. Build + test + pack sanity checks all
-  pass; awaiting explicit go-ahead to run `npm publish`.
+- `3.0.0` — **breaking change**: `Table`'s `apiFunction` now resolves to the raw backend
+  response instead of a fixed `{ result, totalCount }` shape; `TableQueryResult` is removed.
+  Every app declares its backend's response format once via the new `NoviqUIConfigProvider`
+  (`config.table.responseFormat`), and can rename the `search`/`page_no`/`rows_per_page` request
+  keys via `config.table.requestParams`. Also fixes the missing `types` export condition (typed
+  consumers previously got implicit `any` for the whole library) and `Form`'s `formik` prop
+  typing. See the `3.0.0` "Done" entry above and the design spec in `docs/superpowers/`.
+  Migration is a one-time wrap of the app root in `NoviqUIConfigProvider` plus returning the raw
+  response from `apiFunction`. Build + test + pack sanity checks all pass; awaiting explicit
+  go-ahead to run `npm publish`.
 
 ## Not started
 - [ ] Phase 2b (rich Date/Time/Month pickers).
@@ -369,8 +431,11 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
       still broken after four phases; intentionally left out of scope each time.
 - [ ] No CI/CD pipeline.
 - [ ] No consumer integration — not a dependency of any of the four frontend repos yet.
-- [ ] Not a git repository in this checkout (no `.git`) — the risk compounds with every phase
-      that lands; now four phases' / 15 components' worth of uncommitted local work.
+- [ ] `noviq-ui-demo` is still not a git repository (`noviq-ui` itself now is — remote
+      `NeerajSkeyit/noviq-ui-npm`).
+- [ ] Other config sections from the provider's roadmap (theme, locale, notify — see the design
+      spec's Roadmap) are not built; the `NoviqUIConfig` type is shaped so they can be added
+      without another breaking change.
 
 ## Known bugs / limitations
 - `Input`: unrecognized `type` prop renders the literal text `"Worng input type provided"` (typo,
@@ -417,16 +482,27 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
 - `react-hot-toast`'s `<Toaster />` must be mounted by the consumer for export's loading/success/
   error feedback to be visible — `Table` intentionally doesn't auto-mount one (would duplicate
   toasts in apps that already use `react-hot-toast` elsewhere). Documented in `README.md`.
+- **A response that doesn't match the declared `responseFormat` fails soft.** If `rowsPath`/
+  `totalPath` (or `getRows`/`getTotal`) doesn't resolve against what the backend actually
+  returned, `Table` renders "No data found" with total `0` and only `console.warn`s — and only
+  outside `NODE_ENV=production`. That's deliberate (a single error envelope or flaky response
+  shouldn't crash the page; the setup-mistake cases — no provider, malformed config — do throw),
+  but it means a wrong path in production looks like an empty table rather than an error. Worth
+  knowing when debugging "the table is empty."
+- **Tests aren't typechecked.** `tsconfig.json` excludes `*.test.ts(x)` and Vitest doesn't
+  typecheck, so type-level regressions (like the `Form` `formik` prop typing fixed in `3.0.0`)
+  can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
 ## Suggested next steps
-1. Initialize git for both `noviq-ui` and `noviq-ui-demo` — neither is version-controlled locally
-   yet, and the risk compounds with every phase that lands; now the biggest it's been (Table's
-   full 3a-3d feature set plus a whole second project, all uncommitted).
+1. Publish `3.0.0` when ready (staged; see "Ready to publish"), then point
+   `noviq-ui-demo/web` at the registry version (`^3.0.0`) instead of the local tarball.
 2. Add `eslint.config.js` so `npm run lint` actually runs — still not done, still cheap.
-3. Table (3a-3d) is fully done and published (`2.5.1` live, including the `Drawer`/`Form`-doc
-   fixes). Phase 4 (per your redirection) is also done as a standalone integration demo
-   (`noviq-ui-demo`) rather than swapping into an existing frontend — swapping `noviq-ui` into a
-   real consumer frontend (`noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
-   `asset-management-system/apps/web`) remains the next real adoption milestone whenever you want
-   to pursue it.
-4. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.
+3. Initialize git for `noviq-ui-demo` (the only repo here still without one).
+4. Real-frontend adoption: Table (3a-3d) and the config provider are done and published, and
+   `noviq-ui-demo` proves the package works for a typed Vite consumer against a real backend.
+   Swapping `noviq-ui` into `noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
+   `asset-management-system/apps/web` is the next real adoption milestone — the provider is what
+   makes the three non-HRMS backends practical, since none share HRMS's response envelope.
+5. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.
+6. Consider a typecheck gate for tests (a `tsconfig.test.json` + script, or Vitest's typecheck
+   mode) so type-level regressions are caught by `npm test` rather than only by the demo build.
