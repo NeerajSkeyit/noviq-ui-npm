@@ -44,7 +44,7 @@ export type { LabelProps } from "./components/Label/Label";
 export type { SwitchProps } from "./components/Switch/Switch";
 export type { TimePickerProps } from "./components/TimePicker/TimePicker";
 export type { FormFooterProps, FormFooterButton } from "./components/FormFooter/FormFooter";
-export type { FormProps, FormFieldConfig } from "./components/Form/Form";
+export type { FormProps, FormFieldConfig, FormController } from "./components/Form/Form";
 export type { BadgeProps, BadgeVariant } from "./components/Badge/Badge";
 export type { DropdownMenuProps, DropdownMenuItemProps } from "./components/Dropdown/Dropdown";
 export type {
@@ -55,6 +55,8 @@ export type {
 export type {
   NoviqUIConfig,
   NoviqUITableConfig,
+  NotifyFn,
+  NotifyKind,
   TableResponseFormat,
   ResponseFormatPaths,
   ResponseFormatFns,

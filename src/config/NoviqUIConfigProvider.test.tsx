@@ -25,6 +25,28 @@ describe("NoviqUIConfigProvider", () => {
     expect(screen.getByText("no-config")).toBeInTheDocument();
   });
 
+  it("accepts a config that sets only notify (no table section)", () => {
+    render(
+      <NoviqUIConfigProvider config={{ notify: () => {} }}>
+        <Consumer />
+      </NoviqUIConfigProvider>
+    );
+    expect(screen.getByText("has-config")).toBeInTheDocument();
+  });
+
+  it("exposes notify to descendants", () => {
+    const notify = () => {};
+    function NotifyConsumer() {
+      return <div>{useNoviqUIConfig()?.notify === notify ? "same-notify" : "other"}</div>;
+    }
+    render(
+      <NoviqUIConfigProvider config={{ ...VALID_CONFIG, notify }}>
+        <NotifyConsumer />
+      </NoviqUIConfigProvider>
+    );
+    expect(screen.getByText("same-notify")).toBeInTheDocument();
+  });
+
   it("throws when table.responseFormat is missing", () => {
     const badConfig = { table: {} } as any;
     expect(() =>

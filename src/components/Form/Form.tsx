@@ -1,11 +1,10 @@
 import React from "react";
-import type { FormikProps } from "formik";
 import Input, { type InputProps } from "../Input/Input";
 import "./Form.css";
 
 export interface FormFieldConfig
   extends Omit<InputProps, "value" | "onChange" | "error"> {
-  /** Key into `formik.values` / `formik.errors` / `formik.touched`. */
+  /** Key into the form controller's `values` / `errors` / `touched`. */
   inputKey: string;
   /** How many fields share this row: `1` = alone (100% width), `2` = one of
    * two side by side (50% each), `3` = one of three side by side (~33% each).
@@ -19,13 +18,27 @@ export interface FormFieldConfig
   subtitle?: string;
 }
 
+/**
+ * The slice of a form-state object that `Form` actually reads and writes — its whole contract.
+ * A Formik instance (`useFormik()`) satisfies it as-is, so existing Formik code needs no change;
+ * so does any other object exposing the same four members. `Form` itself never imports formik.
+ */
+export interface FormController {
+  /** Current field values, keyed by `inputKey`. */
+  values: any;
+  /** Validation messages keyed by `inputKey`. A message only shows for fields that are also `touched`. */
+  errors?: any;
+  /** Which fields to surface errors for, keyed by `inputKey`. */
+  touched?: any;
+  /** Called with `(inputKey, newValue)` when a field changes. Its return value is ignored. */
+  setFieldValue: (field: string, value: any) => unknown;
+}
+
 export interface FormProps {
   inputList?: FormFieldConfig[];
-  /** Any `useFormik<Values>()` instance. Typed as `FormikProps<any>` rather than
-   * `FormikProps<Record<string, any>>` because Formik's helper methods (`setValues`, etc.) are
-   * contravariant in the values type, so a concretely-typed instance isn't assignable to the
-   * `Record<string, any>` form — which made `<Form formik={typedFormik} />` a type error. */
-  formik: FormikProps<any>;
+  /** A `useFormik()` instance, or any object with the shape of {@link FormController}. The prop is
+   * still called `formik` for continuity with 3.x. */
+  formik: FormController;
 }
 
 function Form({ inputList = [], formik }: FormProps) {

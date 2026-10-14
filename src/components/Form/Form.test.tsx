@@ -99,3 +99,65 @@ describe("Form", () => {
     expect(screen.getByText("Required")).toBeInTheDocument();
   });
 });
+
+describe("Form without formik", () => {
+  // `Form` only needs { values, errors, touched, setFieldValue } — a plain object is enough, so a
+  // consumer on React Hook Form, a reducer, or hand-rolled state doesn't have to install formik.
+  function makeController(overrides: Record<string, any> = {}) {
+    return {
+      values: { name: "Ada" },
+      errors: {},
+      touched: {},
+      setFieldValue: vi.fn(),
+      ...overrides,
+    };
+  }
+
+  it("reads the field value from controller.values", () => {
+    render(
+      <Form
+        inputList={[{ inputKey: "name", type: "text", label: "Name" }]}
+        formik={makeController()}
+      />
+    );
+    expect(screen.getByLabelText("Name")).toHaveValue("Ada");
+  });
+
+  it("calls controller.setFieldValue(inputKey, value) on change", () => {
+    const controller = makeController();
+    render(
+      <Form
+        inputList={[{ inputKey: "name", type: "text", label: "Name" }]}
+        formik={controller}
+      />
+    );
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Grace" } });
+    expect(controller.setFieldValue).toHaveBeenCalledWith("name", "Grace");
+  });
+
+  it("shows an error only for a touched field", () => {
+    const inputList: FormFieldConfig[] = [{ inputKey: "name", type: "text", label: "Name" }];
+    const { rerender } = render(
+      <Form inputList={inputList} formik={makeController({ errors: { name: "Required" } })} />
+    );
+    expect(screen.queryByText("Required")).not.toBeInTheDocument();
+
+    rerender(
+      <Form
+        inputList={inputList}
+        formik={makeController({ errors: { name: "Required" }, touched: { name: true } })}
+      />
+    );
+    expect(screen.getByText("Required")).toBeInTheDocument();
+  });
+
+  it("works when the controller omits errors and touched entirely", () => {
+    render(
+      <Form
+        inputList={[{ inputKey: "name", type: "text", label: "Name" }]}
+        formik={{ values: { name: "" }, setFieldValue: vi.fn() }}
+      />
+    );
+    expect(screen.getByLabelText("Name")).toBeInTheDocument();
+  });
+});

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 const pkg = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8"));
 
@@ -22,5 +22,34 @@ describe("package.json exports", () => {
 
   it('puts "types" first, since condition order matters to resolvers', () => {
     expect(Object.keys(pkg.exports["."])[0]).toBe("types");
+  });
+});
+
+describe("runtime dependencies", () => {
+  // Both are the consumer's choice, not the library's. `Form` is typed structurally against
+  // { values, errors, touched, setFieldValue } and Table export feedback goes through
+  // config.notify, so neither is imported by shipped code.
+  const NOT_RUNTIME_DEPS = ["formik", "react-hot-toast"];
+
+  it.each(NOT_RUNTIME_DEPS)("does not list %s under dependencies or peerDependencies", (name) => {
+    expect(pkg.dependencies ?? {}).not.toHaveProperty(name);
+    expect(pkg.peerDependencies ?? {}).not.toHaveProperty(name);
+  });
+
+  function sourceFiles(dir: string): string[] {
+    return readdirSync(dir).flatMap((entry) => {
+      const path = join(dir, entry);
+      if (statSync(path).isDirectory()) return sourceFiles(path);
+      const isSource = /\.(ts|tsx)$/.test(entry) && !/\.test\.(ts|tsx)$/.test(entry);
+      return isSource ? [path] : [];
+    });
+  }
+
+  it.each(NOT_RUNTIME_DEPS)("shipped source never imports %s, even as a type", (name) => {
+    const importer = new RegExp(`(from|import)\\s*\\(?\\s*["']${name}["']`);
+    const offenders = sourceFiles(resolve(process.cwd(), "src")).filter((file) =>
+      importer.test(readFileSync(file, "utf8"))
+    );
+    expect(offenders).toEqual([]);
   });
 });

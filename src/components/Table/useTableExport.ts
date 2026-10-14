@@ -1,11 +1,11 @@
 import { useState } from "react";
-import toast from "react-hot-toast";
 import type { TableColumn, TableQueryParams } from "./Table";
 import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "./constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { formatTableCellValues, formatStatusLabel } from "./TableCell";
 import { extractRows } from "../../config/responseFormat";
-import type { TableRequestParamNames, TableResponseFormat } from "../../config/types";
+import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
+import type { NotifyFn, TableRequestParamNames, TableResponseFormat } from "../../config/types";
 
 const FALLBACK_ROWS_PER_PAGE = 100000;
 const HEADER_FILL = "02699B";
@@ -23,6 +23,9 @@ export interface UseTableExportArgs<T> {
   filterParams: Record<string, unknown>;
   apiParams?: Record<string, unknown>;
   totalItems: number;
+  /** Where to report the outcome. Defaults to `NoviqUIConfigProvider`'s `config.notify`; when
+   * neither is set the hook stays silent (a failure is still `console.error`ed). */
+  notify?: NotifyFn;
 }
 
 export interface UseTableExportResult {
@@ -53,8 +56,11 @@ function useTableExport<T>({
   filterParams,
   apiParams,
   totalItems,
+  notify: notifyArg,
 }: UseTableExportArgs<T>): UseTableExportResult {
   const [exporting, setExporting] = useState(false);
+  const configNotify = useNoviqUIConfig()?.notify; // unconditional: hooks can't be short-circuited
+  const notify = notifyArg ?? configNotify;
 
   const exportColumns = columns.filter((c) => c.export !== false);
 
@@ -79,7 +85,6 @@ function useTableExport<T>({
 
   const exportToExcel = async (fileName = "export.xlsx") => {
     setExporting(true);
-    const toastId = toast.loading("Preparing export...");
     try {
       const rows = await fetchRows();
       const aoa = buildAoa(rows);
@@ -101,10 +106,10 @@ function useTableExport<T>({
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
       XLSX.writeFile(wb, fileName);
-      toast.success("Export complete", { id: toastId });
+      notify?.("Export complete", "success");
     } catch (err) {
       console.error("Export failed", err);
-      toast.error("Export failed", { id: toastId });
+      notify?.("Export failed", "error");
     } finally {
       setExporting(false);
     }
@@ -112,7 +117,6 @@ function useTableExport<T>({
 
   const exportToCSV = async (fileName = "export.csv") => {
     setExporting(true);
-    const toastId = toast.loading("Preparing export...");
     try {
       const rows = await fetchRows();
       const aoa = buildAoa(rows);
@@ -130,10 +134,10 @@ function useTableExport<T>({
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast.success("Export complete", { id: toastId });
+      notify?.("Export complete", "success");
     } catch (err) {
       console.error("Export failed", err);
-      toast.error("Export failed", { id: toastId });
+      notify?.("Export failed", "error");
     } finally {
       setExporting(false);
     }

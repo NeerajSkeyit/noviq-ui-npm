@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Toaster } from "react-hot-toast";
 import { useFormik } from "formik";
 import {
   Button,
@@ -110,6 +109,18 @@ const employeeColumns: TableColumn<Employee>[] = [
 // <body>, so a wrapper-level font would leave those in the browser's default serif.
 document.body.style.fontFamily = "sans-serif";
 
+function useAutoClear(
+  value: unknown,
+  clear: () => void,
+  ms = 3000
+) {
+  React.useEffect(() => {
+    if (!value) return;
+    const t = setTimeout(clear, ms);
+    return () => clearTimeout(t);
+  }, [value]);
+}
+
 function Playground() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerSide, setDrawerSide] = useState<DrawerSide>("right");
@@ -125,6 +136,8 @@ function Playground() {
   const [agree, setAgree] = useState(false);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null);
+  const [notice, setNotice] = useState<{ message: string; kind: string } | null>(null);
+  useAutoClear(notice, () => setNotice(null));
   const [startTime, setStartTime] = useState("09:30");
   const [endTime, setEndTime] = useState("");
 
@@ -164,12 +177,32 @@ function Playground() {
 
   return (
     <NoviqUIConfigProvider
-      config={{ table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } } }}
+      config={{
+        table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } },
+        // Table export reports its outcome through config.notify; a real app would hand this to
+        // its own toast/snackbar system. Here it just drives the banner below.
+        notify: (message, kind) => setNotice({ message, kind }),
+      }}
     >
       <div style={{ padding: 32, maxWidth: 960 }}>
-        {/* Table's export feature uses react-hot-toast for loading/success/error feedback;
-            consumers must mount their own <Toaster/> (documented in README.md). */}
-        <Toaster position="top-right" />
+        {notice && (
+          <div
+            role="status"
+            data-testid="notice"
+            style={{
+              position: "fixed",
+              top: 16,
+              right: 16,
+              zIndex: 2000,
+              padding: "10px 14px",
+              borderRadius: 6,
+              color: "#fff",
+              background: notice.kind === "error" ? "#dc2626" : "#16a34a",
+            }}
+          >
+            {notice.message}
+          </div>
+        )}
       <h1>noviq-ui playground</h1>
 
       <section style={{ marginBottom: 40 }}>

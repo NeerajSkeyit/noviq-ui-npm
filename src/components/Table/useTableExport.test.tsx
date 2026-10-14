@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import useTableExport from "./useTableExport";
 import { CELL_TYPE } from "./constants";
 import type { TableColumn } from "./Table";
 import { DEFAULT_REQUEST_PARAMS } from "../../config/types";
 import type { ResponseFormatPaths, TableRequestParamNames } from "../../config/types";
+import { NoviqUIConfigProvider } from "../../config/NoviqUIConfigProvider";
 
 const FLAT_RESPONSE_FORMAT: ResponseFormatPaths = { rowsPath: "result", totalPath: "totalCount" };
 
@@ -304,5 +306,110 @@ describe("useTableExport", () => {
     });
 
     expect(result.current.exporting).toBe(false);
+  });
+});
+
+describe("useTableExport notifications", () => {
+  const baseArgs = {
+    responseFormat: FLAT_RESPONSE_FORMAT,
+    requestParams: DEFAULT_REQUEST_PARAMS,
+    usingPreFetched: false,
+    preFetchedData: [] as Row[],
+    columns,
+    search: "",
+    filterParams: {},
+    totalItems: 2,
+  };
+  const okApi = () => vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
+  const failingApi = () => vi.fn().mockRejectedValue(new Error("boom"));
+
+  it("reports a successful Excel export through the notify argument", async () => {
+    const notify = vi.fn();
+    const { result } = renderHook(() => useTableExport({ ...baseArgs, apiFunction: okApi(), notify }));
+    await act(async () => {
+      await result.current.exportToExcel();
+    });
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledWith("Export complete", "success");
+  });
+
+  it("reports a successful CSV export through the notify argument", async () => {
+    const notify = vi.fn();
+    const { result } = renderHook(() => useTableExport({ ...baseArgs, apiFunction: okApi(), notify }));
+    await act(async () => {
+      await result.current.exportToCSV();
+    });
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledWith("Export complete", "success");
+  });
+
+  it("reports a failure as an error, logs it, and clears the exporting flag", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const notify = vi.fn();
+    const { result } = renderHook(() =>
+      useTableExport({ ...baseArgs, apiFunction: failingApi(), notify })
+    );
+    await act(async () => {
+      await result.current.exportToExcel();
+    });
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledWith("Export failed", "error");
+    expect(consoleError).toHaveBeenCalled();
+    expect(result.current.exporting).toBe(false);
+    consoleError.mockRestore();
+  });
+
+  it("does not announce a 'loading' state — only the outcome", async () => {
+    const notify = vi.fn();
+    const { result } = renderHook(() => useTableExport({ ...baseArgs, apiFunction: okApi(), notify }));
+    await act(async () => {
+      await result.current.exportToExcel();
+    });
+    const kinds = notify.mock.calls.map((c) => c[1]);
+    expect(kinds).toEqual(["success"]);
+  });
+
+  it("falls back to NoviqUIConfigProvider's config.notify", async () => {
+    const notify = vi.fn();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <NoviqUIConfigProvider config={{ notify }}>{children}</NoviqUIConfigProvider>
+    );
+    const { result } = renderHook(() => useTableExport({ ...baseArgs, apiFunction: okApi() }), {
+      wrapper,
+    });
+    await act(async () => {
+      await result.current.exportToExcel();
+    });
+    expect(notify).toHaveBeenCalledWith("Export complete", "success");
+  });
+
+  it("prefers the notify argument over the provider's", async () => {
+    const providerNotify = vi.fn();
+    const argNotify = vi.fn();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <NoviqUIConfigProvider config={{ notify: providerNotify }}>{children}</NoviqUIConfigProvider>
+    );
+    const { result } = renderHook(
+      () => useTableExport({ ...baseArgs, apiFunction: okApi(), notify: argNotify }),
+      { wrapper }
+    );
+    await act(async () => {
+      await result.current.exportToExcel();
+    });
+    expect(argNotify).toHaveBeenCalledTimes(1);
+    expect(providerNotify).not.toHaveBeenCalled();
+  });
+
+  it("stays silent, without throwing, when no notify is configured anywhere", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { result } = renderHook(() => useTableExport({ ...baseArgs, apiFunction: failingApi() }));
+    await expect(
+      act(async () => {
+        await result.current.exportToExcel();
+      })
+    ).resolves.not.toThrow();
+    // The failure is still visible to a developer even though nothing was announced to the user.
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 });

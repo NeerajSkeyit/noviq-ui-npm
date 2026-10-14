@@ -29,6 +29,19 @@ export interface NoviqUITableConfig {
   requestParams?: TableRequestParamNames;
 }
 
+export type NotifyKind = "success" | "error";
+
+/**
+ * Receives user-facing feedback the library produces (today: the outcome of a Table export).
+ * Route it into whatever notification system the app already has, e.g.
+ * `(message, kind) => toast[kind](message)` with react-hot-toast.
+ */
+export type NotifyFn = (message: string, kind: NotifyKind) => void;
+
 export interface NoviqUIConfig {
-  table: NoviqUITableConfig;
+  /** Required only if the app renders a `<Table apiFunction>` without a per-instance `responseFormat`. */
+  table?: NoviqUITableConfig;
+  /** Optional. With none configured the library stays silent (a failed export is still
+   * `console.error`ed). */
+  notify?: NotifyFn;
 }

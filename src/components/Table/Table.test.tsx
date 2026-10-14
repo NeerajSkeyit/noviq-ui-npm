@@ -480,6 +480,28 @@ describe("Table", () => {
     warn.mockRestore();
   });
 
+  it("still throws for apiFunction when the provider configures only notify", () => {
+    const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() =>
+      render(
+        <NoviqUIConfigProvider config={{ notify: () => {} }}>
+          <Table columns={columns} apiFunction={apiFunction} />
+        </NoviqUIConfigProvider>
+      )
+    ).toThrow(/needs a response format/);
+    consoleError.mockRestore();
+  });
+
+  it("renders a preFetchedData table under a notify-only provider", () => {
+    render(
+      <NoviqUIConfigProvider config={{ notify: () => {} }}>
+        <Table columns={columns} preFetchedData={rows} isPaginationHidden />
+      </NoviqUIConfigProvider>
+    );
+    expect(screen.getByText("Charlie")).toBeInTheDocument();
+  });
+
   it("does not throw for a hidden table with apiFunction set but no responseFormat configured", () => {
     const apiFunction = vi.fn();
     expect(() => render(<Table columns={columns} apiFunction={apiFunction} hidden />)).not.toThrow();
