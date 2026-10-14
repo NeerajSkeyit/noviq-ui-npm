@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import useTableExport from "./useTableExport";
-import { CELL_TYPE } from "./constants";
+import { CELL_TYPE } from "../../constants";
 import type { TableColumn } from "./Table";
 import { DEFAULT_REQUEST_PARAMS } from "../../config/types";
 import type { ResponseFormatPaths, TableRequestParamNames } from "../../config/types";

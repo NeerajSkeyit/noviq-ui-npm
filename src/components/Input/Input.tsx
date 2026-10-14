@@ -3,33 +3,8 @@ import ReactSelect, { type StylesConfig } from "react-select";
 import { Eye, EyeOff, FileText, Trash2, Upload, X } from "lucide-react";
 import Label from "../Label/Label";
 import Switch from "../Switch/Switch";
+import { BUTTON_TYPE, INPUT_TYPE } from "../../constants";
 import "./Input.css";
-
-export const INPUT_TYPE = {
-  CHECKBOX: "checkbox",
-  DATE: "date",
-  EMAIL: "email",
-  PASSWORD: "password",
-  ROWS_PER_PAGE: "rowsPerPage",
-  SEARCH: "search",
-  SELECT: "select",
-  TEXT: "text",
-  TIME: "time",
-  FILE: "file",
-  TEXTAREA: "textArea",
-  MULTI_TEXT: "multiText",
-  MULTI_SELECT: "multiSelect",
-  CUSTOM: "custom",
-  COLOR: "color",
-  MONTH: "month",
-  RADIO: "radio",
-  DATE_RANGE: "dateRange",
-  MULTIPLE_FILE: "multipleFile",
-  REACT_QUILL: "reactQuill",
-  NUMBER: "number",
-  EXCEL_UPLOAD: "excelUpload",
-  SWITCH: "switch",
-} as const;
 
 export interface InputOption {
   label: string;
@@ -175,7 +150,7 @@ function customSelectStyles(error?: string): StylesConfig<InputOption, boolean> 
 }
 
 function Input({
-  type = "text",
+  type = INPUT_TYPE.TEXT,
   value = "",
   onChange = () => {},
   onKeyDown,
@@ -599,7 +574,7 @@ function Input({
                   </span>
                   {(item instanceof File || itemUrl) && (
                     <button
-                      type="button"
+                      type={BUTTON_TYPE.BUTTON}
                       className="file-row-button"
                       title="View"
                       onClick={(e) => {
@@ -613,7 +588,7 @@ function Input({
                   )}
                   {onRemoveFile && (
                     <button
-                      type="button"
+                      type={BUTTON_TYPE.BUTTON}
                       className="file-row-button file-row-delete"
                       title="Remove"
                       onClick={(e) => {

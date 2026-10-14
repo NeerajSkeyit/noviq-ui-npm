@@ -3,7 +3,8 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FilterDrawer from "./FilterDrawer";
-import { FILTER_TYPE, type FilterConfig, type ActiveFilter } from "./buildActiveFilter";
+import type { FilterConfig, ActiveFilter } from "./buildActiveFilter";
+import { FILTER_TYPE } from "../../constants";
 
 const filters: FilterConfig[] = [
   {

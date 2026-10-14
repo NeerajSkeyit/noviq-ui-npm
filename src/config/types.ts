@@ -1,3 +1,8 @@
+import { DEFAULT_REQUEST_PARAMS, type NotifyKind } from "../constants";
+
+export { DEFAULT_REQUEST_PARAMS };
+export type { NotifyKind };
+
 export interface ResponseFormatPaths {
   rowsPath: string;
   totalPath: string;
@@ -17,19 +22,10 @@ export interface TableRequestParamNames {
   pageSize?: string;
 }
 
-/** Matches today's fixed names, so an app that never sets requestParams sees no change. */
-export const DEFAULT_REQUEST_PARAMS: Required<TableRequestParamNames> = {
-  search: "search",
-  page: "page_no",
-  pageSize: "rows_per_page",
-};
-
 export interface NoviqUITableConfig {
   responseFormat: TableResponseFormat;
   requestParams?: TableRequestParamNames;
 }
-
-export type NotifyKind = "success" | "error";
 
 /**
  * Receives user-facing feedback the library produces (today: the outcome of a Table export).

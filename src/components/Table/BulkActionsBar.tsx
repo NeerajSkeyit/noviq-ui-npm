@@ -1,13 +1,20 @@
 import React from "react";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
+import {
+  BULK_ACTION_VARIANT,
+  BUTTON_SIZE,
+  BUTTON_TYPE,
+  BUTTON_VARIANT,
+  type BulkActionVariant,
+} from "../../constants";
 import "./BulkActionsBar.css";
 
 export interface BulkAction {
   id: string;
   label: string;
   icon?: React.ReactNode;
-  variant?: "destructive" | "secondary";
+  variant?: BulkActionVariant;
   onClick: (selectedIds: string[]) => void;
 }
 
@@ -28,7 +35,7 @@ function BulkActionsBar({ selectedCount, actions, selectedIds, onClearSelection 
           {selectedCount} {selectedCount === 1 ? "row" : "rows"} selected
         </span>
 
-        <button type="button" onClick={onClearSelection} className="bulk-actions-clear">
+        <button type={BUTTON_TYPE.BUTTON} onClick={onClearSelection} className="bulk-actions-clear">
           <X size={12} />
           Clear
         </button>
@@ -38,8 +45,12 @@ function BulkActionsBar({ selectedCount, actions, selectedIds, onClearSelection 
         {actions.map((action) => (
           <Button
             key={action.id}
-            variant={action.variant === "destructive" ? "destructive" : "secondary"}
-            size="sm"
+            variant={
+              action.variant === BULK_ACTION_VARIANT.DESTRUCTIVE
+                ? BUTTON_VARIANT.DESTRUCTIVE
+                : BUTTON_VARIANT.SECONDARY
+            }
+            size={BUTTON_SIZE.SM}
             onClick={() => action.onClick(selectedIds)}
           >
             {action.icon}

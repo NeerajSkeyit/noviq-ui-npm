@@ -16,14 +16,29 @@ import Export from "./Export";
 import useTableExport from "./useTableExport";
 import { buildActiveFilter, type FilterConfig, type ActiveFilter } from "./buildActiveFilter";
 import { useTableColumnSettings } from "./useTableColumnSettings";
-import { CELL_TYPE, NO_TEXT_PLACEHOLDER, type CellType } from "./constants";
+import {
+  ACTIONS_COLUMN_WIDTH,
+  CELL_TYPE,
+  DEFAULT_COLUMN_WIDTH,
+  DEFAULT_EXPORT_FILE_BASE,
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE_OPTIONS,
+  DEFAULT_REQUEST_PARAMS,
+  NO_TEXT_PLACEHOLDER,
+  SEARCH_DEBOUNCE_MS,
+  SELECT_COLUMN_WIDTH,
+  SORT_DIRECTION,
+  TABLE_COLUMN_ID,
+  type CellType,
+  type ColumnAlign,
+  type SortDirection,
+  type StickyPosition,
+} from "../../constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import { extractRows, extractTotal } from "../../config/responseFormat";
-import { DEFAULT_REQUEST_PARAMS, type TableResponseFormat } from "../../config/types";
+import type { TableResponseFormat } from "../../config/types";
 import "./Table.css";
-
-const DEFAULT_COLUMN_WIDTH = 140;
 
 function columnWidthPx(width: string | number | undefined): number {
   if (typeof width === "number") return width;
@@ -41,7 +56,7 @@ export interface TableColumn<T = any> {
   cell?: (row: T, cellValue: string, rawRow: T) => React.ReactNode;
   type?: CellType;
   sortable?: boolean;
-  align?: "left" | "center" | "right";
+  align?: ColumnAlign;
   width?: string | number;
   capitalize?: boolean;
   capitalizeEveryWord?: boolean;
@@ -59,7 +74,7 @@ export interface TableColumn<T = any> {
   /** Default visibility (before any user customization). Defaults to visible. */
   visible?: boolean;
   /** Default sticky pin side (before any user customization). */
-  sticky?: "left" | "right";
+  sticky?: StickyPosition;
   /** Include this column in Excel/CSV export. Defaults to `true`. */
   export?: boolean;
   /** Custom export cell value, overriding the default accessor/formatting-based value. */
@@ -93,7 +108,7 @@ export interface TableProps<T = any> {
   actions?: ActionBarAction[];
   emptyMessage?: string;
   statusVariantMap?: Record<string, string>;
-  pageSizeOptions?: number[];
+  pageSizeOptions?: readonly number[];
   onRowClick?: (row: T) => void;
   /** Presence enables row selection (an auto-injected, always-sticky-left checkbox column). */
   getRowId?: (row: T) => string;
@@ -131,7 +146,7 @@ function TableInner<T extends Record<string, any> = any>({
   actions,
   emptyMessage,
   statusVariantMap,
-  pageSizeOptions = [10, 20, 50, 100],
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   onRowClick,
   getRowId,
   rowActions,
@@ -139,7 +154,7 @@ function TableInner<T extends Record<string, any> = any>({
   bulkActions = [],
   onRowSelectionChange,
   filterConfigs = [],
-  exportFileName = "export",
+  exportFileName = DEFAULT_EXPORT_FILE_BASE,
   isExportHidden = false,
   responseSheetUrl,
 }: TableProps<T>) {
@@ -158,9 +173,9 @@ function TableInner<T extends Record<string, any> = any>({
   // matching the source's behavior of always pinning them to the outer edges.
   const renderColumns = useMemo(() => {
     const cols: TableColumn<T>[] = [];
-    if (isRowSelectionEnabled) cols.push({ id: "select", heading: "", width: 48 } as TableColumn<T>);
+    if (isRowSelectionEnabled) cols.push({ id: TABLE_COLUMN_ID.SELECT, heading: "", width: SELECT_COLUMN_WIDTH } as TableColumn<T>);
     cols.push(...displayColumns);
-    if (rowActions) cols.push({ id: "actions", heading: "Actions", width: 90 } as TableColumn<T>);
+    if (rowActions) cols.push({ id: TABLE_COLUMN_ID.ACTIONS, heading: "Actions", width: ACTIONS_COLUMN_WIDTH } as TableColumn<T>);
     return cols;
   }, [displayColumns, isRowSelectionEnabled, rowActions]);
 
@@ -170,9 +185,9 @@ function TableInner<T extends Record<string, any> = any>({
     let lastRightId: string | null = null;
 
     const isStickyLeft = (col: TableColumn<T>) =>
-      col.id === "select" || columnSettings.stickyColumns.left.includes(col.id);
+      col.id === TABLE_COLUMN_ID.SELECT || columnSettings.stickyColumns.left.includes(col.id);
     const isStickyRight = (col: TableColumn<T>) =>
-      col.id === "actions" || columnSettings.stickyColumns.right.includes(col.id);
+      col.id === TABLE_COLUMN_ID.ACTIONS || columnSettings.stickyColumns.right.includes(col.id);
 
     let leftAcc = 0;
     for (const col of renderColumns) {
@@ -217,9 +232,9 @@ function TableInner<T extends Record<string, any> = any>({
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pagination, setPagination] = useState<TablePaginationState>({
     page: 1,
-    pageSize: pageSizeOptions[0] ?? 10,
+    pageSize: pageSizeOptions[0] ?? DEFAULT_PAGE_SIZE,
   });
-  const [sort, setSort] = useState<{ column: string | null; direction: "asc" | "desc" | null }>({
+  const [sort, setSort] = useState<{ column: string | null; direction: SortDirection | null }>({
     column: null,
     direction: null,
   });
@@ -262,7 +277,7 @@ function TableInner<T extends Record<string, any> = any>({
     const timer = setTimeout(() => {
       setDebouncedSearch(searchValue);
       setPagination((prev) => ({ ...prev, page: 1 }));
-    }, 500);
+    }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [searchValue]);
 
@@ -345,7 +360,9 @@ function TableInner<T extends Record<string, any> = any>({
     return [...data].sort((a, b) => {
       const aValue = getCellValue(a, column);
       const bValue = getCellValue(b, column);
-      return sort.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      return sort.direction === SORT_DIRECTION.ASC
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
     });
   }, [data, sort, columns]);
 
@@ -364,8 +381,8 @@ function TableInner<T extends Record<string, any> = any>({
 
   const handleSort = (columnId: string) => {
     setSort((prev) => {
-      if (prev.column !== columnId) return { column: columnId, direction: "asc" };
-      if (prev.direction === "asc") return { column: columnId, direction: "desc" };
+      if (prev.column !== columnId) return { column: columnId, direction: SORT_DIRECTION.ASC };
+      if (prev.direction === SORT_DIRECTION.ASC) return { column: columnId, direction: SORT_DIRECTION.DESC };
       return { column: null, direction: null };
     });
   };
@@ -380,7 +397,7 @@ function TableInner<T extends Record<string, any> = any>({
 
   const renderSortIcon = (columnId: string) => {
     if (sort.column !== columnId) return <ArrowUpDown size={14} className="table-sort-icon" />;
-    if (sort.direction === "asc")
+    if (sort.direction === SORT_DIRECTION.ASC)
       return <ArrowUp size={14} className="table-sort-icon table-sort-icon-active" />;
     return <ArrowDown size={14} className="table-sort-icon table-sort-icon-active" />;
   };
@@ -476,7 +493,7 @@ function TableInner<T extends Record<string, any> = any>({
                   style={{ width: column.width, ...stickyStyle(column.id) }}
                   onClick={() => column.sortable && handleSort(column.id)}
                 >
-                  {column.id === "select" ? (
+                  {column.id === TABLE_COLUMN_ID.SELECT ? (
                     <Checkbox checked={!!allSelected} onChange={handleSelectAll} />
                   ) : (
                     <span className="table-th-content">
@@ -512,7 +529,7 @@ function TableInner<T extends Record<string, any> = any>({
                   }}
                 >
                   {renderColumns.map((column) => {
-                    if (column.id === "select") {
+                    if (column.id === TABLE_COLUMN_ID.SELECT) {
                       return (
                         <td
                           key={column.id}
@@ -526,7 +543,7 @@ function TableInner<T extends Record<string, any> = any>({
                         </td>
                       );
                     }
-                    if (column.id === "actions") {
+                    if (column.id === TABLE_COLUMN_ID.ACTIONS) {
                       return (
                         <td
                           key={column.id}

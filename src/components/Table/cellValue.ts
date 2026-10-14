@@ -1,4 +1,4 @@
-import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "./constants";
+import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "../../constants";
 import { capitalize, capitalizeEveryWord } from "./textTransforms";
 import type { CellFormatOptions } from "./TableCell";
 import type { TableColumn } from "./Table";

@@ -1,14 +1,5 @@
 import { formatDatePart } from "./dateFormat";
-
-export const FILTER_TYPE = {
-  SEARCH: "search",
-  DATE: "date",
-  SELECT: "select",
-  DATE_RANGE: "dateRange",
-  MONTH: "month",
-} as const;
-
-export type FilterType = (typeof FILTER_TYPE)[keyof typeof FILTER_TYPE];
+import { FILTER_PAYLOAD_KEY, FILTER_TYPE, type FilterType } from "../../constants";
 
 export interface FilterOption {
   value: string;
@@ -97,7 +88,10 @@ export function buildActiveFilter(config: FilterConfig, rawValue: unknown): Acti
       const displayValue = `${MONTH_NAMES[monthIndex] ?? monthStr} ${yearStr}`;
       const apiPayload =
         config.monthKey || config.yearKey
-          ? { [config.monthKey ?? "month"]: monthStr, [config.yearKey ?? "year"]: yearStr }
+          ? {
+              [config.monthKey ?? FILTER_PAYLOAD_KEY.MONTH]: monthStr,
+              [config.yearKey ?? FILTER_PAYLOAD_KEY.YEAR]: yearStr,
+            }
           : { [config.id]: rawValue };
       return { ...base, displayValue, apiPayload };
     }

@@ -4,6 +4,14 @@ import Button from "../Button/Button";
 import Drawer from "../Drawer/Drawer";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import Switch from "../Switch/Switch";
+import {
+  BUTTON_SIZE,
+  BUTTON_TYPE,
+  BUTTON_VARIANT,
+  NON_CONFIGURABLE_COLUMN_IDS,
+  STICKY_POSITION,
+  type StickyPosition,
+} from "../../constants";
 import type { TableColumn } from "./Table";
 import type { StickyColumnsState } from "./useTableColumnSettings";
 import "./ColumnSelector.css";
@@ -15,7 +23,7 @@ export interface ColumnSelectorProps<T = any> {
   stickyColumns: StickyColumnsState;
   onVisibilityChange: (columnId: string, visible: boolean) => void;
   onReorder: (order: string[]) => void;
-  onStickyChange: (columnId: string, sticky: "left" | "right" | null) => void;
+  onStickyChange: (columnId: string, sticky: StickyPosition | null) => void;
   onReset: () => void;
 }
 
@@ -32,24 +40,22 @@ function ColumnSelector<T = any>({
   const [open, setOpen] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
-  const configurableColumns = columns.filter(
-    (c) => c.id !== "select" && c.id !== "actions" && c.id !== "action"
-  );
+  const configurableColumns = columns.filter((c) => !NON_CONFIGURABLE_COLUMN_IDS.includes(c.id));
 
   const orderedColumns = columnOrder
     .map((id) => configurableColumns.find((c) => c.id === id))
     .filter((c): c is TableColumn<T> => c !== undefined);
 
-  const getStickyState = (columnId: string): "left" | "right" | null => {
-    if (stickyColumns.left.includes(columnId)) return "left";
-    if (stickyColumns.right.includes(columnId)) return "right";
+  const getStickyState = (columnId: string): StickyPosition | null => {
+    if (stickyColumns.left.includes(columnId)) return STICKY_POSITION.LEFT;
+    if (stickyColumns.right.includes(columnId)) return STICKY_POSITION.RIGHT;
     return null;
   };
 
   const toggleSticky = (columnId: string) => {
     const current = getStickyState(columnId);
-    if (current === null) onStickyChange(columnId, "left");
-    else if (current === "left") onStickyChange(columnId, "right");
+    if (current === null) onStickyChange(columnId, STICKY_POSITION.LEFT);
+    else if (current === STICKY_POSITION.LEFT) onStickyChange(columnId, STICKY_POSITION.RIGHT);
     else onStickyChange(columnId, null);
   };
 
@@ -67,7 +73,7 @@ function ColumnSelector<T = any>({
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={() => setOpen(true)}>
         <Settings2 size={16} />
         Columns
       </Button>
@@ -92,7 +98,7 @@ function ColumnSelector<T = any>({
               <PinOff size={12} />
               <span>Unpinned</span>
             </div>
-            <Button variant="default" size="sm" onClick={onReset}>
+            <Button variant={BUTTON_VARIANT.DEFAULT} size={BUTTON_SIZE.SM} onClick={onReset}>
               Reset Columns
             </Button>
           </div>
@@ -119,7 +125,7 @@ function ColumnSelector<T = any>({
                   <span className="column-selector-label">{column.heading}</span>
 
                   <button
-                    type="button"
+                    type={BUTTON_TYPE.BUTTON}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSticky(column.id);
@@ -128,9 +134,9 @@ function ColumnSelector<T = any>({
                       stickyState ? "column-selector-sticky-active" : ""
                     }`}
                     title={
-                      stickyState === "left"
+                      stickyState === STICKY_POSITION.LEFT
                         ? "Pinned left (click for right)"
-                        : stickyState === "right"
+                        : stickyState === STICKY_POSITION.RIGHT
                           ? "Pinned right (click to unpin)"
                           : "Pin column"
                     }
@@ -139,7 +145,7 @@ function ColumnSelector<T = any>({
                       <span className="column-selector-sticky-indicator">
                         <Pin size={14} />
                         <span className="column-selector-sticky-letter">
-                          {stickyState === "left" ? "L" : "R"}
+                          {stickyState === STICKY_POSITION.LEFT ? "L" : "R"}
                         </span>
                       </span>
                     ) : (

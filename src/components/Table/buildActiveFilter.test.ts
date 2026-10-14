@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { buildActiveFilter, FILTER_TYPE, type FilterConfig } from "./buildActiveFilter";
+import { buildActiveFilter, type FilterConfig } from "./buildActiveFilter";
+import { FILTER_TYPE } from "../../constants";
 
 describe("buildActiveFilter", () => {
   it("returns null for an empty search value", () => {

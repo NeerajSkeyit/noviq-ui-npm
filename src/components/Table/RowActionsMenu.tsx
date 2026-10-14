@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { MoreHorizontal } from "lucide-react";
-import Button, { type ButtonVariant } from "../Button/Button";
+import Button from "../Button/Button";
+import {
+  BUTTON_SIZE,
+  BUTTON_VARIANT,
+  ROW_ACTION_TYPE,
+  ROW_ACTION_VARIANT,
+  type ButtonVariant,
+  type RowActionType,
+  type RowActionVariant,
+} from "../../constants";
 import { DropdownMenu, DropdownMenuItem } from "../Dropdown/Dropdown";
 import Switch from "../Switch/Switch";
 import RejectAction from "./RejectAction";
@@ -19,8 +28,8 @@ export interface RowActionContext<T = any> {
 
 export interface RowAction<T = any> {
   label: string;
-  type?: "button" | "checkbox" | "icon";
-  variant?: ButtonVariant | "reject";
+  type?: RowActionType;
+  variant?: ButtonVariant | RowActionVariant;
   icon?: React.ComponentType<{ size?: number }>;
   disabled?: boolean;
   title?: string;
@@ -75,7 +84,7 @@ function RowActionsMenu<T = any>({
         {actions.map((action, index) => {
           const Icon = action.icon;
 
-          if (action.type === "checkbox") {
+          if (action.type === ROW_ACTION_TYPE.CHECKBOX) {
             return (
               <Switch
                 key={index}
@@ -86,12 +95,12 @@ function RowActionsMenu<T = any>({
             );
           }
 
-          if (action.type === "button") {
+          if (action.type === ROW_ACTION_TYPE.BUTTON) {
             return (
               <Button
                 key={index}
-                variant={(action.variant as ButtonVariant) || "outline"}
-                size="sm"
+                variant={(action.variant as ButtonVariant) || BUTTON_VARIANT.OUTLINE}
+                size={BUTTON_SIZE.SM}
                 disabled={action.disabled}
                 title={action.title}
                 isRowActionBtn
@@ -108,7 +117,7 @@ function RowActionsMenu<T = any>({
             );
           }
 
-          if (action.variant === "reject") {
+          if (action.variant === ROW_ACTION_VARIANT.REJECT) {
             return (
               <RejectAction
                 key={index}
@@ -127,8 +136,8 @@ function RowActionsMenu<T = any>({
           return (
             <Button
               key={index}
-              variant={(action.variant as ButtonVariant) || "outline"}
-              size="sm"
+              variant={(action.variant as ButtonVariant) || BUTTON_VARIANT.OUTLINE}
+              size={BUTTON_SIZE.SM}
               title={action.title}
               disabled={action.disabled}
               isRowActionBtn
@@ -142,8 +151,10 @@ function RowActionsMenu<T = any>({
     );
   }
 
-  const dropdownActions = actions.filter((a) => a.type !== "button" && a.type !== "checkbox");
-  const inlineActions = actions.filter((a) => a.type === "button" || a.type === "checkbox");
+  const isInlineType = (a: RowAction<T>) =>
+    a.type === ROW_ACTION_TYPE.BUTTON || a.type === ROW_ACTION_TYPE.CHECKBOX;
+  const dropdownActions = actions.filter((a) => !isInlineType(a));
+  const inlineActions = actions.filter(isInlineType);
 
   return (
     <div className="row-actions-inline">
@@ -152,8 +163,8 @@ function RowActionsMenu<T = any>({
         setIsOpen={setIsOpen}
         trigger={
           <Button
-            variant="ghost"
-            size="icon"
+            variant={BUTTON_VARIANT.GHOST}
+            size={BUTTON_SIZE.ICON}
             data-stop-row-click
             onClick={() => setIsOpen((prev) => !prev)}
           >
@@ -168,7 +179,7 @@ function RowActionsMenu<T = any>({
               setIsOpen((prev) => !prev);
               action.onClick?.(context(action, index));
             }}
-            destructive={action.variant === "destructive"}
+            destructive={action.variant === BUTTON_VARIANT.DESTRUCTIVE}
           >
             {action.label}
           </DropdownMenuItem>
@@ -177,12 +188,12 @@ function RowActionsMenu<T = any>({
 
       {inlineActions.map((action, index) => {
         const Icon = action.icon;
-        if (action.type === "button") {
+        if (action.type === ROW_ACTION_TYPE.BUTTON) {
           return (
             <Button
               key={index}
-              variant={(action.variant as ButtonVariant) || "outline"}
-              size="sm"
+              variant={(action.variant as ButtonVariant) || BUTTON_VARIANT.OUTLINE}
+              size={BUTTON_SIZE.SM}
               disabled={action.disabled}
               title={action.title}
               isRowActionBtn

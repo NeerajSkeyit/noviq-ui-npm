@@ -3,10 +3,17 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
 import ScrollArea from "../ScrollArea/ScrollArea";
+import {
+  BUTTON_SIZE,
+  BUTTON_VARIANT,
+  DRAWER_HEIGHT_BY_SIZE,
+  DRAWER_SIDE,
+  DRAWER_SIZE,
+  KEY,
+  type DrawerSide,
+  type DrawerSize,
+} from "../../constants";
 import "./Drawer.css";
-
-export type DrawerSide = "right" | "left" | "top" | "bottom";
-export type DrawerSize = "sm" | "md" | "lg";
 
 export interface DrawerProps {
   isOpen: boolean;
@@ -20,12 +27,6 @@ export interface DrawerProps {
   size?: DrawerSize;
 }
 
-const heightBySize: Record<DrawerSize, number> = {
-  sm: 420,
-  md: 520,
-  lg: 620,
-};
-
 function Drawer({
   isOpen,
   onClose,
@@ -34,12 +35,12 @@ function Drawer({
   children,
   footer,
   closeOnOutside = false,
-  side = "right",
-  size = "md",
+  side = DRAWER_SIDE.RIGHT,
+  size = DRAWER_SIZE.MD,
 }: DrawerProps) {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closeOnOutside) onClose();
+      if (e.key === KEY.ESCAPE && closeOnOutside) onClose();
     };
 
     if (isOpen) {
@@ -68,11 +69,11 @@ function Drawer({
 
       <div
         className={`drawer-content drawer-${side} ${
-          side === "left" || side === "right" ? `drawer-content-${size}` : ""
+          side === DRAWER_SIDE.LEFT || side === DRAWER_SIDE.RIGHT ? `drawer-content-${size}` : ""
         } ${isOpen ? "drawer-open" : ""}`}
         style={
-          side === "top" || side === "bottom"
-            ? { height: heightBySize[size], maxHeight: "100vh" }
+          side === DRAWER_SIDE.TOP || side === DRAWER_SIDE.BOTTOM
+            ? { height: DRAWER_HEIGHT_BY_SIZE[size], maxHeight: "100vh" }
             : undefined
         }
         aria-hidden={!isOpen}
@@ -84,8 +85,8 @@ function Drawer({
           </span>
 
           <Button
-            variant="ghost"
-            size="icon"
+            variant={BUTTON_VARIANT.GHOST}
+            size={BUTTON_SIZE.ICON}
             className="drawer-close"
             onClick={() => onClose()}
           >

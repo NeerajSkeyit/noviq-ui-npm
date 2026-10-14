@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import TableCell, { formatTableCellValues } from "./TableCell";
-import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "./constants";
+import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "../../constants";
 
 describe("formatTableCellValues", () => {
   it("formats a date as DD/MM/YYYY", () => {

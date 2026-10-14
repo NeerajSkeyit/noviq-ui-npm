@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
+import { BUTTON_SIZE, BUTTON_VARIANT, KEY, MODAL_SIZE, type ModalSize } from "../../constants";
 import "./Modal.css";
-
-export type ModalSize = "sm" | "md" | "lg" | "xl" | "auto";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -56,7 +55,7 @@ function Modal({
   children,
   footer,
   closeOnOutside = true,
-  size = "md",
+  size = MODAL_SIZE.MD,
 }: ModalProps) {
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -69,7 +68,7 @@ function Modal({
     if (!isOpen) return;
 
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === KEY.ESCAPE) onClose();
     };
 
     window.addEventListener("keydown", handleEsc);
@@ -106,8 +105,8 @@ function Modal({
               </div>
 
               <Button
-                variant="ghost"
-                size="icon"
+                variant={BUTTON_VARIANT.GHOST}
+                size={BUTTON_SIZE.ICON}
                 className="modal-close"
                 onClick={() => onClose()}
               >

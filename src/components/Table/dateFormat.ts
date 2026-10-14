@@ -2,6 +2,8 @@
 // expected to be ISO-8601 (or a Date/epoch number) — arbitrary custom-format
 // parsing (moment's `currentFormat` option) is intentionally not supported.
 
+import { TIME_PERIOD } from "../../constants";
+
 const HAS_TZ_SUFFIX = /(Z|[+-]\d{2}:?\d{2})$/i;
 
 function toDate(value: string | number | Date, isUtc?: boolean): Date {
@@ -29,7 +31,7 @@ export function formatTimePart(value: string | number | Date, isUtc?: boolean): 
   const date = toDate(value, isUtc);
   const minutes = isUtc ? date.getUTCMinutes() : date.getMinutes();
   let hours = isUtc ? date.getUTCHours() : date.getHours();
-  const period = hours >= 12 ? "PM" : "AM";
+  const period = hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
   hours = hours % 12 || 12;
   return `${pad(hours)}:${pad(minutes)} ${period}`;
 }

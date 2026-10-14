@@ -3,6 +3,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { ChevronDown, Search } from "lucide-react";
 import Button from "../Button/Button";
 import { DropdownMenu, DropdownMenuItem } from "../Dropdown/Dropdown";
+import { ACTION_ID, BUTTON_SIZE, BUTTON_VARIANT, HOTKEY } from "../../constants";
 import "./ActionBar.css";
 
 export interface ActionBarOption {
@@ -52,7 +53,7 @@ function ActionBar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useHotkeys(
-    "slash",
+    HOTKEY.FOCUS_SEARCH,
     (e) => {
       e.preventDefault();
       inputRef.current?.focus();
@@ -94,8 +95,10 @@ function ActionBar({
                     }
                     trigger={
                       <Button
-                        variant={action.id === "add" ? "default" : "outline"}
-                        size="sm"
+                        variant={
+                          action.id === ACTION_ID.ADD ? BUTTON_VARIANT.DEFAULT : BUTTON_VARIANT.OUTLINE
+                        }
+                        size={BUTTON_SIZE.SM}
                         onClick={() =>
                           setOpenMenus((prev) => ({
                             ...prev,
@@ -132,8 +135,10 @@ function ActionBar({
                   return (
                     <Button
                       key={option.label}
-                      variant={option.id === "add" ? "default" : "outline"}
-                      size="sm"
+                      variant={
+                        option.id === ACTION_ID.ADD ? BUTTON_VARIANT.DEFAULT : BUTTON_VARIANT.OUTLINE
+                      }
+                      size={BUTTON_SIZE.SM}
                       onClick={() => option.onClick?.({ option })}
                       disabled={option.disabled || option.loading}
                     >
@@ -148,8 +153,10 @@ function ActionBar({
             return (
               <Button
                 key={action.label}
-                variant={action.id === "add" ? "default" : "outline"}
-                size="sm"
+                variant={
+                  action.id === ACTION_ID.ADD ? BUTTON_VARIANT.DEFAULT : BUTTON_VARIANT.OUTLINE
+                }
+                size={BUTTON_SIZE.SM}
                 onClick={() => action.onClick?.({ action })}
                 disabled={action.disabled || action.loading}
               >

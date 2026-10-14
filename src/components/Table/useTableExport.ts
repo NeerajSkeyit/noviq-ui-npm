@@ -1,14 +1,24 @@
 import { useState } from "react";
 import type { TableColumn, TableQueryParams } from "./Table";
-import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "./constants";
+import {
+  CELL_TYPE,
+  CSV_MIME_TYPE,
+  CSV_UTF8_BOM,
+  DEFAULT_EXPORT_FILE_BASE,
+  EXPORT_FALLBACK_ROWS_PER_PAGE,
+  EXPORT_FILE_EXTENSION,
+  EXPORT_HEADER_FILL,
+  EXPORT_MESSAGE,
+  EXPORT_SHEET_NAME,
+  NOTIFY_KIND,
+  NO_TEXT_PLACEHOLDER,
+} from "../../constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { formatTableCellValues, formatStatusLabel } from "./TableCell";
 import { extractRows } from "../../config/responseFormat";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import type { NotifyFn, TableRequestParamNames, TableResponseFormat } from "../../config/types";
 
-const FALLBACK_ROWS_PER_PAGE = 100000;
-const HEADER_FILL = "02699B";
 
 export interface UseTableExportArgs<T> {
   apiFunction?: (params: TableQueryParams) => Promise<unknown>;
@@ -72,7 +82,7 @@ function useTableExport<T>({
       ...filterParams,
       [requestParams.search]: search,
       [requestParams.page]: 1,
-      [requestParams.pageSize]: totalItems > 0 ? totalItems : FALLBACK_ROWS_PER_PAGE,
+      [requestParams.pageSize]: totalItems > 0 ? totalItems : EXPORT_FALLBACK_ROWS_PER_PAGE,
     });
     return extractRows(raw, responseFormat);
   };
@@ -83,7 +93,7 @@ function useTableExport<T>({
     return [header, ...body];
   };
 
-  const exportToExcel = async (fileName = "export.xlsx") => {
+  const exportToExcel = async (fileName = `${DEFAULT_EXPORT_FILE_BASE}.${EXPORT_FILE_EXTENSION.EXCEL}`) => {
     setExporting(true);
     try {
       const rows = await fetchRows();
@@ -96,7 +106,7 @@ function useTableExport<T>({
         if (ws[address]) {
           ws[address].s = {
             font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { patternType: "solid", fgColor: { rgb: HEADER_FILL } },
+            fill: { patternType: "solid", fgColor: { rgb: EXPORT_HEADER_FILL } },
           };
         }
         ws["!cols"] = ws["!cols"] || [];
@@ -104,18 +114,18 @@ function useTableExport<T>({
       });
 
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      XLSX.utils.book_append_sheet(wb, ws, EXPORT_SHEET_NAME);
       XLSX.writeFile(wb, fileName);
-      notify?.("Export complete", "success");
+      notify?.(EXPORT_MESSAGE.SUCCESS, NOTIFY_KIND.SUCCESS);
     } catch (err) {
-      console.error("Export failed", err);
-      notify?.("Export failed", "error");
+      console.error(EXPORT_MESSAGE.FAILURE, err);
+      notify?.(EXPORT_MESSAGE.FAILURE, NOTIFY_KIND.ERROR);
     } finally {
       setExporting(false);
     }
   };
 
-  const exportToCSV = async (fileName = "export.csv") => {
+  const exportToCSV = async (fileName = `${DEFAULT_EXPORT_FILE_BASE}.${EXPORT_FILE_EXTENSION.CSV}`) => {
     setExporting(true);
     try {
       const rows = await fetchRows();
@@ -124,8 +134,7 @@ function useTableExport<T>({
       const ws = XLSX.utils.aoa_to_sheet(aoa);
       const csv = XLSX.utils.sheet_to_csv(ws);
 
-      const UTF8_BOM = "﻿";
-      const blob = new Blob([UTF8_BOM + csv], { type: "text/csv;charset=utf-8;" });
+      const blob = new Blob([CSV_UTF8_BOM + csv], { type: CSV_MIME_TYPE });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -134,10 +143,10 @@ function useTableExport<T>({
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      notify?.("Export complete", "success");
+      notify?.(EXPORT_MESSAGE.SUCCESS, NOTIFY_KIND.SUCCESS);
     } catch (err) {
-      console.error("Export failed", err);
-      notify?.("Export failed", "error");
+      console.error(EXPORT_MESSAGE.FAILURE, err);
+      notify?.(EXPORT_MESSAGE.FAILURE, NOTIFY_KIND.ERROR);
     } finally {
       setExporting(false);
     }

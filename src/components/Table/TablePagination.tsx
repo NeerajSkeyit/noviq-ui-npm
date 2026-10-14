@@ -2,6 +2,7 @@ import React from "react";
 import ReactSelect, { type StylesConfig } from "react-select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import Button from "../Button/Button";
+import { BUTTON_SIZE, BUTTON_VARIANT, DEFAULT_PAGE_SIZE_OPTIONS } from "../../constants";
 import "./TablePagination.css";
 
 export interface TablePaginationState {
@@ -14,7 +15,7 @@ export interface TablePaginationProps {
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
-  pageSizeOptions?: number[];
+  pageSizeOptions?: readonly number[];
 }
 
 interface PageSizeOption {
@@ -50,7 +51,7 @@ function TablePagination({
   totalItems,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = [10, 20, 50, 100],
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: TablePaginationProps) {
   const { page, pageSize } = pagination;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -100,32 +101,32 @@ function TablePagination({
             </span>
 
             <Button
-              variant="outline"
-              size="icon"
+              variant={BUTTON_VARIANT.OUTLINE}
+              size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(1)}
               disabled={!canGoPrevious}
             >
               <ChevronsLeft size={16} />
             </Button>
             <Button
-              variant="outline"
-              size="icon"
+              variant={BUTTON_VARIANT.OUTLINE}
+              size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(page - 1)}
               disabled={!canGoPrevious}
             >
               <ChevronLeft size={16} />
             </Button>
             <Button
-              variant="outline"
-              size="icon"
+              variant={BUTTON_VARIANT.OUTLINE}
+              size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(page + 1)}
               disabled={!canGoNext}
             >
               <ChevronRight size={16} />
             </Button>
             <Button
-              variant="outline"
-              size="icon"
+              variant={BUTTON_VARIANT.OUTLINE}
+              size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(totalPages)}
               disabled={!canGoNext}
             >

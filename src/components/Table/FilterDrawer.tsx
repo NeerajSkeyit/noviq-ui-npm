@@ -5,16 +5,20 @@ import Drawer from "../Drawer/Drawer";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import Checkbox from "../Checkbox/Checkbox";
 import {
-  FILTER_TYPE,
   buildActiveFilter,
   type FilterConfig,
-  type FilterType,
   type ActiveFilter,
   type DateRangeValue,
 } from "./buildActiveFilter";
+import {
+  BUTTON_SIZE,
+  BUTTON_VARIANT,
+  FILTER_PAYLOAD_KEY,
+  FILTER_TYPE,
+  type FilterType,
+} from "../../constants";
 import "./FilterDrawer.css";
 
-export { FILTER_TYPE };
 export type { FilterConfig, FilterOption, ActiveFilter, DateRangeValue } from "./buildActiveFilter";
 
 export interface FilterDrawerProps {
@@ -51,8 +55,8 @@ function deriveDraftValue(config: FilterConfig, active?: ActiveFilter): unknown 
     }
     case FILTER_TYPE.MONTH: {
       if (config.monthKey || config.yearKey) {
-        const month = active.apiPayload[config.monthKey ?? "month"];
-        const year = active.apiPayload[config.yearKey ?? "year"];
+        const month = active.apiPayload[config.monthKey ?? FILTER_PAYLOAD_KEY.MONTH];
+        const year = active.apiPayload[config.yearKey ?? FILTER_PAYLOAD_KEY.YEAR];
         return month && year ? `${year}-${String(month).padStart(2, "0")}` : "";
       }
       return active.apiPayload[config.id] ?? "";
@@ -180,7 +184,7 @@ function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: Fil
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={() => setOpen(true)}>
         <SlidersHorizontal size={16} />
         Filters
         {activeFilters.length > 0 && <span className="filter-drawer-badge">{activeFilters.length}</span>}
@@ -193,10 +197,10 @@ function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: Fil
         closeOnOutside
         footer={
           <div className="filter-drawer-footer">
-            <Button variant="outline" size="sm" onClick={handleClearAll}>
+            <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={handleClearAll}>
               Clear all
             </Button>
-            <Button variant="default" size="sm" onClick={handleApply}>
+            <Button variant={BUTTON_VARIANT.DEFAULT} size={BUTTON_SIZE.SM} onClick={handleApply}>
               Apply
             </Button>
           </div>

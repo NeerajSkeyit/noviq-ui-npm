@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { TableColumn } from "./Table";
+import { COLUMN_SETTINGS_STORAGE_PREFIX, STICKY_POSITION, type StickyPosition } from "../../constants";
 
 export interface StickyColumnsState {
   left: string[];
@@ -11,7 +12,7 @@ export interface TableColumnSettings {
   columnOrder: string[];
   stickyColumns: StickyColumnsState;
   setVisibility: (columnId: string, visible: boolean) => void;
-  setStickyState: (columnId: string, sticky: "left" | "right" | null) => void;
+  setStickyState: (columnId: string, sticky: StickyPosition | null) => void;
   setOrder: (order: string[]) => void;
   reset: () => void;
 }
@@ -23,7 +24,7 @@ interface PersistedSettings {
 }
 
 function storageKeyFor(id: string): string {
-  return `noviq-ui-table-columns:${id}`;
+  return `${COLUMN_SETTINGS_STORAGE_PREFIX}${id}`;
 }
 
 function readPersisted(id: string | undefined): PersistedSettings | null {
@@ -59,8 +60,8 @@ function computeDefaults<T>(columns: TableColumn<T>[]) {
     visibleColumns: columns.filter((c) => c.visible !== false).map((c) => c.id),
     columnOrder: columns.map((c) => c.id),
     stickyColumns: {
-      left: columns.filter((c) => c.sticky === "left").map((c) => c.id),
-      right: columns.filter((c) => c.sticky === "right").map((c) => c.id),
+      left: columns.filter((c) => c.sticky === STICKY_POSITION.LEFT).map((c) => c.id),
+      right: columns.filter((c) => c.sticky === STICKY_POSITION.RIGHT).map((c) => c.id),
     } as StickyColumnsState,
   };
 }
@@ -118,12 +119,12 @@ export function useTableColumnSettings<T>(
   );
 
   const setStickyState = useCallback(
-    (columnId: string, sticky: "left" | "right" | null) => {
+    (columnId: string, sticky: StickyPosition | null) => {
       setStickyColumnsState((prev) => {
         const left = prev.left.filter((c) => c !== columnId);
         const right = prev.right.filter((c) => c !== columnId);
-        if (sticky === "left") left.push(columnId);
-        if (sticky === "right") right.push(columnId);
+        if (sticky === STICKY_POSITION.LEFT) left.push(columnId);
+        if (sticky === STICKY_POSITION.RIGHT) right.push(columnId);
         const next = { left, right };
         persist({ stickyColumns: next });
         return next;

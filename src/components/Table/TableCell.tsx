@@ -1,6 +1,12 @@
 import React from "react";
 import Badge from "../Badge/Badge";
-import { CELL_TYPE, NO_TEXT_PLACEHOLDER, type CellType } from "./constants";
+import {
+  BADGE_VARIANT,
+  CELL_TYPE,
+  DEFAULT_CURRENCY,
+  NO_TEXT_PLACEHOLDER,
+  type CellType,
+} from "../../constants";
 import { formatDatePart, formatDateTime, formatDuration, formatTimePart } from "./dateFormat";
 import "./TableCell.css";
 
@@ -60,7 +66,7 @@ export function formatTableCellValues(type: CellType, options: CellFormatOptions
     case CELL_TYPE.CURRENCY:
       return new Intl.NumberFormat("en-IN", {
         style: "currency",
-        currency: options.currency || "INR",
+        currency: options.currency || DEFAULT_CURRENCY,
         maximumFractionDigits: options.maximumFractionDigits ?? 2,
       }).format(options.value ?? 0);
 
@@ -110,7 +116,7 @@ function TableCell({ type, options = {}, statusVariantMap }: TableCellProps) {
       statusVariantMap?.[key] ?? DEFAULT_STATUS_VARIANTS[key] ?? "status-default";
 
     return (
-      <Badge variant="outline" className={variantClass}>
+      <Badge variant={BADGE_VARIANT.OUTLINE} className={variantClass}>
         {formatStatusLabel(options.status)}
       </Badge>
     );

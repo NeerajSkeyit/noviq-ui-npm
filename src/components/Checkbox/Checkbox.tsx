@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { KEY } from "../../constants";
 import "./Checkbox.css";
 
 export interface CheckboxProps {
@@ -36,7 +37,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           }}
           onKeyDown={(e) => {
             if (disabled) return;
-            if (e.key === "Enter" || e.key === " ") {
+            if (e.key === KEY.ENTER || e.key === KEY.SPACE) {
               e.preventDefault();
               onChange(!checked);
             }

@@ -1,5 +1,6 @@
 import React from "react";
-import Button, { type ButtonVariant } from "../Button/Button";
+import Button from "../Button/Button";
+import { BUTTON_TYPE, BUTTON_VARIANT, type ButtonVariant } from "../../constants";
 
 export interface FormFooterButton {
   label: string;
@@ -26,14 +27,14 @@ function FormFooter({
 }: FormFooterProps) {
   return (
     <>
-      <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
+      <Button variant={BUTTON_VARIANT.OUTLINE} type={BUTTON_TYPE.BUTTON} onClick={onCancel} disabled={isSubmitting}>
         {cancelLabel || "Cancel"}
       </Button>
 
       {buttons.map((btn) => (
         <Button
-          variant={btn.variant || "outline"}
-          type="button"
+          variant={btn.variant || BUTTON_VARIANT.OUTLINE}
+          type={BUTTON_TYPE.BUTTON}
           onClick={btn.onClick}
           key={btn.label}
           disabled={isSubmitting}
@@ -42,7 +43,7 @@ function FormFooter({
         </Button>
       ))}
 
-      <Button variant="default" type="button" onClick={onSubmit} disabled={isSubmitting}>
+      <Button variant={BUTTON_VARIANT.DEFAULT} type={BUTTON_TYPE.BUTTON} onClick={onSubmit} disabled={isSubmitting}>
         {submitLabel || "Save"}
       </Button>
     </>

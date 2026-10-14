@@ -1,15 +1,6 @@
 import React from "react";
+import { BUTTON_SIZE, BUTTON_VARIANT, type ButtonSize, type ButtonVariant } from "../../constants";
 import "./Button.css";
-
-export type ButtonVariant =
-  | "default"
-  | "outline"
-  | "destructive"
-  | "secondary"
-  | "ghost"
-  | "link";
-
-export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export interface ButtonProps
   extends Omit<React.ComponentPropsWithRef<"button">, "size"> {
@@ -22,8 +13,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(
     {
       children,
-      variant = "default",
-      size = "md",
+      variant = BUTTON_VARIANT.DEFAULT,
+      size = BUTTON_SIZE.MD,
       className = "",
       isRowActionBtn,
       ...props

@@ -3,7 +3,8 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Table, { type TableColumn } from "./Table";
-import { FILTER_TYPE, type FilterConfig } from "./buildActiveFilter";
+import type { FilterConfig } from "./buildActiveFilter";
+import { FILTER_TYPE } from "../../constants";
 import { NoviqUIConfigProvider } from "../../config/NoviqUIConfigProvider";
 import type { ResponseFormatPaths } from "../../config/types";
 

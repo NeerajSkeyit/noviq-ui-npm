@@ -1,5 +1,6 @@
 import React from "react";
 import Input, { type InputProps } from "../Input/Input";
+import { COL_SPAN, FORM_FIELD_TYPE, type ColSpan } from "../../constants";
 import "./Form.css";
 
 export interface FormFieldConfig
@@ -11,7 +12,7 @@ export interface FormFieldConfig
    * Fields meant to sit on the same row must use the same `colSpan` value —
    * mismatched values (e.g. a `2` next to a `1`) will wrap instead of
    * filling the row evenly. Defaults to `1`. */
-  colSpan?: 1 | 2 | 3;
+  colSpan?: ColSpan;
   hidden?: boolean;
   /** Renders an "info" section header instead of a field when type is "info". */
   title?: string;
@@ -47,7 +48,7 @@ function Form({ inputList = [], formik }: FormProps) {
       {inputList.map((input, index) => {
         if (input.hidden) return null;
 
-        if (input.type === "info") {
+        if (input.type === FORM_FIELD_TYPE.INFO) {
           return (
             <div key={index} className="col-span-1 info-section">
               <div className="info-section-title">{input.title}</div>
@@ -56,7 +57,7 @@ function Form({ inputList = [], formik }: FormProps) {
           );
         }
 
-        const { inputKey, colSpan = 1, disabled, ...rest } = input;
+        const { inputKey, colSpan = COL_SPAN.FULL, disabled, ...rest } = input;
 
         return (
           <div key={index} className={`col-span-${colSpan}`}>

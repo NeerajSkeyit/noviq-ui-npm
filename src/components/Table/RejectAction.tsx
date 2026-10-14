@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import Button from "../Button/Button";
+import { BUTTON_VARIANT, HOTKEY } from "../../constants";
 import "./RejectAction.css";
 
 const LEADING_SPACE_REGEX = /^\s/;
@@ -109,7 +110,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
   }, [open]);
 
   useHotkeys(
-    "esc",
+    HOTKEY.CLOSE,
     () => {
       if (!loading) setOpen(false);
     },
@@ -124,7 +125,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
     <div className="reject-action-wrapper" ref={wrapperRef}>
       <Button
         ref={buttonRef}
-        variant="destructive"
+        variant={BUTTON_VARIANT.DESTRUCTIVE}
         onClick={togglePopover}
         disabled={disabled || loading}
         isRowActionBtn
@@ -155,7 +156,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
               <p className="reject-action-error">{rejectReasonError}</p>
             )}
 
-            <Button variant="destructive" onClick={handleConfirm} disabled={!reason.trim() || disabled || loading}>
+            <Button variant={BUTTON_VARIANT.DESTRUCTIVE} onClick={handleConfirm} disabled={!reason.trim() || disabled || loading}>
               Confirm
             </Button>
           </div>,

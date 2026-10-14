@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
-import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "./constants";
+import { CELL_TYPE, NO_TEXT_PLACEHOLDER } from "../../constants";
 import type { TableColumn } from "./Table";
 
 interface Row {

@@ -1,4 +1,5 @@
 import React from "react";
+import { KEY } from "../../constants";
 import "./Switch.css";
 
 export interface SwitchProps {
@@ -23,7 +24,7 @@ function Switch({ checked, onChange, disabled = false }: SwitchProps) {
       tabIndex={disabled ? -1 : 0}
       onClick={toggle}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === KEY.ENTER || e.key === KEY.SPACE) {
           e.preventDefault();
           toggle();
         }
