@@ -13,6 +13,7 @@ import {
   FormFooter,
   Form,
   Table,
+  NoviqUIConfigProvider,
   FILTER_TYPE,
 } from "../src/index";
 import type {
@@ -21,7 +22,6 @@ import type {
   FormFieldConfig,
   TableColumn,
   TableQueryParams,
-  TableQueryResult,
   FilterConfig,
 } from "../src/index";
 
@@ -55,7 +55,7 @@ const mockDatabase: Employee[] = Array.from({ length: 47 }).map((_, i) => ({
   salary: 40000 + (i % 10) * 4000,
 }));
 
-function mockFetchEmployees(params: TableQueryParams): Promise<TableQueryResult<Employee>> {
+function mockFetchEmployees(params: TableQueryParams): Promise<{ result: Employee[]; totalCount: number }> {
   const search = (params.search as string)?.toLowerCase() ?? "";
   const department = params.department as string | undefined;
   const joinDateFrom = params.joinDateFrom as string | undefined;
@@ -70,8 +70,10 @@ function mockFetchEmployees(params: TableQueryParams): Promise<TableQueryResult<
     if (joinDateTo && row.joinDate > joinDateTo) return false;
     return true;
   });
-  const start = (params.page_no - 1) * params.rows_per_page;
-  const page = filtered.slice(start, start + params.rows_per_page);
+  const pageNo = params.page_no as number;
+  const rowsPerPage = params.rows_per_page as number;
+  const start = (pageNo - 1) * rowsPerPage;
+  const page = filtered.slice(start, start + rowsPerPage);
 
   return new Promise((resolve) => {
     setTimeout(() => resolve({ result: page, totalCount: filtered.length }), 400);
@@ -154,10 +156,13 @@ function Playground() {
   });
 
   return (
-    <div style={{ padding: 32, fontFamily: "sans-serif", maxWidth: 960 }}>
-      {/* Table's export feature uses react-hot-toast for loading/success/error feedback;
-          consumers must mount their own <Toaster/> (documented in README.md). */}
-      <Toaster position="top-right" />
+    <NoviqUIConfigProvider
+      config={{ table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } } }}
+    >
+      <div style={{ padding: 32, fontFamily: "sans-serif", maxWidth: 960 }}>
+        {/* Table's export feature uses react-hot-toast for loading/success/error feedback;
+            consumers must mount their own <Toaster/> (documented in README.md). */}
+        <Toaster position="top-right" />
       <h1>noviq-ui playground</h1>
 
       <section style={{ marginBottom: 40 }}>
@@ -399,7 +404,8 @@ function Playground() {
           </div>
         </form>
       </section>
-    </div>
+      </div>
+    </NoviqUIConfigProvider>
   );
 }
 
