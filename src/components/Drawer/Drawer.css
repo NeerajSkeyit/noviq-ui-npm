@@ -14,6 +14,12 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.25s ease;
+  /* .drawer-content has an explicit width/max-width, so its own box never
+     grows — but without this, a child that refuses to shrink (a native
+     date input renders with a wider intrinsic minimum width in some
+     browsers than others) can still visually spill past that fixed
+     boundary instead of being contained by it. */
+  overflow: hidden;
 }
 
 .drawer-right {

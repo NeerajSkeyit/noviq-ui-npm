@@ -1,7 +1,7 @@
 {
   "name": "noviq-ui",
   "private": false,
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Lightweight React component library — forms, data tables, drawers, and modals — for the Noviq product suite.",
   "keywords": [
     "react",

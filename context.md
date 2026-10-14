@@ -3,13 +3,14 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v2.5.0** on npm, with **v2.5.1 built/tested/staged but not yet published** (`1.1.0` shipped
+**v2.5.1** on npm, with **v2.5.2 built/tested/staged but not yet published** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0` shipped `Table` sub-phase 3a core table; `2.2.0` shipped sub-phase 3b column show/hide/
 reorder/pin + optional `localStorage` persistence; `2.3.0` shipped sub-phase 3c row
 selection/actions/bulk actions; `2.4.0` shipped sub-phase 3d-i filters; `2.5.0` shipped sub-phase
 3d-ii Excel/CSV export, completing Table's full 3a-3d feature set; `2.5.1` fixes a real `Drawer`
-responsive-breakpoint bug and clarifies `Form`'s `colSpan` docs — see below — found via
+responsive-breakpoint bug and clarifies `Form`'s `colSpan` docs; `2.5.2` fixes a second, related
+overflow bug the user found in Edge on a full-width window — see below — found via
 `noviq-ui-demo`, a standalone sibling project that installs the real published package against a
 real backend) — see `progress.md` for the phase-by-phase extraction
 history. Intended to be installed as a dependency
@@ -420,10 +421,24 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
   at a narrow viewport — only found via `noviq-ui-demo` (see below), which consumes the real
   published npm package. Worth remembering: the local playground is good for fast iteration, but
   isn't a substitute for testing against the actual built/published artifact, ideally at more than
-  one viewport width. (A second reported issue, `Form`'s field layout looking wrong, turned out
-  *not* to be a `Form.css` bug on investigation — see the `2.5.1` notes in `progress.md` for the
-  full story of how a misleading JSDoc comment led to a wrong first diagnosis, caught before it
-  shipped.)
+  one viewport width and more than one real browser. (A second reported issue, `Form`'s field
+  layout looking wrong, turned out *not* to be a `Form.css` bug on investigation — see the `2.5.1`
+  notes in `progress.md` for the full story of how a misleading JSDoc comment led to a wrong first
+  diagnosis, caught before it shipped.)
+- **`2.5.1`'s `Drawer` fix only covered narrow *viewports* — a real, related bug still got through
+  to `2.5.2`.** The user hit a case in Edge, on a full-width/maximized window, where a form field
+  (a native date input) rendered with a wider intrinsic minimum width than this session's own
+  Chromium-based testing tool ever produced, causing content to visually spill past the drawer's
+  fixed boundary even though the *viewport* was plenty wide. `Drawer.css`'s `.drawer-content` had
+  no `overflow: hidden` of its own (only its inner `ScrollArea` did), and `Form.css`'s
+  `.col-span-*` had no `min-width: 0` (flex items default to refusing to shrink below their
+  content's intrinsic minimum). Neither gap depends on viewport width at all, which is exactly why
+  `2.5.1`'s `@media (max-width: 640px)` breakpoint didn't help. Lesson: a "make it responsive at
+  narrow widths" fix and a "make it robust to an oversized child, at any width, in any browser"
+  fix are different problems — this one needed the latter. Verified the `2.5.2` fix by forcibly
+  setting a real input's `min-width` to 900px via JS and confirming (via screenshot) the drawer
+  still renders with clean edges — a check that doesn't depend on reproducing Edge's exact
+  rendering.
 
 ## `noviq-ui-demo` — a standalone integration-test sibling project
 `/Users/neerajyadav/Documents/sk/noviq/noviq-ui-demo/` (own README) is a small, separate project —

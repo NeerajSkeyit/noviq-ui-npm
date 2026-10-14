@@ -301,6 +301,38 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
   - [x] `npm test` (202/202), `npm run build`, `npm pack --dry-run` all verified clean —
         `Drawer.css` changed (additive `@media` rule), `Form.css` unchanged, no behavior/API
         change beyond the JSDoc wording, so no new tests were needed.
+- [x] **`2.5.2` — a second, real overflow bug found in Edge after `2.5.1` shipped** (staged, see
+      "Ready to publish"): the `2.5.1` responsive-breakpoint fix only covered narrow *viewports*
+      (`< 640px`); it didn't cover a **full-width, maximized** window where a single field's
+      native rendering is simply wider than expected in that browser. Diagnosed live with the
+      user (real screenshots + a `window.innerWidth`/`getBoundingClientRect()` check pasted from
+      their own Edge DevTools console) rather than guessed at:
+  - [x] **Root cause**: `.drawer-content` had no `overflow: hidden` of its own — only its inner
+        `ScrollArea` (`.drawer-body`) did. `.drawer-content` is `position: fixed` with an explicit
+        `width`/`max-width`, so *its own box* never grows past 512px regardless of content — but
+        with nothing containing overflow at that outer level, a child that refuses to shrink below
+        its own intrinsic minimum width (a native `<input type="date">` can render with a
+        meaningfully wider intrinsic minimum in Edge than in the Chromium build this session's
+        automated Browser pane uses) can still visually spill out past that fixed boundary instead
+        of being clipped by it. Separately, `Form.css`'s `.col-span-1/2/3` (the actual flex items
+        inside `.form-container`) had no `min-width: 0` — flex items default to `min-width: auto`,
+        which refuses to shrink below the content's intrinsic minimum, so an oversized input could
+        force its whole `.col-span-N` wrapper (and thus the row) wider than its calculated
+        percentage width in the first place.
+  - [x] **Fix**: added `overflow: hidden` to `.drawer-content` in `Drawer.css` (a hard guarantee —
+        nothing can ever visually escape a box with `overflow: hidden`, regardless of the precise
+        cause — confirmed `react-select`'s dropdown menu already uses `menuPosition="fixed"` +
+        `menuPortalTarget={document.body}`, i.e. it portals outside `.drawer-content` entirely, so
+        this containment can't clip it). Added `min-width: 0` to `.col-span-1/2/3` in `Form.css` so
+        fields actually shrink to fit their calculated width instead of relying on clipping alone.
+  - [x] **Verified the containment directly**, not just by hoping Edge's exact rendering would
+        reproduce in this session's own browser: forced a real `<input type="date">` inside the
+        drawer to `min-width: 900px` via JS (simulating "a browser renders this input much wider
+        than expected") and confirmed via screenshot that the drawer still renders with clean,
+        contained edges — no visible spillover — proving the fix holds regardless of *why* a field
+        ends up oversized in some particular browser.
+  - [x] `npm test` (202/202), `npm run build`, `npm pack --dry-run` all verified clean — both
+        changes are additive CSS properties, no behavior/API change.
 
 ## Published
 - `1.1.0` — live on npm.
@@ -315,13 +347,17 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
   no breaking changes.
 - `2.5.0` — live on npm (confirmed via the registry API). Sub-phase 3d-ii export. **Completes
   Table's full 3a-3d feature set.** Additive only, no breaking changes.
+- `2.5.1` — live on npm (confirmed via the registry API). Fixes a real `Drawer` bug (no responsive
+  breakpoint, causing overflow/clipping on narrow viewports) found via `noviq-ui-demo`, plus a
+  `FormFieldConfig.colSpan` JSDoc clarification (the CSS itself was already correct — see the
+  `2.5.1` "Done" notes above for the full story). Patch release, no API/behavior change.
 
 ## Ready to publish
-- `2.5.1` — fixes a real `Drawer` bug (no responsive breakpoint, causing overflow/clipping on
-  narrow viewports) found via `noviq-ui-demo`, plus a `FormFieldConfig.colSpan` JSDoc clarification
-  (the CSS itself was already correct — see the `2.5.1` "Done" notes above for the full story).
-  Patch release: `Drawer.css` gains an additive `@media` rule, `Form.tsx`'s doc comment is
-  reworded, `Form.css` is unchanged. No API/behavior change. Build + test + pack sanity checks all
+- `2.5.2` — fixes a second, real overflow bug (Edge-specific, found by the user with real
+  DevTools evidence): `.drawer-content` gains `overflow: hidden` and `Form.css`'s `.col-span-*`
+  gain `min-width: 0`, so an oversized field is contained/shrinks instead of visually spilling
+  past the drawer's boundary on a full-width window (a scenario `2.5.1`'s narrow-viewport-only fix
+  didn't cover). Patch release, no API/behavior change. Build + test + pack sanity checks all
   pass; awaiting explicit go-ahead to run `npm publish`.
 
 ## Not started
@@ -383,12 +419,14 @@ _Last updated 2026-08-19, mid-way through the HRMS-component-extraction project 
   toasts in apps that already use `react-hot-toast` elsewhere). Documented in `README.md`.
 
 ## Suggested next steps
-1. Initialize git for this repo — still nothing version-controlled locally, and the risk compounds
-   with every phase that lands; now the biggest it's been (Table's full 3a-3d feature set, ~20
-   components' worth of uncommitted local work).
+1. Initialize git for both `noviq-ui` and `noviq-ui-demo` — neither is version-controlled locally
+   yet, and the risk compounds with every phase that lands; now the biggest it's been (Table's
+   full 3a-3d feature set plus a whole second project, all uncommitted).
 2. Add `eslint.config.js` so `npm run lint` actually runs — still not done, still cheap.
-3. Table (3a-3d) is now fully done and published (`2.5.0` live). Pick one consumer frontend
-   (`noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
-   `asset-management-system/apps/web`) and start swapping in `noviq-ui` components — this is
-   **Phase 4**, the next real milestone per the original task framing.
-5. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.
+3. Table (3a-3d) is fully done and published (`2.5.1` live, including the `Drawer`/`Form`-doc
+   fixes). Phase 4 (per your redirection) is also done as a standalone integration demo
+   (`noviq-ui-demo`) rather than swapping into an existing frontend — swapping `noviq-ui` into a
+   real consumer frontend (`noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
+   `asset-management-system/apps/web`) remains the next real adoption milestone whenever you want
+   to pursue it.
+4. Phase 2b (rich Date/Time/Month pickers) remains fully unstarted, whenever it's picked up.

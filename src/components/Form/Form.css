@@ -12,6 +12,18 @@
    sit side by side; mismatched pairs (e.g. colSpan:2 next to colSpan:1) will
    wrap rather than fill the row exactly, so pick matching spans for fields
    meant to share a row. */
+/* Flex items default to `min-width: auto`, which refuses to shrink below
+   the content's own intrinsic minimum width — a native input (a date input
+   especially, whose intrinsic rendering width varies by browser) can be
+   wider than its calculated share of the row, forcing the field (and the
+   whole row) wider than the drawer/container it's in. `min-width: 0`
+   overrides that so the percentage width above always wins. */
+.col-span-1,
+.col-span-2,
+.col-span-3 {
+  min-width: 0;
+}
+
 .col-span-1 {
   width: 100%;
 }
