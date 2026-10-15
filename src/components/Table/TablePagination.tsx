@@ -2,6 +2,7 @@ import React from "react";
 import ReactSelect, { type StylesConfig } from "react-select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import Button from "../Button/Button";
+import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
 import { BUTTON_SIZE, BUTTON_VARIANT, DEFAULT_PAGE_SIZE_OPTIONS } from "../../constants";
 import "./TablePagination.css";
 
@@ -53,6 +54,7 @@ function TablePagination({
   onPageSizeChange,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: TablePaginationProps) {
+  const selectEscapeGuard = useSelectEscapeGuard(); // before the early return below: hooks run unconditionally
   const { page, pageSize } = pagination;
   const totalPages = Math.ceil(totalItems / pageSize);
   const startItem = (page - 1) * pageSize + 1;
@@ -79,6 +81,7 @@ function TablePagination({
         <div className="table-pagination-page-size">
           <span className="table-pagination-text">Rows per page:</span>
           <ReactSelect<PageSizeOption, false>
+            {...selectEscapeGuard}
             classNamePrefix="rs"
             placeholder={pageSize.toString()}
             options={pageSizeOptions.map((option) => ({ value: option, label: String(option) }))}

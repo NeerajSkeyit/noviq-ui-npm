@@ -230,6 +230,7 @@ function TimePicker({
         break;
       case KEY.ESCAPE:
         e.preventDefault();
+        e.stopPropagation(); // closes the picker only, not an overlay it sits in
         closePicker();
         break;
       case KEY.TAB:

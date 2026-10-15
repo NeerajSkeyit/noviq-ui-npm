@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
-import { BUTTON_SIZE, BUTTON_VARIANT, KEY, MODAL_SIZE, type ModalSize } from "../../constants";
+import { useEscapeLayer } from "../../hooks/useEscapeLayer";
+import { BUTTON_SIZE, BUTTON_VARIANT, MODAL_SIZE, type ModalSize } from "../../constants";
 import "./Modal.css";
 
 export interface ModalProps {
@@ -64,16 +65,7 @@ function Modal({
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === KEY.ESCAPE) onClose();
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [isOpen, onClose]);
+  useEscapeLayer(isOpen, onClose);
 
   return (
     <AnimatePresence>

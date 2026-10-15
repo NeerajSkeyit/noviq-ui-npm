@@ -111,7 +111,9 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
 
   useHotkeys(
     HOTKEY.CLOSE,
-    () => {
+    (e) => {
+      if (!open) return; // nothing of ours is showing: let Escape reach whatever is beneath
+      e.stopPropagation(); // dismisses the popover only, not an overlay it sits in
       if (!loading) setOpen(false);
     },
     // The reason textarea auto-focuses on open, and react-hotkeys-hook

@@ -179,6 +179,7 @@ function DatePicker({
         break;
       case KEY.ESCAPE:
         e.preventDefault();
+        e.stopPropagation(); // closes the picker only, not an overlay it sits in
         closePicker();
         break;
       case KEY.TAB:
@@ -246,6 +247,7 @@ function DatePicker({
             onKeyDown={(e) => {
               // Focus is on a <select>/<button> inside the panel after a mouse interaction.
               if (e.key === KEY.ESCAPE) {
+                e.stopPropagation();
                 closePicker();
                 triggerRef.current?.focus();
               }

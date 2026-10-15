@@ -170,6 +170,7 @@ function MonthPicker({
         break;
       case KEY.ESCAPE:
         e.preventDefault();
+        e.stopPropagation(); // closes the picker only, not an overlay it sits in
         closePicker();
         break;
       case KEY.TAB:
@@ -223,6 +224,7 @@ function MonthPicker({
             style={{ position: "fixed", top: position.top, left: position.left }}
             onKeyDown={(e) => {
               if (e.key === KEY.ESCAPE) {
+                e.stopPropagation();
                 closePicker();
                 triggerRef.current?.focus();
               }

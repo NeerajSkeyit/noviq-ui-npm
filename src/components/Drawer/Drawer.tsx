@@ -3,13 +3,13 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
 import ScrollArea from "../ScrollArea/ScrollArea";
+import { useEscapeLayer } from "../../hooks/useEscapeLayer";
 import {
   BUTTON_SIZE,
   BUTTON_VARIANT,
   DRAWER_HEIGHT_BY_SIZE,
   DRAWER_SIDE,
   DRAWER_SIZE,
-  KEY,
   type DrawerSide,
   type DrawerSize,
 } from "../../constants";
@@ -38,23 +38,16 @@ function Drawer({
   side = DRAWER_SIDE.RIGHT,
   size = DRAWER_SIZE.MD,
 }: DrawerProps) {
+  // Escape dismisses a drawer only when it is the topmost overlay and `closeOnOutside` is set. An
+  // open drawer that ignores Escape is still a layer, so it shields a Modal beneath it.
+  useEscapeLayer(isOpen, closeOnOutside ? onClose : undefined);
+
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === KEY.ESCAPE && closeOnOutside) onClose();
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEsc);
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
-      document.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = "";
     };
-  }, [isOpen, onClose, closeOnOutside]);
+  }, [isOpen]);
 
   return createPortal(
     <>
