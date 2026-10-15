@@ -509,6 +509,24 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         Back returns to the table, and a real submit (date via the calendar) created the row.
   - [x] Test suite 483 (up from 473). Main bundle 132.8 → 133.1 kB gzip.
 
+- [x] **Integration test of the published `4.2.0` in `noviq-ui-demo`** (no library change):
+  - [x] Method: installed `4.2.0` **from the registry** (after byte-comparing it with the staged
+        tarball) and audited which exports the demo used — only 8/28 components, 12/24 constant
+        groups and 0/8 helpers, i.e. the Phase 4 demo was not a full consumer test.
+  - [x] Added a **Component showcase** view that uses every export through its public API, a second
+        differently-shaped backend endpoint (`/api/v2/staff`), and a **consumer-side Vitest suite
+        (37 tests)** that runs it against the installed package (with the shipped `style.css`).
+        Typechecked including the tests; `npm test` documented in the demo README.
+  - [x] Results: 37/37 pass; typecheck + production build pass; real-browser pass with a clean
+        console; **also green on React 18.3.1** (single React copy, typecheck, tests, build) and the
+        published `.d.ts` files typecheck on **TypeScript 4.9.5** with `skipLibCheck: false`.
+        No defect was found in the *behaviour* of any component; the failures along the way were
+        my own wrong assumptions in tests/showcase (and one showcase bug: `<Label>`s with no
+        `htmlFor`). Findings that ARE about the library are under "Known bugs / limitations".
+  - [x] Corrected a stale fact: `noviq-hrms-ui` is on **Vite 6**, not CRA (the suite-level
+        `CLAUDE.md` still says CRA). All four target frontends are Vite, three on React 18 and
+        hrms-ui on TypeScript 4.9 — both now verified compatible.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -555,11 +573,11 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   `monthPicker` `Input` types, and `src/constants.ts` (every fixed value a named, exported
   constant). `noviq-ui-demo/web` now depends on `^4.1.0` from the registry.
 
+- `4.2.0` — live on npm (confirmed with `npm view`; the registry bundle is byte-identical to the
+  tarball verified before publishing, 51 files). Additive: `FullPageSection`.
+
 ## Ready to publish
-- `4.2.0` — **additive, no breaking changes.** New `FullPageSection` (page-level single-step form
-  layout; router-free). Gate: `tsc` clean, 483/483 tests, build, `npm pack` (51 files), demo
-  typecheck + build against the packed tarball, live run incl. a real submit. Awaiting explicit
-  go-ahead to `npm publish`.
+_Nothing staged._
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
@@ -636,6 +654,30 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - **Tests aren't typechecked.** `tsconfig.json` excludes `*.test.ts(x)` and Vitest doesn't
   typecheck, so type-level regressions (like the `Form` `formik` prop typing fixed in `3.0.0`)
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
+
+### Found by the 4.2.0 integration test (real browser unless noted)
+- **Escape closes the Modal *and* the picker open inside it.** Pickers close on Escape but don't
+  stop the event, and `Modal` listens on `window`, so dismissing a date/time picker inside a modal
+  also dismisses the modal (losing its form state). Escape should close only the topmost layer.
+  Same shape applies to `Drawer` with `closeOnOutside`.
+- **Table pagination's right-hand controls don't wrap on phone widths.** At ~430px the "last page"
+  button is clipped by 27px (`.table-pagination-right` is one non-wrapping row ~391px wide inside
+  `.table-wrapper { overflow-x: hidden }`), so it can be unreachable.
+- **A closed `Drawer` keeps its children mounted** (hidden, `aria-hidden`). Each `Table` therefore
+  mounts two hidden drawers (columns, filters); a form inside a closed Drawer stays live
+  (state, effects, autofocus), and two drawers rendering the same `id` produce duplicate ids.
+- **5 of 26 `INPUT_TYPE` values have no implementation** and render "Worng input type provided":
+  `ROWS_PER_PAGE`, `MULTI_TEXT`, `CUSTOM`, `DATE_RANGE`, `REACT_QUILL`. They're public constants
+  now, so a consumer will reasonably reach for them.
+- `Input type="search"` ignores `label`, `error` and `helper` (renders no field container).
+- `TableColumn.cell(row, cellValue)` receives the library's placeholder `"-"` for an empty value,
+  not `""` — easy to get backwards (`value ? … : …` is always truthy).
+- `FilterDrawer`'s `onRemoveFilter` prop is required by the type but never used.
+- The `Checkbox` renders a hidden native `<input>` *and* a `role="checkbox"` div; it relies on
+  `style.css` to hide the input (without the stylesheet a screen reader sees two checkboxes).
+- Only Chromium was exercised: no Firefox/Safari run, no screen-reader pass, no RTL.
+- The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
+  the browser); only the CSV bytes are asserted.
 
 ## Suggested next steps
 1. Add `eslint.config.js` so `npm run lint` actually runs — still not done, still cheap.
