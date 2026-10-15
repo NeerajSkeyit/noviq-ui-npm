@@ -26,7 +26,9 @@ export interface FilterDrawerProps {
   filters: FilterConfig[];
   activeFilters: ActiveFilter[];
   onApplyFilter: (filters: ActiveFilter[]) => void;
-  onRemoveFilter: (filterId: string) => void;
+  /** @deprecated Not used: the drawer itself never removes a single filter (use `FilterChips`'
+   * `onRemove`). Accepted so existing call sites keep compiling; safe to omit. */
+  onRemoveFilter?: (filterId: string) => void;
   onClearAll: () => void;
 }
 

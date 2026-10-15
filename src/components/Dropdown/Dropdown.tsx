@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useEscapeLayer } from "../../hooks/useEscapeLayer";
 import "./Dropdown.css";
 
 export interface DropdownMenuItemProps {
@@ -48,6 +49,10 @@ export function DropdownMenu({ trigger, isOpen, setIsOpen, children }: DropdownM
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Escape closes an open menu, and — as the topmost layer — only the menu: a menu opened inside a
+  // Modal or Drawer closes before that overlay does.
+  useEscapeLayer(isOpen, () => setIsOpen(false));
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

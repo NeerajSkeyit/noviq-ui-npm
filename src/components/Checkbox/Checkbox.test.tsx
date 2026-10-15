@@ -37,4 +37,24 @@ describe("Checkbox", () => {
     await user.click(screen.getByRole("checkbox"));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it("exposes exactly one checkbox to assistive tech, even without the stylesheet", () => {
+    // This suite loads the package CSS (`css: true`), where `.checkbox-input { display: none }`
+    // would hide the native input anyway. A consumer who forgets `import "noviq-ui/style.css"`
+    // doesn't get that — so take the injected styles away and look again.
+    const styles = Array.from(document.querySelectorAll("style"));
+    styles.forEach((node) => node.remove());
+    try {
+      const { container } = render(<Checkbox checked onChange={() => {}} />);
+      expect(screen.getAllByRole("checkbox")).toHaveLength(1);
+      expect(screen.getByRole("checkbox")).toHaveAttribute("aria-checked", "true");
+
+      // And it must not show up as a second, visible native checkbox beside ours.
+      const native = container.querySelector<HTMLInputElement>("input[type=checkbox]")!;
+      expect(native.hidden).toBe(true);
+      expect(getComputedStyle(native).display).toBe("none");
+    } finally {
+      styles.forEach((node) => document.head.appendChild(node));
+    }
+  });
 });

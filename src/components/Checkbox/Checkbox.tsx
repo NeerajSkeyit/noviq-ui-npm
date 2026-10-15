@@ -19,11 +19,16 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           disabled={disabled}
           ref={ref}
           className="checkbox-input"
+          // Hidden by the `hidden` attribute (the browser's own `display: none`) rather than only
+          // by our stylesheet, so an app that forgot `style.css` doesn't expose two checkboxes.
+          hidden
+          aria-hidden="true"
+          tabIndex={-1}
           {...props}
         />
-        {/* The native input above is visually hidden (display:none), which also removes it
-            from the accessibility tree — so the visible box below carries the real ARIA
-            checkbox semantics and keyboard support instead. */}
+        {/* The native input above is hidden, which also removes it from the accessibility
+            tree — so the visible box below carries the real ARIA checkbox semantics and
+            keyboard support instead. */}
         <div
           role="checkbox"
           aria-checked={checked}
