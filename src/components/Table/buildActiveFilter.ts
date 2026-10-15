@@ -1,5 +1,10 @@
-import { formatValue, resolveFormats, type ResolvedFormats } from "../../utils/dateTimeFormat";
-import { FILTER_PAYLOAD_KEY, FILTER_TYPE, MONTH_NAMES, type FilterType } from "../../constants";
+import {
+  formatValue,
+  getDateNames,
+  resolveFormats,
+  type FormatsInput,
+} from "../../utils/dateTimeFormat";
+import { FILTER_PAYLOAD_KEY, FILTER_TYPE, type FilterType } from "../../constants";
 
 export interface FilterOption {
   value: string;
@@ -47,9 +52,9 @@ function isBlank(value: unknown): boolean {
 export function buildActiveFilter(
   config: FilterConfig,
   rawValue: unknown,
-  formats: ResolvedFormats = resolveFormats()
+  formats: FormatsInput = resolveFormats()
 ): ActiveFilter | null {
-  const formatDate = (value: string) => formatValue(value, formats.date);
+  const formatDate = (value: string) => formatValue(value, formats.date, false, formats.locale);
   const base = { id: config.id, label: config.label, mandatory: config.mandatory };
 
   switch (config.type) {
@@ -89,7 +94,8 @@ export function buildActiveFilter(
       if (isBlank(rawValue)) return null;
       const [yearStr, monthStr] = (rawValue as string).split("-");
       const monthIndex = Number(monthStr) - 1;
-      const displayValue = `${MONTH_NAMES[monthIndex] ?? monthStr} ${yearStr}`;
+      const monthName = getDateNames(formats.locale).months[monthIndex];
+      const displayValue = `${monthName ?? monthStr} ${yearStr}`;
       const apiPayload =
         config.monthKey || config.yearKey
           ? {

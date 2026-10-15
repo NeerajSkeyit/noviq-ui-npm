@@ -11,10 +11,8 @@ import {
   DEFAULT_MIN_YEAR,
   DEFAULT_YEARS_AHEAD,
   KEY,
-  MONTH_NAMES,
-  WEEKDAY_LABELS,
-  WEEK_START,
 } from "../../constants";
+import { getDateNames } from "../../utils/dateTimeFormat";
 import {
   addDays,
   addMonths,
@@ -80,6 +78,8 @@ function DatePicker({
   const baseId = useId();
   const configuredFormats = useDateTimeFormats(); // unconditional: hooks can't be short-circuited
   const pattern = displayFormat ?? configuredFormats.date;
+  const { locale, weekStart } = configuredFormats;
+  const names = getDateNames(locale);
   const gridId = `${baseId}-grid`;
   const cellId = (date: YMD) => `${baseId}-${formatISODate(date)}`;
 
@@ -173,12 +173,12 @@ function DatePicker({
         break;
       case KEY.HOME:
         e.preventDefault();
-        focusDate(addDays(focused, -((weekdayOf(focused) - WEEK_START + DAYS_IN_WEEK) % DAYS_IN_WEEK)));
+        focusDate(addDays(focused, -((weekdayOf(focused) - weekStart + DAYS_IN_WEEK) % DAYS_IN_WEEK)));
         break;
       case KEY.END:
         e.preventDefault();
         focusDate(
-          addDays(focused, DAYS_IN_WEEK - 1 - ((weekdayOf(focused) - WEEK_START + DAYS_IN_WEEK) % DAYS_IN_WEEK))
+          addDays(focused, DAYS_IN_WEEK - 1 - ((weekdayOf(focused) - weekStart + DAYS_IN_WEEK) % DAYS_IN_WEEK))
         );
         break;
       case KEY.ENTER:
@@ -212,10 +212,10 @@ function DatePicker({
     return (!!minYM && compareYM(ym, minYM) < 0) || (!!maxYM && compareYM(ym, maxYM) > 0);
   };
 
-  const grid = buildMonthGrid(view.year, view.month, WEEK_START);
+  const grid = buildMonthGrid(view.year, view.month, weekStart);
   const weekdayHeadings = Array.from(
     { length: DAYS_IN_WEEK },
-    (_, i) => WEEKDAY_LABELS[(WEEK_START + i) % DAYS_IN_WEEK]
+    (_, i) => names.weekdaysMin[(weekStart + i) % DAYS_IN_WEEK]
   );
 
   const todayDisabled = isDateDisabled(today, min, max);
@@ -228,7 +228,7 @@ function DatePicker({
       ariaLabel={ariaLabel}
       wrapperRef={wrapperRef}
       triggerRef={triggerRef}
-      displayValue={selected ? formatYMD(selected, pattern) : ""}
+      displayValue={selected ? formatYMD(selected, pattern, locale) : ""}
       placeholder={placeholder}
       hasValue={selected !== null}
       icon={<Calendar size={14} strokeWidth={2.5} aria-hidden />}
@@ -282,7 +282,7 @@ function DatePicker({
                 value={view.month}
                 onChange={(e) => showMonth(view.year, Number(e.target.value))}
               >
-                {MONTH_NAMES.map((label, i) => (
+                {names.months.map((label, i) => (
                   <option key={label} value={i + 1} disabled={isMonthDisabled(i + 1)}>
                     {label}
                   </option>
@@ -319,7 +319,7 @@ function DatePicker({
             <div
               id={gridId}
               role="grid"
-              aria-label={`${MONTH_NAMES[view.month - 1]} ${view.year}`}
+              aria-label={`${names.months[view.month - 1]} ${view.year}`}
               className="date-picker-grid"
             >
               <div role="row" className="date-picker-weekdays">
@@ -353,7 +353,7 @@ function DatePicker({
                         role="gridcell"
                         aria-selected={isSelected}
                         aria-disabled={isDisabled || undefined}
-                        aria-label={formatYMD(date, pattern)}
+                        aria-label={formatYMD(date, pattern, locale)}
                         className={classes}
                         onClick={() => choose(date)}
                       >

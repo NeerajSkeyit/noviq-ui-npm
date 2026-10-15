@@ -8,7 +8,8 @@ import {
   type CellType,
 } from "../../constants";
 import { formatDuration } from "./dateFormat";
-import { formatValue, resolveFormats, type ResolvedFormats } from "../../utils/dateTimeFormat";
+import { formatValue, resolveFormats, type FormatsInput } from "../../utils/dateTimeFormat";
+import { formatCurrency } from "../../utils/numberFormat";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import "./TableCell.css";
 
@@ -31,18 +32,20 @@ export interface CellFormatOptions {
 }
 
 /**
- * Formats one cell value. `formats` are the date / time / date-time patterns (from
- * `NoviqUIConfigProvider`'s `formats`); omit them for the defaults.
+ * Formats one cell value. `formats` are the resolved settings from `NoviqUIConfigProvider`'s
+ * `formats` (patterns, locale, currency) — `useDateTimeFormatters().formats` gives them to you;
+ * omit them for the defaults.
  */
 export function formatTableCellValues(
   type: CellType,
   options: CellFormatOptions = {},
-  formats: ResolvedFormats = resolveFormats()
+  formats: FormatsInput = resolveFormats()
 ): string {
   const { isUtc } = options;
-  const dateOf = (v: string | number | Date) => formatValue(v, formats.date, isUtc);
-  const timeOf = (v: string | number | Date) => formatValue(v, formats.time, isUtc);
-  const dateTimeOf = (v: string | number | Date) => formatValue(v, formats.dateTime, isUtc);
+  const dateOf = (v: string | number | Date) => formatValue(v, formats.date, isUtc, formats.locale);
+  const timeOf = (v: string | number | Date) => formatValue(v, formats.time, isUtc, formats.locale);
+  const dateTimeOf = (v: string | number | Date) =>
+    formatValue(v, formats.dateTime, isUtc, formats.locale);
 
   switch (type) {
     case CELL_TYPE.DATE:
@@ -77,11 +80,11 @@ export function formatTableCellValues(
       return formatDuration(options.duration);
 
     case CELL_TYPE.CURRENCY:
-      return new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: options.currency || DEFAULT_CURRENCY,
-        maximumFractionDigits: options.maximumFractionDigits ?? 2,
-      }).format(options.value ?? 0);
+      return formatCurrency(options.value ?? 0, {
+        locale: formats.locale,
+        currency: options.currency || formats.currency || DEFAULT_CURRENCY,
+        maximumFractionDigits: options.maximumFractionDigits,
+      });
 
     default:
       return "Invalid cell type. Please provide a valid type and options.";

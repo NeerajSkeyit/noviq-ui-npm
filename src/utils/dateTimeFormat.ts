@@ -1,11 +1,19 @@
 import {
+  BUILT_IN_NAMES_LANGUAGE,
   DATE_FORMAT,
+  DAYS_IN_WEEK,
+  DEFAULT_CURRENCY,
+  DEFAULT_LOCALE,
   HOUR_STYLE,
   MONTH_NAMES,
   MONTH_NAMES_SHORT,
+  MONTH_SAMPLE_DAY,
   TIME_FORMAT,
   TIME_PERIOD,
+  WEEKDAY_LABELS,
   WEEKDAY_NAMES,
+  WEEKDAY_SAMPLE_YEAR,
+  WEEK_START,
   type HourStyle,
 } from "../constants";
 import type { NoviqUIFormats } from "../config/types";
@@ -99,6 +107,79 @@ export function toDateTimeParts(value: DateTimeInput, isUtc?: boolean): DateTime
       };
 }
 
+// ─── Names ─────────────────────────────────────────────────────────────────────────────────────
+
+/** Month and weekday names in one language. Months start at January, weekdays at Sunday. */
+export interface DateNames {
+  months: readonly string[];
+  monthsShort: readonly string[];
+  weekdays: readonly string[];
+  /** For the `ddd` token. */
+  weekdaysShort: readonly string[];
+  /** For calendar column headings: as short as the language allows. */
+  weekdaysMin: readonly string[];
+}
+
+const ENGLISH_NAMES: DateNames = {
+  months: MONTH_NAMES,
+  monthsShort: MONTH_NAMES_SHORT,
+  weekdays: WEEKDAY_NAMES,
+  weekdaysShort: WEEKDAY_NAMES.map((name) => name.slice(0, 3)),
+  weekdaysMin: WEEKDAY_LABELS,
+};
+
+const namesByLocale = new Map<string, DateNames>();
+
+function languageOf(locale: string): string | undefined {
+  try {
+    return new Intl.Locale(locale).language;
+  } catch {
+    return undefined; // not a tag at all
+  }
+}
+
+function namesFromIntl(locale: string): DateNames {
+  const nameOf = (options: Intl.DateTimeFormatOptions, date: Date) =>
+    new Intl.DateTimeFormat(locale, { ...options, timeZone: "UTC" }).format(date);
+  const monthDate = (m: number) => new Date(Date.UTC(WEEKDAY_SAMPLE_YEAR, m, MONTH_SAMPLE_DAY));
+  const weekdayDate = (d: number) => new Date(Date.UTC(WEEKDAY_SAMPLE_YEAR, 0, 1 + d));
+  const range = (count: number) => Array.from({ length: count }, (_, i) => i);
+
+  const weekdaysShort = range(DAYS_IN_WEEK).map((d) => nameOf({ weekday: "short" }, weekdayDate(d)));
+  return {
+    months: range(MONTH_NAMES.length).map((m) => nameOf({ month: "long" }, monthDate(m))),
+    monthsShort: range(MONTH_NAMES.length).map((m) => nameOf({ month: "short" }, monthDate(m))),
+    weekdays: range(DAYS_IN_WEEK).map((d) => nameOf({ weekday: "long" }, weekdayDate(d))),
+    weekdaysShort,
+    weekdaysMin: weekdaysShort.map((name) => name.replace(/\.$/, "")),
+  };
+}
+
+/**
+ * Month and weekday names for a locale. English (and anything unreadable) uses the built-in
+ * tables so a date reads the same on every runtime; other languages come from `Intl` and are
+ * cached, since a table asks for them once per cell.
+ */
+export function getDateNames(locale?: string): DateNames {
+  if (!locale) return ENGLISH_NAMES;
+  const cached = namesByLocale.get(locale);
+  if (cached) return cached;
+
+  const language = languageOf(locale);
+  let names: DateNames;
+  if (language === undefined || language === BUILT_IN_NAMES_LANGUAGE) {
+    names = ENGLISH_NAMES;
+  } else {
+    try {
+      names = namesFromIntl(locale);
+    } catch {
+      names = ENGLISH_NAMES;
+    }
+  }
+  namesByLocale.set(locale, names);
+  return names;
+}
+
 // ─── Patterns ──────────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -110,22 +191,26 @@ const TOKEN_PATTERN =
 
 const pad = (n: number, width = 2) => String(n).padStart(width, "0");
 
-/** Renders `parts` with `pattern`. */
-export function formatParts(parts: DateTimeParts, pattern: string): string {
+/**
+ * Renders `parts` with `pattern`. `locale` picks the language of month and weekday names;
+ * numbers and the AM/PM marker are the same in every locale.
+ */
+export function formatParts(parts: DateTimeParts, pattern: string, locale?: string): string {
   const { year, month, day, hour, minute, second, weekday } = parts;
   const period = hour >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
+  const names = getDateNames(locale);
 
   return pattern.replace(TOKEN_PATTERN, (match: string, literal: string | undefined) => {
     if (literal !== undefined) return literal;
     switch (match) {
       case "YYYY": return pad(year, 4);
       case "YY": return pad(year % 100);
-      case "MMMM": return MONTH_NAMES[month - 1];
-      case "MMM": return MONTH_NAMES_SHORT[month - 1];
+      case "MMMM": return names.months[month - 1];
+      case "MMM": return names.monthsShort[month - 1];
       case "MM": return pad(month);
       case "M": return String(month);
-      case "dddd": return WEEKDAY_NAMES[weekday];
-      case "ddd": return WEEKDAY_NAMES[weekday].slice(0, 3);
+      case "dddd": return names.weekdays[weekday];
+      case "ddd": return names.weekdaysShort[weekday];
       case "DD": return pad(day);
       case "D": return String(day);
       case "HH": return pad(hour);
@@ -149,9 +234,14 @@ export function formatParts(parts: DateTimeParts, pattern: string): string {
  * Formats a value with a pattern. A value that can't be read as a date or time is returned as
  * the text it was — better to show the data than to hide it or print "NaN/NaN/NaN".
  */
-export function formatValue(value: DateTimeInput, pattern: string, isUtc?: boolean): string {
+export function formatValue(
+  value: DateTimeInput,
+  pattern: string,
+  isUtc?: boolean,
+  locale?: string
+): string {
   const parts = toDateTimeParts(value, isUtc);
-  return parts ? formatParts(parts, pattern) : String(value);
+  return parts ? formatParts(parts, pattern, locale) : String(value);
 }
 
 /** Splits a pattern into tokens and literal text, keeping `[escaped]` text as a literal. */
@@ -213,11 +303,52 @@ export interface ResolvedFormats {
   date: string;
   time: string;
   dateTime: string;
+  /** The BCP-47 tag in force; `"en-IN"` when none was configured. */
+  locale: string;
+  /** The default currency code for `currency` cells. */
+  currency: string;
+  /** First day of the calendar week, `0` = Sunday. */
+  weekStart: number;
 }
 
-/** Applies the defaults. `dateTime` follows a customised `date` and `time` unless it is set. */
+/**
+ * What the formatting functions accept: the three patterns, and the regional settings if the
+ * caller has them. Hand-built `{ date, time, dateTime }` objects (from before regional settings
+ * existed) keep working and behave as the defaults for the rest.
+ */
+export type FormatsInput = Pick<ResolvedFormats, "date" | "time" | "dateTime"> & Partial<ResolvedFormats>;
+
+/** The day a locale's calendar week starts on (`0` = Sunday), or `undefined` if the runtime can't say. */
+function localeWeekStart(locale: string): number | undefined {
+  try {
+    const tag = new Intl.Locale(locale) as Intl.Locale & {
+      getWeekInfo?: () => { firstDay: number };
+      weekInfo?: { firstDay: number };
+    };
+    // Chrome and Node have `getWeekInfo()`; older engines had a `weekInfo` property. Both count
+    // Monday = 1 … Sunday = 7.
+    const info = typeof tag.getWeekInfo === "function" ? tag.getWeekInfo() : tag.weekInfo;
+    return typeof info?.firstDay === "number" ? info.firstDay % DAYS_IN_WEEK : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Applies the defaults. `dateTime` follows a customised `date` and `time` unless it is set; the
+ * week starts where the configured locale's does, and on Sunday if none is configured.
+ */
 export function resolveFormats(input?: NoviqUIFormats): ResolvedFormats {
   const date = input?.date ?? DATE_FORMAT;
   const time = input?.time ?? TIME_FORMAT;
-  return { date, time, dateTime: input?.dateTime ?? `${date} ${time}` };
+  const weekStart =
+    input?.weekStart ?? (input?.locale ? localeWeekStart(input.locale) : undefined) ?? WEEK_START;
+  return {
+    date,
+    time,
+    dateTime: input?.dateTime ?? `${date} ${time}`,
+    locale: input?.locale ?? DEFAULT_LOCALE,
+    currency: input?.currency ?? DEFAULT_CURRENCY,
+    weekStart,
+  };
 }

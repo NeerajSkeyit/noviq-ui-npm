@@ -74,16 +74,17 @@ export function formatISOMonth({ year, month }: YM): string {
 }
 
 /** A calendar date rendered with a display pattern such as `"DD/MM/YYYY"`. */
-export function formatYMD(date: YMD, pattern: string): string {
+export function formatYMD(date: YMD, pattern: string, locale?: string): string {
   return formatParts(
     { ...date, hour: 0, minute: 0, second: 0, weekday: weekdayOf(date) },
-    pattern
+    pattern,
+    locale
   );
 }
 
 /** A month rendered with a display pattern such as `"MM/YYYY"` (day 1, for weekday tokens). */
-export function formatYM(month: YM, pattern: string): string {
-  return formatYMD({ ...month, day: 1 }, pattern);
+export function formatYM(month: YM, pattern: string, locale?: string): string {
+  return formatYMD({ ...month, day: 1 }, pattern, locale);
 }
 
 export function todayYMD(): YMD {

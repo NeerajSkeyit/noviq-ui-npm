@@ -10,9 +10,12 @@ import {
 /** The date / time / date-time patterns in force: `NoviqUIConfigProvider`'s `formats`, or defaults. */
 export function useDateTimeFormats(): ResolvedFormats {
   const formats = useNoviqUIConfig()?.formats;
-  const { date, time, dateTime } = formats ?? {};
-  // Keyed on the three strings, not the object: apps commonly pass an inline `config={{...}}`.
-  return useMemo(() => resolveFormats({ date, time, dateTime }), [date, time, dateTime]);
+  const { date, time, dateTime, locale, currency, weekStart } = formats ?? {};
+  // Keyed on the values, not the object: apps commonly pass an inline `config={{...}}`.
+  return useMemo(
+    () => resolveFormats({ date, time, dateTime, locale, currency, weekStart }),
+    [date, time, dateTime, locale, currency, weekStart]
+  );
 }
 
 /**
@@ -39,17 +42,19 @@ export interface DateTimeFormatters {
 export function useDateTimeFormatters(): DateTimeFormatters {
   const formats = useDateTimeFormats();
   const formatDate = useCallback(
-    (value: DateTimeInput, options?: { isUtc?: boolean }) => formatValue(value, formats.date, options?.isUtc),
-    [formats.date]
+    (value: DateTimeInput, options?: { isUtc?: boolean }) =>
+      formatValue(value, formats.date, options?.isUtc, formats.locale),
+    [formats.date, formats.locale]
   );
   const formatTime = useCallback(
-    (value: DateTimeInput, options?: { isUtc?: boolean }) => formatValue(value, formats.time, options?.isUtc),
-    [formats.time]
+    (value: DateTimeInput, options?: { isUtc?: boolean }) =>
+      formatValue(value, formats.time, options?.isUtc, formats.locale),
+    [formats.time, formats.locale]
   );
   const formatDateTime = useCallback(
     (value: DateTimeInput, options?: { isUtc?: boolean }) =>
-      formatValue(value, formats.dateTime, options?.isUtc),
-    [formats.dateTime]
+      formatValue(value, formats.dateTime, options?.isUtc, formats.locale),
+    [formats.dateTime, formats.locale]
   );
   return { formats, formatDate, formatTime, formatDateTime };
 }

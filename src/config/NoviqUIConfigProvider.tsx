@@ -1,6 +1,12 @@
 import React, { createContext, useContext } from "react";
 import type { NoviqUIConfig, NoviqUIFormats, NoviqUITableConfig } from "./types";
-import { DATE_FORMAT } from "../constants";
+import {
+  CURRENCY_CODE_PATTERN,
+  DATE_FORMAT,
+  DAYS_IN_WEEK,
+  DEFAULT_CURRENCY,
+  DEFAULT_LOCALE,
+} from "../constants";
 import { isFnsFormat, isPathsFormat } from "./responseFormat";
 
 const NoviqUIConfigContext = createContext<NoviqUIConfig | undefined>(undefined);
@@ -24,6 +30,16 @@ function validateTableConfig(table: NoviqUITableConfig): void {
 
 const FORMAT_KEYS: (keyof NoviqUIFormats)[] = ["date", "time", "dateTime"];
 
+function isLocaleTag(value: unknown): boolean {
+  if (typeof value !== "string" || value.trim() === "") return false;
+  try {
+    Intl.getCanonicalLocales(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function validateFormats(formats: NoviqUIFormats): void {
   for (const key of FORMAT_KEYS) {
     const value = formats[key];
@@ -34,6 +50,29 @@ function validateFormats(formats: NoviqUIFormats): void {
           `got ${JSON.stringify(value)}.`
       );
     }
+  }
+
+  const { locale, currency, weekStart } = formats;
+  if (locale !== undefined && !isLocaleTag(locale)) {
+    throw new Error(
+      `noviq-ui: config.formats.locale must be a BCP-47 language tag, e.g. "${DEFAULT_LOCALE}" or ` +
+        `"de-DE" — got ${JSON.stringify(locale)}.`
+    );
+  }
+  if (currency !== undefined && !(typeof currency === "string" && CURRENCY_CODE_PATTERN.test(currency))) {
+    throw new Error(
+      `noviq-ui: config.formats.currency must be a three-letter ISO 4217 code, e.g. ` +
+        `"${DEFAULT_CURRENCY}" — got ${JSON.stringify(currency)}.`
+    );
+  }
+  if (
+    weekStart !== undefined &&
+    !(Number.isInteger(weekStart) && weekStart >= 0 && weekStart < DAYS_IN_WEEK)
+  ) {
+    throw new Error(
+      `noviq-ui: config.formats.weekStart must be a whole number from 0 (Sunday) to ` +
+        `${DAYS_IN_WEEK - 1} (Saturday) — got ${JSON.stringify(weekStart)}.`
+    );
   }
 }
 

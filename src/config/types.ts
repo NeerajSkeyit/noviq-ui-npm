@@ -47,6 +47,23 @@ export interface NoviqUIFormats {
   time?: string;
   /** Default: the date pattern, a space, then the time pattern. */
   dateTime?: string;
+  /**
+   * A BCP-47 language tag such as `"de-DE"` or `"fr-FR"`. It sets the language of month and weekday
+   * names (`MMMM`, `ddd`, the calendar headings), how currency cells group and place their symbol,
+   * and — unless `weekStart` says otherwise — which day the calendar's week starts on.
+   * Default `"en-IN"`: English names, lakh/crore grouping, weeks starting on Sunday.
+   */
+  locale?: string;
+  /**
+   * ISO 4217 code a `currency` column uses when it sets none of its own, e.g. `"USD"`.
+   * Default `"INR"`.
+   */
+  currency?: string;
+  /**
+   * The first day of the calendar's week: `0` = Sunday … `6` = Saturday. Default: the locale's own
+   * first day when `locale` is set, otherwise Sunday.
+   */
+  weekStart?: number;
 }
 
 export interface NoviqUIConfig {

@@ -3,14 +3,13 @@ import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import PickerField from "../PickerField/PickerField";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
-import { deriveMonthPattern } from "../../utils/dateTimeFormat";
+import { deriveMonthPattern, getDateNames } from "../../utils/dateTimeFormat";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import {
   BUTTON_TYPE,
   KEY,
   MONTH_GRID_COLUMNS,
   MONTH_NAMES,
-  MONTH_NAMES_SHORT,
 } from "../../constants";
 import {
   addMonthsYM,
@@ -71,6 +70,8 @@ function MonthPicker({
   const baseId = useId();
   const configuredFormats = useDateTimeFormats(); // unconditional: hooks can't be short-circuited
   const pattern = displayFormat ?? deriveMonthPattern(configuredFormats.date);
+  const { locale } = configuredFormats;
+  const names = getDateNames(locale);
   const gridId = `${baseId}-grid`;
   const cellId = (ym: YM) => `${baseId}-${formatISOMonth(ym)}`;
 
@@ -208,7 +209,7 @@ function MonthPicker({
       ariaLabel={ariaLabel}
       wrapperRef={wrapperRef}
       triggerRef={triggerRef}
-      displayValue={selected ? formatYM(selected, pattern) : ""}
+      displayValue={selected ? formatYM(selected, pattern, locale) : ""}
       placeholder={placeholder}
       hasValue={selected !== null}
       icon={<Calendar size={14} strokeWidth={2.5} aria-hidden />}
@@ -287,11 +288,11 @@ function MonthPicker({
                         role="gridcell"
                         aria-selected={isSelected}
                         aria-disabled={isDisabled || undefined}
-                        aria-label={`${MONTH_NAMES[ym.month - 1]} ${ym.year}`}
+                        aria-label={`${names.months[ym.month - 1]} ${ym.year}`}
                         className={classes}
                         onClick={() => choose(ym)}
                       >
-                        {MONTH_NAMES_SHORT[ym.month - 1]}
+                        {names.monthsShort[ym.month - 1]}
                       </div>
                     );
                   })}

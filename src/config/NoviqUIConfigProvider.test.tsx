@@ -109,5 +109,34 @@ describe("NoviqUIConfigProvider", () => {
     it.each(["date", "time", "dateTime"])("throws when %s is empty", (key) => {
       expect(() => mount({ formats: { [key]: "   " } })).toThrow(/non-empty format string/);
     });
+
+    describe("regional settings", () => {
+      it("accepts a locale, currency and weekStart", () => {
+        mount({ formats: { locale: "de-DE", currency: "EUR", weekStart: 1 } });
+        expect(screen.getByText("has-config")).toBeInTheDocument();
+      });
+
+      it.each([42, "", "   ", "not a locale!", "en_US"])("throws for locale %j", (locale) => {
+        expect(() => mount({ formats: { locale } })).toThrow(/config\.formats\.locale/);
+      });
+
+      it.each([42, "", "RUPEE", "in", "R$"])("throws for currency %j", (currency) => {
+        expect(() => mount({ formats: { currency } })).toThrow(/config\.formats\.currency/);
+      });
+
+      it("accepts a lower-case currency code", () => {
+        mount({ formats: { currency: "usd" } });
+        expect(screen.getByText("has-config")).toBeInTheDocument();
+      });
+
+      it.each([-1, 7, 1.5, "1", NaN])("throws for weekStart %j", (weekStart) => {
+        expect(() => mount({ formats: { weekStart } })).toThrow(/config\.formats\.weekStart/);
+      });
+
+      it.each([0, 1, 6])("accepts weekStart %i", (weekStart) => {
+        mount({ formats: { weekStart } });
+        expect(screen.getByText("has-config")).toBeInTheDocument();
+      });
+    });
   });
 });

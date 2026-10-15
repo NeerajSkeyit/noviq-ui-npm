@@ -323,8 +323,23 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const DEFAULT_COLUMN_WIDTH = 140;
 /** @internal */
 export const SEARCH_DEBOUNCE_MS = 500;
-/** @internal Currency a `currency` cell falls back to when the column sets none. */
+/** @internal Currency a `currency` cell falls back to when neither the column nor `formats.currency` sets one. */
 export const DEFAULT_CURRENCY = "INR";
+/** @internal Locale numbers are grouped by when `formats.locale` is not set (lakh/crore grouping). */
+export const DEFAULT_LOCALE = "en-IN";
+/** @internal Fraction digits a `currency` cell shows when the column sets no `maximumFractionDigits`. */
+export const DEFAULT_CURRENCY_FRACTION_DIGITS = 2;
+/**
+ * @internal Names for this language come from the built-in tables, not from `Intl`: ICU spells
+ * September "Sept" in en-GB and en-AU but "Sep" in en-US, and a date shouldn't change with the build.
+ */
+export const BUILT_IN_NAMES_LANGUAGE = "en";
+/** @internal An ISO 4217 currency code: exactly three letters. */
+export const CURRENCY_CODE_PATTERN = /^[A-Za-z]{3}$/;
+/** @internal A year whose 1 January is a Sunday: weekday names are read from the seven days after it. */
+export const WEEKDAY_SAMPLE_YEAR = 2023;
+/** @internal Month names are read from this day of each month, well clear of any time-zone edge. */
+export const MONTH_SAMPLE_DAY = 15;
 /** @internal Key prefix under which a Table's column settings are persisted in `localStorage`. */
 export const COLUMN_SETTINGS_STORAGE_PREFIX = "noviq-ui-table-columns:";
 

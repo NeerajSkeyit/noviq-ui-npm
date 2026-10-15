@@ -169,7 +169,7 @@ describe("deriveMonthPattern", () => {
 
 describe("resolveFormats", () => {
   it("defaults to DD/MM/YYYY, hh:mm A and their combination", () => {
-    expect(resolveFormats()).toEqual({
+    expect(resolveFormats()).toMatchObject({
       date: "DD/MM/YYYY",
       time: "hh:mm A",
       dateTime: "DD/MM/YYYY hh:mm A",
