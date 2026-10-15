@@ -178,8 +178,8 @@ function Example() {
 }
 ```
 
-**Escape closes only the topmost layer.** With a date/time/month picker or a select's menu open
-inside a `Modal` or `Drawer`, the first Escape closes that picker or menu and the second closes
+**Escape closes only the topmost layer.** With a date/time/month picker, a select's menu or a
+`DropdownMenu` open inside a `Modal` or `Drawer`, the first Escape closes that picker or menu and the second closes
 the overlay. A `Drawer` opened from a `Modal` closes before the `Modal` does, and an open `Drawer`
 without `closeOnOutside` ignores Escape but still shields the `Modal` beneath it. (A `Modal`
 always closes on Escape; a `Drawer` only with `closeOnOutside`.)
@@ -405,6 +405,8 @@ prop — e.g. one screen calling a third-party API with a different shape than t
 
 Pass `preFetchedData` instead of `apiFunction` for a fully client-controlled table (no fetching,
 no `@tanstack/react-query`, and no `NoviqUIConfigProvider` requirement — you own the array).
+While your own request is still in flight, pass `isPrefetchedDataLoading` — the table shows its
+loading state (not "No data found") even though the array is still empty.
 
 #### Column management
 

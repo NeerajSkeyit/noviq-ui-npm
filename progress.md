@@ -593,6 +593,26 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `formats.month`); a nested provider *replaces* its parent's config (does not merge);
         native date/time inputs can't be reformatted.
 
+- [x] **`4.3.1` — correctness patch** (staged, see "Ready to publish"; no API change).
+  - [x] **Reference-counted body scroll lock** (`hooks/useBodyScrollLock`): nested overlays no
+        longer unlock the page under an open Modal, a closed Drawer can't cancel a Modal's lock,
+        and the page's previous `overflow` is restored. 7 tests.
+  - [x] **`isPrefetchedDataLoading` works while the array is empty** (prefetched mode is now "rows
+        given *or* no apiFunction"). Found a second, related flaw while testing it, fixed in the
+        same place: "No data found" rendered *under* the translucent spinner on every first load,
+        in `apiFunction` mode too; the empty state is now withheld while loading.
+  - [x] **`Checkbox` no longer depends on `style.css` to hide its native input** (`hidden` +
+        `aria-hidden`); a test removes the injected styles to prove it — my first version of that
+        test passed vacuously because the suite loads the CSS.
+  - [x] **`DropdownMenu` closes on Escape** (joins the layer stack), and finally has a test file —
+        it had none.
+  - [x] **`FilterDrawer.onRemoveFilter` is optional** (`@deprecated`; it was required but unused).
+  - [x] Tests: library 646 (up from 626), demo 57 (5 new). All five fixes mutation-checked; one
+        mutant survived at first (`hidden` was masked by `aria-hidden`) and led to a stronger
+        assertion. The 5 new consumer tests **fail on the published 4.3.0** and pass on 4.3.1.
+        Verified in a real browser: nested modal+drawer lock, Export menu Escape, late rows.
+  - [x] Left for `4.4.0`: `Input type="search"` label/error, the `cell()` placeholder gotcha.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -649,7 +669,13 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   `^4.3.0` from the registry (typecheck, build and 52 consumer tests green).
 
 ## Ready to publish
-_Nothing staged._
+- `4.3.1` — **patch.** Nested overlays keep the page scroll-locked until the last one closes;
+  `Table` shows its loading state (and no "No data found" underneath it) while prefetched rows are
+  still arriving and on the first `apiFunction` load; `Checkbox` is accessible without
+  `style.css`; `DropdownMenu` closes on Escape; `FilterDrawer`'s `onRemoveFilter` is optional.
+  Gate: `tsc` clean, 646/646 library tests, build, `npm pack` (57 files), demo typecheck + build +
+  57 consumer tests against the packed tarball (5 fail on 4.3.0), real-browser checks.
+  Awaiting explicit go-ahead to `npm publish`.
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
@@ -725,30 +751,18 @@ _Nothing staged._
   typecheck, so type-level regressions (like the `Form` `formik` prop typing fixed in `3.0.0`)
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
-### Open defects and gotchas (as of `4.3.0`)
-(From the 4.2.0 integration test, minus what `4.2.1`/`4.3.0` fixed, plus two verified since.)
+### Open defects and gotchas (as of `4.3.1`)
+(From the 4.2.0 integration test, minus everything fixed since, plus what was verified later.)
 - **Currency is always formatted with Indian digit grouping.** `TableCell` hard-codes
   `Intl.NumberFormat("en-IN", …)` for every currency, so USD renders `$12,34,567.50` and EUR
   `€98,76,543.21`; a US/EU app expects `$1,234,567.50` / `9.876.543,21 €`. The default currency is
   also hard-coded to `INR`. (Verified.)
-- **`Table` `isPrefetchedDataLoading` does nothing while the array is empty.** Prefetched mode is
-  decided by `preFetchedData.length > 0`, so the common `preFetchedData={data ?? []}` +
-  `isPrefetchedDataLoading={isFetching}` shows "No data found" instead of the loading state until
-  the first rows arrive. (Verified.)
-- **Body scroll lock isn't reference-counted** (found while fixing Escape). `Modal`/`Drawer` each
-  write `document.body.style.overflow = isOpen ? "hidden" : ""`. Closing a nested Drawer unlocks
-  page scroll under an open Modal, and a closed Drawer whose effect runs after an open Modal's
-  (every `Table` mounts two hidden drawers) cancels the Modal's lock. Verified in jsdom.
 - **A closed `Drawer` keeps its children mounted** (hidden, `aria-hidden`). Each `Table`
   therefore mounts two hidden drawers (columns, filters); a form inside a closed Drawer stays live
   (state, effects, autofocus), and two drawers rendering the same `id` produce duplicate ids.
-- `DropdownMenu` has no Escape handling.
 - `Input type="search"` ignores `label`, `error` and `helper` (renders no field container).
 - `TableColumn.cell(row, cellValue)` receives the library's placeholder `"-"` for an empty value,
   not `""` — easy to get backwards (`value ? … : …` is always truthy).
-- `FilterDrawer`'s `onRemoveFilter` prop is required by the type but never used.
-- The `Checkbox` renders a hidden native `<input>` *and* a `role="checkbox"` div; it relies on
-  `style.css` to hide the input (without the stylesheet a screen reader sees two checkboxes).
 - Only Chromium was exercised: no Firefox/Safari run, no screen-reader pass, no RTL.
 - The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
   the browser); only the CSV bytes are asserted.
@@ -757,12 +771,10 @@ _Nothing staged._
 Each release is one theme, small enough to verify in the demo before publishing. Order is by
 user-visible damage first, then by how much later work depends on it.
 
-### `4.3.1` — correctness patch (no API change)
-1. Reference-counted body scroll lock (nested overlays stop unlocking page scroll).
-2. `Table`: `isPrefetchedDataLoading` honoured while the array is still empty.
-3. `Checkbox`: don't rely on `style.css` to hide the native input (a11y without the stylesheet).
-4. `DropdownMenu`: close on Escape (join the overlay layer stack).
-5. `FilterDrawer`: make the unused `onRemoveFilter` prop optional.
+### `4.3.1` — correctness patch (no API change) — done, staged
+~~1. Reference-counted body scroll lock.~~ ~~2. `isPrefetchedDataLoading` while empty (+ no "No
+data found" under the spinner).~~ ~~3. `Checkbox` accessible without `style.css`.~~ ~~4.
+`DropdownMenu` closes on Escape.~~ ~~5. `FilterDrawer.onRemoveFilter` optional.~~
 
 ### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`)
 1. `formats.locale` (BCP-47) for number/currency grouping, replacing the hard-coded `en-IN`;

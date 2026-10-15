@@ -593,14 +593,13 @@ the panel, because focus moves into the header `<select>`s after a mouse interac
 menus (`hooks/useSelectEscapeGuard.ts`, used by `Input` and `TablePagination`), and `RejectAction`'s
 popover. The stack is ordered by *open* order, so a callback's identity is kept in a ref — registering
 again on each render would move the layer to the top.
-Known gaps (verified, not fixed in `4.2.1`):
-- `DropdownMenu` has no Escape handling at all.
-- **Body scroll lock is not reference-counted.** `Modal` and `Drawer` each write
-  `document.body.style.overflow = isOpen ? "hidden" : ""` from their own effect. So (a) closing a
-  nested Drawer re-enables page scroll under a Modal that is still open, and (b) a *closed* Drawer
-  whose effect runs after an open Modal's (e.g. the hidden column/filter drawers every `Table`
-  mounts, or both present at first render) cancels the Modal's lock. Fix = a shared counter hook
-  that locks while any overlay is open and restores the previous value at zero.
+**Body scroll lock is reference-counted** (`hooks/useBodyScrollLock.ts`, `4.3.1`). `Modal` and
+`Drawer` each used to write `document.body.style.overflow = isOpen ? "hidden" : ""` from their own
+effect, so closing a nested Drawer unlocked the page under an open Modal, and a *closed* Drawer
+(every `Table` mounts two) could cancel a Modal's lock. Now only an *open* overlay takes a lock,
+the page is locked until the last one closes, and the page's own previous `overflow` is restored
+(not blindly `""`). `DropdownMenu` also joins the Escape layer stack, so a menu opened inside a
+Modal closes before the Modal does.
 
 ## Constants — the standing convention
 **Every fixed value goes in `src/constants.ts`; component code never repeats it as a bare
