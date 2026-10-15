@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { BUTTON_SIZE, BUTTON_VARIANT, MODAL_SIZE, type ModalSize } from "../../constants";
 import "./Modal.css";
 
@@ -58,12 +59,7 @@ function Modal({
   closeOnOutside = true,
   size = MODAL_SIZE.MD,
 }: ModalProps) {
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   useEscapeLayer(isOpen, onClose);
 

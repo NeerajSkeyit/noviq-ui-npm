@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import {
   BUTTON_SIZE,
   BUTTON_VARIANT,
@@ -42,12 +43,7 @@ function Drawer({
   // open drawer that ignores Escape is still a layer, so it shields a Modal beneath it.
   useEscapeLayer(isOpen, closeOnOutside ? onClose : undefined);
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   return createPortal(
     <>
