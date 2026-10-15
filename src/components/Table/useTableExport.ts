@@ -46,7 +46,8 @@ export interface UseTableExportResult {
   exporting: boolean;
 }
 
-function getExportCellValue<T>(
+/** The text a column shows (or its `exportValue`) — what an export writes and a search matches. */
+export function getExportCellValue<T>(
   row: T,
   column: TableColumn<T>,
   formats: ResolvedFormats

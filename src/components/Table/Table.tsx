@@ -13,7 +13,7 @@ import BulkActionsBar, { type BulkAction } from "./BulkActionsBar";
 import FilterDrawer from "./FilterDrawer";
 import FilterChips from "./FilterChips";
 import Export from "./Export";
-import useTableExport from "./useTableExport";
+import useTableExport, { getExportCellValue } from "./useTableExport";
 import { buildActiveFilter, type FilterConfig, type ActiveFilter } from "./buildActiveFilter";
 import { useTableColumnSettings } from "./useTableColumnSettings";
 import {
@@ -336,8 +336,22 @@ function TableInner<T extends Record<string, any> = any>({
   }, [queryResult, responseFormat]);
 
   const data: T[] = usingPreFetched ? preFetchedData : extracted.rows;
-  const totalItems = usingPreFetched ? preFetchedData.length : extracted.total;
   const isLoading = usingPreFetched ? isPrefetchedDataLoading : isQueryLoading;
+
+  // Rows handed over by the caller are searched here, against the text the visible columns show
+  // (a date as "05/03/2024", a status as its label). With an `apiFunction` the term goes to the
+  // server instead and the rows that come back are already the answer.
+  const searchedData = useMemo(() => {
+    const term = debouncedSearch.trim().toLowerCase();
+    if (!usingPreFetched || term === "") return data;
+    const textOf = (row: T, column: TableColumn<T>) => {
+      const text = String(getExportCellValue(row, column, dateTimeFormats));
+      return text === NO_TEXT_PLACEHOLDER ? "" : text.toLowerCase();
+    };
+    return data.filter((row) => displayColumns.some((column) => textOf(row, column).includes(term)));
+  }, [data, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats]);
+
+  const totalItems = usingPreFetched ? searchedData.length : extracted.total;
 
   const getRenderValue = useCallback(
     (row: T, column: TableColumn<T>, cellValue: string): React.ReactNode => {
@@ -358,18 +372,32 @@ function TableInner<T extends Record<string, any> = any>({
   );
 
   const sortedData = useMemo(() => {
-    if (!sort.column || !sort.direction) return data;
+    if (!sort.column || !sort.direction) return searchedData;
     const column = columns.find((c) => c.id === sort.column);
-    if (!column) return data;
+    if (!column) return searchedData;
 
-    return [...data].sort((a, b) => {
+    return [...searchedData].sort((a, b) => {
       const aValue = getCellValue(a, column);
       const bValue = getCellValue(b, column);
       return sort.direction === SORT_DIRECTION.ASC
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     });
-  }, [data, sort, columns]);
+  }, [searchedData, sort, columns]);
+
+  // Handed-over rows are all here at once, so the pager is honoured client-side: one page of the
+  // searched, sorted rows. A hidden pager means the caller wants every row shown. A page left
+  // beyond the end (the rows shrank) shows the last one instead of an empty table.
+  const pageCount = Math.max(1, Math.ceil(sortedData.length / pagination.pageSize));
+  const currentPage = usingPreFetched ? Math.min(pagination.page, pageCount) : pagination.page;
+  const shownPagination = { page: currentPage, pageSize: pagination.pageSize };
+  const pageRows = useMemo(
+    () =>
+      usingPreFetched && !isPaginationHidden
+        ? sortedData.slice((currentPage - 1) * pagination.pageSize, currentPage * pagination.pageSize)
+        : sortedData,
+    [usingPreFetched, isPaginationHidden, sortedData, currentPage, pagination.pageSize]
+  );
 
   const { exportToExcel, exportToCSV, exporting } = useTableExport({
     apiFunction,
@@ -394,11 +422,11 @@ function TableInner<T extends Record<string, any> = any>({
 
   const handleSelectAll = (checked: boolean) => {
     if (!isRowSelectionEnabled) return;
-    setSelectedRows(checked ? new Set(sortedData.map((row) => getRowId!(row))) : new Set());
+    setSelectedRows(checked ? new Set(pageRows.map((row) => getRowId!(row))) : new Set());
   };
 
   const allSelected =
-    isRowSelectionEnabled && sortedData.length > 0 && sortedData.every((row) => selectedRows.has(getRowId!(row)));
+    isRowSelectionEnabled && pageRows.length > 0 && pageRows.every((row) => selectedRows.has(getRowId!(row)));
 
   const renderSortIcon = (columnId: string) => {
     if (sort.column !== columnId) return <ArrowUpDown size={14} className="table-sort-icon" />;
@@ -511,7 +539,7 @@ function TableInner<T extends Record<string, any> = any>({
             </tr>
           </thead>
           <tbody>
-            {sortedData.length === 0 ? (
+            {pageRows.length === 0 ? (
               <tr>
                 <td colSpan={renderColumns.length}>
                   {isLoading ? (
@@ -525,7 +553,7 @@ function TableInner<T extends Record<string, any> = any>({
                 </td>
               </tr>
             ) : (
-              sortedData.map((row, rowIndex) => {
+              pageRows.map((row, rowIndex) => {
                 const rowId = isRowSelectionEnabled ? getRowId!(row) : undefined;
                 const isSelected = !!rowId && selectedRows.has(rowId);
 
@@ -566,7 +594,7 @@ function TableInner<T extends Record<string, any> = any>({
                             actions={rowActions!(row)}
                             row={row}
                             rowIndex={rowIndex}
-                            pagination={pagination}
+                            pagination={shownPagination}
                             isWithoutDropdown={isRowActionsWithoutDropdown}
                           />
                         </td>
@@ -596,7 +624,7 @@ function TableInner<T extends Record<string, any> = any>({
 
       {!isPaginationHidden && (
         <TablePagination
-          pagination={pagination}
+          pagination={shownPagination}
           totalItems={totalItems}
           onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
           onPageSizeChange={(pageSize) => setPagination({ page: 1, pageSize })}
