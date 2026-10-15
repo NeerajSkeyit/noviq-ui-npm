@@ -316,7 +316,10 @@ function TableInner<T extends Record<string, any> = any>({
     retry: 3,
   });
 
-  const usingPreFetched = preFetchedData.length > 0;
+  // Prefetched mode is "rows were handed to me", but also "there is no apiFunction to ask": with
+  // neither, an empty array still means the caller is feeding the table, so
+  // `isPrefetchedDataLoading` must apply while the first rows are still on their way.
+  const usingPreFetched = preFetchedData.length > 0 || !apiFunction;
 
   // Run the response format only against a real response. `queryResult` is `undefined` until the
   // first request resolves; handing that to `getRows`/`getTotal` would force every consumer to
@@ -511,7 +514,14 @@ function TableInner<T extends Record<string, any> = any>({
             {sortedData.length === 0 ? (
               <tr>
                 <td colSpan={renderColumns.length}>
-                  <EmptyState message={emptyMessage} />
+                  {isLoading ? (
+                    // Nothing has arrived yet. "No data found" would show through the
+                    // translucent spinner overlay and read as a verdict, not a wait, so reserve
+                    // the same space and say nothing.
+                    <div className="table-empty-state table-empty-state-pending" aria-hidden="true" />
+                  ) : (
+                    <EmptyState message={emptyMessage} />
+                  )}
                 </td>
               </tr>
             ) : (

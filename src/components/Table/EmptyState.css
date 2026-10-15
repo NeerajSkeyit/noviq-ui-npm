@@ -12,3 +12,9 @@
   margin: 0;
   font-size: var(--font-size);
 }
+
+/* Same footprint as the real empty state (icon + one line), without its content. */
+.table-empty-state-pending {
+  min-height: 108px;
+  box-sizing: content-box;
+}

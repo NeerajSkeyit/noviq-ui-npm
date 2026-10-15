@@ -508,3 +508,53 @@ describe("Table", () => {
     expect(() => render(<Table columns={columns} apiFunction={apiFunction} hidden />)).not.toThrow();
   });
 });
+
+describe("Table: prefetched data that is still on its way", () => {
+  const cols: TableColumn<Row>[] = [{ id: "name", heading: "Name", accessorKey: "name" }];
+
+  it("shows the loading state while the array is still empty", () => {
+    render(<Table columns={cols} preFetchedData={[]} isPrefetchedDataLoading />);
+    expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
+    // …and doesn't also announce "No data found" underneath it.
+    expect(screen.queryByText(/no data found/i)).not.toBeInTheDocument();
+  });
+
+  it("an apiFunction table's first load doesn't flash 'No data found' either", async () => {
+    let resolve!: (v: unknown) => void;
+    const apiFunction = vi.fn(() => new Promise((r) => (resolve = r)));
+    render(<Table columns={cols} apiFunction={apiFunction} responseFormat={FLAT_RESPONSE_FORMAT} />);
+
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeInTheDocument();
+    expect(screen.queryByText(/no data found/i)).not.toBeInTheDocument();
+
+    resolve({ result: [], totalCount: 0 });
+    await waitFor(() => expect(screen.getByText(/no data found/i)).toBeInTheDocument());
+  });
+
+  it("shows the empty state, not a spinner, once loading has finished with no rows", () => {
+    render(<Table columns={cols} preFetchedData={[]} isPrefetchedDataLoading={false} />);
+    expect(screen.queryByRole("status", { name: "Loading" })).not.toBeInTheDocument();
+    expect(screen.getByText(/no data found/i)).toBeInTheDocument();
+  });
+
+  it("still shows the loading state when refreshing a table that already has rows", () => {
+    render(<Table columns={cols} preFetchedData={rows} isPrefetchedDataLoading />);
+    expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
+    expect(screen.getByText("Charlie")).toBeInTheDocument();
+  });
+
+  it("does not turn an apiFunction table into a prefetched one when the array is empty", async () => {
+    const apiFunction = vi.fn().mockResolvedValue({ result: rows, totalCount: rows.length });
+    render(
+      <Table
+        columns={cols}
+        apiFunction={apiFunction}
+        responseFormat={FLAT_RESPONSE_FORMAT}
+        preFetchedData={[]}
+        isPrefetchedDataLoading
+      />
+    );
+    await waitFor(() => expect(screen.getByText("Charlie")).toBeInTheDocument());
+    expect(apiFunction).toHaveBeenCalled();
+  });
+});
