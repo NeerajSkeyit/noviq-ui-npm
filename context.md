@@ -3,7 +3,7 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v4.3.0** on npm (`1.1.0` shipped
+**v4.3.0** on npm, with **`4.4.0` staged** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
@@ -15,7 +15,9 @@ the `datePicker`/`timePicker`/`monthPicker` `Input` types, and the `src/constant
 (which was **not** in the published 4.0.0 even though the tree said 4.0.0 for a while: verify what
 is on the registry with `npm view` / a bundle hash before assuming); `4.2.0` adds `FullPageSection`;
 `4.3.0` adds configurable date/time formats and carries the Escape-layering, phone-pagination and
-dead-field-type fixes — see "Date and time formats" and "Overlays and Escape" below). The `2.5.x`
+dead-field-type fixes — see "Date and time formats" and "Overlays and Escape" below; `4.3.1` was
+prepared but never reached the registry, so `4.4.0` carries its fixes and adds regional settings —
+see "Regional settings" below). The `2.5.x`
 fixes were found via
 `noviq-ui-demo`, a standalone sibling project that installs the real published package against a
 real backend. See `progress.md` for the
@@ -220,8 +222,12 @@ on scroll/resize and flips above near the viewport bottom; ARIA combobox/listbox
 `aria-activedescendant`; uses the library's own `ScrollArea` instead of `simplebar-react`. The
 source's `minDate`/`maxDate` props were accepted but ignored, so they aren't ported.
 
-`hourCycle={12}` (not in the source) shows hours as `00 … 11` plus an AM/PM column — the
-zero-based 12-hour clock (Intl's `h11`), chosen explicitly by the user over the conventional
+**Since `4.4.0` the default clock is 12-hour** (`hh:mm A`, conventional `12, 01 … 11`) — it follows
+the library default `formats.time`, i.e. the pattern Table cells use; before it was 24-hour. An
+explicit `hourCycle` still wins and a configured `formats.time` still decides the clock.
+
+`hourCycle={12}` (not in the source) with **no configured format** shows hours as `00 … 11` plus an
+AM/PM column — the zero-based 12-hour clock (Intl's `h11`), chosen explicitly by the user over the conventional
 `12, 01 … 11`: `00 AM` is midnight, `00 PM` is noon (shown `00:30 PM` for 12:30). The minute column
 lists every minute 00–59 by default in both clocks (`DEFAULT_MINUTE_STEP = 1`; it was 5 before
 `4.2.1`; `minuteStep` still coarsens it). **`value`/
@@ -453,9 +459,13 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
   ReactNode` slot prop rather than threading column-visibility props through `ActionBar` itself —
   the filter/export/view-toggle slots for 3c/3d will likely follow the same pattern. Confirms the
   earlier note that `ActionBar` grows incrementally across sub-phases, not "ported once, done."
-- Known rough edge, not fixed yet: the built-in search box has no effect in `preFetchedData`
-  mode (matches the source's own behavior — search was always a server-side-only feature there
-  too, never client-side filtering).
+- `preFetchedData` mode searches and pages client-side since `4.4.0` (it used to ignore the search
+  box and render every row under a pager that claimed one page). The term matches the text of the
+  *visible* columns via `getExportCellValue` (dates as displayed, status labels, `exportValue`
+  columns; the `-` placeholder never matches). One page of the searched, sorted rows renders when
+  the pager is shown; `isPaginationHidden` renders all. Select-all = the page's rows; export =
+  all searched rows; row-action `sn` counts from the list start. `apiFunction` tables are
+  untouched: the term goes to the server.
 - **Row selection, row actions, bulk actions (3c)**: `getRowId?: (row: T) => string` (presence
   enables row selection) and `rowActions?: (row: T) => RowAction<T>[]` each auto-inject a
   pseudo-column into the rendered column set — `select` (sticky-left, width 48) and/or `actions`
@@ -567,14 +577,14 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   `DatePicker`/`MonthPicker`/`TimePicker` (+ `displayFormat` props). Defaults are unchanged.
 - **MonthPicker** derives its pattern from `formats.date` with the day token (and the adjacent
   separator) removed (`deriveMonthPattern`); there is deliberately no `formats.month`.
-- **TimePicker is the subtle one.** Its *clock* and hour list follow `formats.time` when the app set
-  one: `HH` → 24-hour, `hh`/`h` → 12-hour listing `12, 01…11`, `KK`/`K` → 12-hour listing `00…11`.
-  Precedence: explicit `hourCycle` prop > configured `formats.time` > 24-hour. A pattern that
-  contradicts the clock is ignored for that clock's default (`HH:mm` / `KK:mm A`) so the field
-  never disagrees with its columns. Not configured ⇒ identical to `4.2.x` (24-hour; `hourCycle={12}`
-  is zero-based). This is why the *table's* default time (`hh:mm A`, 12:30 PM) and the *picker's*
-  default (`00:30 PM` in 12-hour) differ until an app sets `formats.time`: unifying them silently
-  would have changed existing output.
+- **TimePicker is the subtle one.** Its *clock* and hour list follow `formats.time`: `HH` →
+  24-hour, `hh`/`h` → 12-hour listing `12, 01…11`, `KK`/`K` → 12-hour listing `00…11`. Precedence:
+  explicit `hourCycle` prop > configured `formats.time` > the library default `hh:mm A`
+  (**12-hour since `4.4.0`**; it was 24-hour until then, which is why a Table cell said
+  `02:30 PM` next to a picker saying `14:30`). A pattern that contradicts the clock is ignored for
+  that clock's default (`HH:mm` / `KK:mm A`) so the field never disagrees with its columns.
+  `hourCycle={12}` with *no* configured format keeps the zero-based `KK:mm A` (`00 … 11`) — the
+  default text only applies when the clock itself is unset (`TimePicker.tsx`: `followedPattern`).
 - **Date-only strings are calendar days.** `"2024-03-05"` is read as that day in every zone. The old
   formatter ran it through `new Date()` (UTC midnight) and showed `04/03/2024` west of Greenwich —
   a real bug in Table cells and filter chips, fixed by the same change. A bare `"HH:mm[:ss]"` is
@@ -582,6 +592,26 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
 - Unreadable values are returned as they were (was `NaN/NaN/NaN`).
 - **Nested providers replace** the parent's config; they do not merge.
 - Not covered: native `<input type=date|time|month>` render in the browser's locale.
+
+### Regional settings (`formats.locale` / `currency` / `weekStart`, `4.4.0`)
+- `locale` (BCP-47, default `DEFAULT_LOCALE = "en-IN"`), `currency` (ISO 4217, default
+  `DEFAULT_CURRENCY = "INR"`), `weekStart` (0–6, 0 = Sunday). `resolveFormats()` fills them in;
+  `weekStart` falls back to the locale's own first day (`Intl.Locale#getWeekInfo()`/`weekInfo`,
+  Monday = 1 … Sunday = 7, `% 7`) only when a locale was *configured*, else `WEEK_START`.
+- **Names**: `getDateNames(locale)` in `dateTimeFormat.ts` — English (and unreadable tags) use the
+  built-in `MONTH_NAMES`/`WEEKDAY_NAMES` tables because ICU spells September "Sept" in en-GB/en-AU
+  (probed); other languages are read from `Intl.DateTimeFormat` (UTC, a fixed Sunday-first sample
+  week), cached per locale. `weekdaysMin` is `weekday: "short"` minus a trailing dot (calendar
+  headings). `formatParts`/`formatValue` take an optional `locale`; `formatYMD`/`formatYM` too.
+- **Currency**: `utils/numberFormat.ts#formatCurrency` — cached `Intl.NumberFormat`, locale
+  validated with `Intl.getCanonicalLocales`, and a currency Intl rejects renders `"CODE 1,234.5"`
+  instead of throwing (the code may come from row data). The column's own `currency` beats
+  `formats.currency`.
+- **Types**: `ResolvedFormats` has the three new required fields; `FormatsInput` (the three
+  patterns + `Partial<ResolvedFormats>`) is what `formatTableCellValues` / `buildActiveFilter`
+  accept, so callers that built `{ date, time, dateTime }` by hand keep compiling.
+- **Not translated**: digits (always Latin), the AM/PM marker, UI copy (4.5.0), genitive month
+  forms. The provider validates the three settings and throws on mount.
 
 ## Overlays and Escape
 `Modal` and `Drawer` register on a module-level **layer stack** (`hooks/useEscapeLayer.ts`): one

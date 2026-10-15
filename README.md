@@ -4,7 +4,8 @@ A lightweight React UI component library built with React and bundled using Vite
 It provides reusable UI components that can be shared across multiple projects.
 
 **Keywords:** react components, ui library, component library, design system, typescript,
-form components, data table, react table, drawer, modal, dropdown, admin dashboard.
+form components, data table, react table, drawer, modal, dropdown, admin dashboard, date picker,
+time picker, month picker, i18n, locale, currency formatting, client-side search.
 
 ## Installation
 
@@ -72,6 +73,28 @@ depended on `noviq-ui`.
     }}
   >
 ```
+
+## What changed in 4.4.0
+
+New, and one default that changed:
+
+- **Default change — `TimePicker` is a 12-hour clock when the app sets no `formats.time`.** It used
+  to be 24-hour while every Table cell showed `hh:mm A`; now both follow the library default
+  `hh:mm A`, so a picker and a cell show a time the same way. `value` / `onChange` are still
+  24-hour `"HH:mm"`. To keep the old 24-hour picker: set `formats.time: "HH:mm"` (the Table
+  follows too) or pass `hourCycle={24}` to that picker. An explicit `hourCycle` always wins, and
+  `hourCycle={12}` with no configured format still lists `00 … 11`.
+- **`Table` with `preFetchedData` now searches and pages client-side.** The search box used to do
+  nothing and the pager said "Showing 1 to 10 of 25" over all 25 rows. Now the term filters the
+  rows by the text the visible columns show, and one page renders when the pager is shown;
+  `isPaginationHidden` still shows every row. Select-all picks the rows on the page; export writes
+  every searched row. If you fed the table one already-paged slice and kept the pager visible, pass
+  `isPaginationHidden` — otherwise it pages your slice again.
+- **`formats.locale`, `formats.currency`, `formats.weekStart`** — see "Regional settings" below.
+- **`column.cell(row, text, rawRow, rawValue)`** — a 4th argument: the accessor's untouched value
+  (number, boolean, `null`, array), next to the trimmed text.
+- **`<Input type="search" />`** renders `label`, `required`, `helper`, `error`, `disabled` and
+  `maxLength`; it ignored all of them. A bare search field is unchanged.
 
 ## Constants
 
@@ -232,7 +255,8 @@ each). Fields meant to sit on the same row need the *same* `colSpan` value (as `
 
 A time field with scrollable hour/minute columns — a consistent alternative to the browser's
 native `<input type="time">`, whose look and 12/24-hour behavior vary by browser and OS locale.
-Works as a 24-hour clock (default) or a 12-hour clock with an AM/PM column.
+Works as a 12-hour clock with an AM/PM column (the default, `hh:mm A`, as in Table cells) or a
+24-hour clock — set `formats.time: "HH:mm"` once, or `hourCycle={24}` per picker.
 
 ```javascript
 import { useState } from "react";
@@ -242,8 +266,8 @@ function Example() {
   const [start, setStart] = useState("14:30");
   return (
     <>
-      <TimePicker value={start} onChange={setStart} minuteStep={15} />              {/* 14:30 */}
-      <TimePicker value={start} onChange={setStart} hourCycle={12} />               {/* 02:30 PM */}
+      <TimePicker value={start} onChange={setStart} />                              {/* 02:30 PM */}
+      <TimePicker value={start} onChange={setStart} hourCycle={24} minuteStep={15} /> {/* 14:30 */}
     </>
   );
 }
@@ -254,10 +278,12 @@ function Example() {
   the display mode. Clearing calls `onChange("")`. An empty (or unparseable) value shows the
   placeholder — never a misleading `00:00`. A value with seconds (`"09:30:45"`) is accepted and
   displayed without them; the picker emits `HH:mm` only.
-- `hourCycle`: `24` (default) lists hours 00–23. `12` lists hours **00 … 11** and adds an AM/PM
-  column — the zero-based 12-hour clock (Intl's `h11`), so there is no "12": `00 AM` is midnight
-  and `00 PM` is noon (stored as `00:xx` and `12:xx`). Picking an hour keeps the current AM/PM;
-  picking AM/PM keeps the hour and minute.
+- `hourCycle`: left unset, the clock follows `formats.time` — `hh:mm A` by default, a 12-hour
+  clock listing `12, 01 … 11` with an AM/PM column. `24` lists hours 00–23. `12` is the same
+  AM/PM clock; with no configured `formats.time` it lists hours **00 … 11** — the zero-based
+  12-hour clock (Intl's `h11`), where `00 AM` is midnight and `00 PM` is noon (stored as `00:xx`
+  and `12:xx`) — and with an `hh` pattern configured it lists `12, 01 … 11`. Picking an hour keeps
+  the current AM/PM; picking AM/PM keeps the hour and minute.
 - The minute column lists **every minute, 00–59**, in both clocks. `minuteStep` makes it coarser
   (`minuteStep={15}` → 00, 15, 30, 45). A value that isn't on the grid (`"09:32"` with a step of 5)
   is still displayed as-is.
@@ -407,6 +433,17 @@ Pass `preFetchedData` instead of `apiFunction` for a fully client-controlled tab
 no `@tanstack/react-query`, and no `NoviqUIConfigProvider` requirement — you own the array).
 While your own request is still in flight, pass `isPrefetchedDataLoading` — the table shows its
 loading state (not "No data found") even though the array is still empty.
+
+With `preFetchedData` the table does the searching and paging itself: the search box filters the
+rows by the text the visible columns show (a date as it is displayed, a status as its label; the
+`-` placeholder for an empty cell never matches), and the pager renders one page of the searched,
+sorted rows. Pass `isPaginationHidden` to show every row — do that if you pass one already-paged
+slice. With an `apiFunction` the term is sent to your backend instead and the rows that come back
+are shown as they are.
+
+A custom `cell` render function is `cell(row, cellValue, rawRow, rawValue)`: `cellValue` is the
+accessor's value as trimmed text (`"-"` when empty), `rawValue` the same value untouched — a number,
+boolean, `null` or array. It is `undefined` for a column with no `accessorKey`.
 
 #### Column management
 
@@ -607,8 +644,39 @@ zero-based 12-hour clock where midnight and noon read `00`.
 - **`TimePicker`** takes both its **clock** and its text from `formats.time`: `HH:mm` is a
   24-hour picker, `hh:mm A` a 12-hour one listing `12, 01 … 11`, `KK:mm A` a 12-hour one listing
   `00 … 11`. An explicit `hourCycle` prop always wins, and a pattern that contradicts the clock is
-  ignored. With no `formats.time` configured it stays 24-hour (and `hourCycle={12}` uses the
-  zero-based `KK:mm A`), exactly as before.
+  ignored. With no `formats.time` configured it is the library default `hh:mm A` — the same
+  12-hour pattern the Table uses (and `hourCycle={12}` alone uses the zero-based `KK:mm A`).
+
+### Regional settings
+
+Three more options on `formats` set the language and conventions of what the UI shows:
+
+```javascript
+<NoviqUIConfigProvider
+  config={{
+    formats: {
+      locale: "de-DE",      // BCP-47 tag            (default "en-IN")
+      currency: "EUR",      // ISO 4217 code         (default "INR")
+      weekStart: 1,         // 0 = Sunday … 6 = Saturday (default: the locale's, else Sunday)
+      date: "dddd, D. MMMM YYYY",
+    },
+  }}
+>
+```
+
+- **`locale`** sets the language of month and weekday names (`MMMM`, `MMM`, `dddd`, `ddd`, the
+  calendar's month list and weekday headings, a month filter's chip), how `currency` cells group
+  digits and place the symbol (`1.234.567,50 €`), and — unless `weekStart` is set — which day the
+  calendar week starts on. English locales keep the built-in names, so a date reads the same on
+  every browser. Digits and the AM/PM marker are not translated.
+- **`currency`** is what a `currency` column uses when it sets no `currency` of its own.
+- **`weekStart`** overrides the locale's first day of the week.
+
+Unset, everything stays as it was: English names, lakh/crore grouping (`₹12,34,567.50`), INR,
+Sunday first. A locale Intl can't read, a currency that isn't three letters, or a `weekStart` that
+isn't a whole number 0–6 throws a clear error from the provider; a bad currency code inside row
+data shows the code before the number instead of breaking the table. `useDateTimeFormatters()`
+returns the resolved values as `formats.locale`, `formats.currency` and `formats.weekStart`.
 
 ### Nested providers replace, they don't merge
 A `NoviqUIConfigProvider` inside another one *replaces* the outer config for its subtree. To change
@@ -634,8 +702,8 @@ filter drawer) is rendered by the browser in the user's locale and can't be refo
 - `<Modal />` — portal-based centered modal with enter/exit animation (sizes `sm`/`md`/`lg`/`xl`/`auto`)
 - `<Label />` — styled `<label>` wrapper
 - `<Switch />` — toggle switch, keyboard accessible
-- `<TimePicker />` — time field with scrollable hour/minute columns; 24-hour or 12-hour with an
-  AM/PM column (see above)
+- `<TimePicker />` — time field with scrollable hour/minute columns; 12-hour with an AM/PM column
+  by default, or 24-hour (see above)
 - `<DatePicker />` — calendar dropdown for a date, with min/max and keyboard support (see above)
 - `<MonthPicker />` — month/year grid (see above)
 - `<FormFooter />` — Cancel/Save button row for a form

@@ -613,6 +613,47 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         Verified in a real browser: nested modal+drawer lock, Export menu Escape, late rows.
   - [x] Left for `4.4.0`: `Input type="search"` label/error, the `cell()` placeholder gotcha.
 
+- [x] **`4.4.0` — regional settings and Table/Input ergonomics** (staged, see "Ready to publish";
+      absorbs `4.3.1`, which is *not* on the registry — see "Published").
+  - [x] **`formats.locale` / `formats.currency` / `formats.weekStart`.** `locale` (BCP-47) drives
+        month/weekday names (`MMMM`, `MMM`, `dddd`, `ddd`, calendar headings, month chips),
+        currency grouping/symbol placement, and the calendar's first day unless `weekStart`
+        (0–6) is set. English locales keep the built-in tables (ICU spells September "Sept" in
+        en-GB; checked), other languages come from `Intl` and are cached. Unconfigured output is
+        byte-identical: `en-IN` grouping, `INR`, Sunday-first. `src/utils/numberFormat.ts` caches
+        one `Intl.NumberFormat` per locale/currency/precision and falls back to "CODE number"
+        for a code Intl rejects (row data can't crash the table). Provider validation: invalid
+        locale / non-3-letter currency / non-integer or out-of-range `weekStart` throw at mount.
+        `ResolvedFormats` gained `locale`, `currency`, `weekStart`; the formatting functions
+        accept the wider `FormatsInput`, so hand-built `{date,time,dateTime}` objects still work.
+  - [x] **`TimePicker` default clock follows the library time format (12-hour `hh:mm A`)** — the
+        decision from the 4.3.x roadmap, taken by the user: the Table and the picker no longer
+        disagree out of the box. A *default change*, called out in the README ("What changed in
+        4.4.0") with the one-line way back (`formats.time: "HH:mm"` or `hourCycle={24}`).
+        Explicit `hourCycle` still wins; `hourCycle={12}` with no configured format keeps the
+        `00 … 11` list the user asked for in 4.2.1. `useConfiguredTimePattern` stays internal.
+  - [x] **`Table` `preFetchedData` searches and pages client-side.** Verified before changing:
+        typing in the search box left 25 rows at 25, and the pager read "Showing 1 to 10 of 25"
+        over 25 rendered rows. Search matches the text the visible columns show (via the export
+        value, so dates/status labels match as displayed; the `-` placeholder never matches);
+        one page renders when the pager is shown (`isPaginationHidden` shows all; a stale page
+        clamps to the last); select-all is the page's rows; row-action `sn` counts from the start
+        of the list; export writes every searched row. Not applied to `apiFunction` tables.
+  - [x] **`column.cell(row, text, rawRow, rawValue)`** — raw accessor value (number, boolean,
+        `null`, array; `undefined` without an `accessorKey`).
+  - [x] **`Input type="search"`** renders label, required, helper, error, disabled, maxLength; a
+        bare search field keeps its markup (no `.form-field` margin).
+  - [x] Demo (`noviq-ui-demo`): `usd` and `de` format presets, a currency column, a client-paged
+        25-row table with a raw-value `cell`, a labelled search `Input`; 63 consumer tests (up
+        from 57) against the packed tarball — **12 fail on the published 4.3.0** (5 from the
+        4.3.1 fixes, 7 from 4.4.0). Verified in a real browser: German names, Monday-first
+        calendar, `1.234.567,50 €`, typed search "alpha 1" → Alpha 10…18, paged "1 to 10 of 25",
+        employees flow unchanged, no console errors.
+  - [x] Tests: library 753 (up from 646). Every wiring point mutation-checked (all killed; one
+        survivor — `shownPagination` in `RowActionsMenu` — led to a rows-shrank test). The
+        existing exact-match assertions on `resolveFormats()` / `useDateTimeFormats()` were
+        updated for the three new fields on purpose.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -668,8 +709,16 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   removed) and the zero-based 12-hour / every-minute TimePicker. `noviq-ui-demo/web` is on
   `^4.3.0` from the registry (typecheck, build and 52 consumer tests green).
 
+- `4.3.1` — **NOT published** (checked against the registry on 2026-10-15: `latest` is `4.3.0`,
+  `npm view noviq-ui@4.3.1` is a 404). The publish most likely failed on the OTP / web-auth 403.
+  Its fixes ship in `4.4.0`, as `4.2.1`'s did in `4.3.0`.
+
 ## Ready to publish
-- `4.3.1` — **patch.** Nested overlays keep the page scroll-locked until the last one closes;
+- `4.4.0` — **minor** (regional settings, prefetched search/paging, `cell` raw value, search
+  `Input`; one default change — see "Done"). Gate: `tsc` clean, 753/753 library tests, build,
+  `npm pack` (58 files, `noviq-ui-4.4.0.tgz`), demo typecheck + build + 63 consumer tests against
+  the tarball, real-browser checks. Awaiting `npm publish` by the user (OTP).
+- `4.3.1` — **superseded by `4.4.0`; never published.** Patch. Nested overlays keep the page scroll-locked until the last one closes;
   `Table` shows its loading state (and no "No data found" underneath it) while prefetched rows are
   still arriving and on the first `apiFunction` load; `Checkbox` is accessible without
   `style.css`; `DropdownMenu` closes on Escape; `FilterDrawer`'s `onRemoveFilter` is optional.
@@ -687,15 +736,11 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - [ ] No consumer integration — not a dependency of any of the four frontend repos yet.
 - [ ] `noviq-ui-demo` is still not a git repository (`noviq-ui` itself now is — remote
       `NeerajSkeyit/noviq-ui-npm`).
-- [ ] Other config sections from the provider's roadmap (theme, locale — see the design spec's
-      Roadmap; `notify` was built in `4.0.0`) are not built; the `NoviqUIConfig` type is shaped so they can be added
-      without another breaking change.
+- [ ] Other config sections from the provider's roadmap (theme, copy/`text` — see the design
+      spec's Roadmap; `notify` was built in `4.0.0`, `formats.locale` in `4.4.0`) are not built; the
+      `NoviqUIConfig` type is shaped so they can be added without another breaking change.
 
 ## Known bugs / limitations
-- `Table`: the built-in search box has no effect when using `preFetchedData` (client-controlled
-  mode) — matches the source's own behavior (search was always server-side-only in HRMS too), but
-  worth fixing at some point since it's a slightly confusing rough edge for a "fully controlled"
-  mode.
 - `Table`: sorting is client-side and only reorders the currently-loaded page — for a
   server-paginated table, this means sorting doesn't span the full dataset. This is faithful to
   the HRMS source's actual behavior (confirmed by reading the sort comparator directly), not a
@@ -738,8 +783,10 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   object — kept to avoid a rename for existing callers.
 - `Input type="time" | "date" | "month"` still render the browser's native inputs on purpose; the
   custom pickers are the separate `timePicker` / `datePicker` / `monthPicker` types.
-- `DatePicker` weeks always start on Sunday, and month/weekday names are English: no `weekStart`
-  or locale option yet. (The display *format* is configurable since `4.3.0`.)
+- Locale support is names, numbers/currency and week start only: digits stay Latin (`ar-EG` does
+  not get Arabic-Indic digits), the AM/PM marker is always "AM"/"PM", and month names are the
+  standalone form (so a Russian "D MMMM" reads nominative, not genitive). UI copy ("Cancel",
+  "Showing x to y…") is English until `4.5.0`.
 - **A response that doesn't match the declared `responseFormat` fails soft.** If `rowsPath`/
   `totalPath` (or `getRows`/`getTotal`) doesn't resolve against what the backend actually
   returned, `Table` renders "No data found" with total `0` and only `console.warn`s — and only
@@ -751,23 +798,21 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   typecheck, so type-level regressions (like the `Form` `formik` prop typing fixed in `3.0.0`)
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
-### Open defects and gotchas (as of `4.3.1`)
+### Open defects and gotchas (as of `4.4.0`)
 (From the 4.2.0 integration test, minus everything fixed since, plus what was verified later.)
-- **Currency is always formatted with Indian digit grouping.** `TableCell` hard-codes
-  `Intl.NumberFormat("en-IN", …)` for every currency, so USD renders `$12,34,567.50` and EUR
-  `€98,76,543.21`; a US/EU app expects `$1,234,567.50` / `9.876.543,21 €`. The default currency is
-  also hard-coded to `INR`. (Verified.)
 - **A closed `Drawer` keeps its children mounted** (hidden, `aria-hidden`). Each `Table`
   therefore mounts two hidden drawers (columns, filters); a form inside a closed Drawer stays live
   (state, effects, autofocus), and two drawers rendering the same `id` produce duplicate ids.
-- `Input type="search"` ignores `label`, `error` and `helper` (renders no field container).
 - `TableColumn.cell(row, cellValue)` receives the library's placeholder `"-"` for an empty value,
-  not `""` — easy to get backwards (`value ? … : …` is always truthy).
+  not `""` — easy to get backwards (`value ? … : …` is always truthy). Since `4.4.0` the 4th
+  argument is the raw value, which is `null`/`undefined` when empty.
+- `Table` `preFetchedData` + `filterConfigs`: the filter drawer builds API payloads only, so with
+  handed-over rows filters have nothing to act on (no client-side filtering, no change callback).
 - Only Chromium was exercised: no Firefox/Safari run, no screen-reader pass, no RTL.
 - The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
   the browser); only the CSV bytes are asserted.
 
-## Roadmap (as of `4.3.0`)
+## Roadmap (as of `4.4.0`)
 Each release is one theme, small enough to verify in the demo before publishing. Order is by
 user-visible damage first, then by how much later work depends on it.
 
@@ -776,13 +821,10 @@ user-visible damage first, then by how much later work depends on it.
 data found" under the spinner).~~ ~~3. `Checkbox` accessible without `style.css`.~~ ~~4.
 `DropdownMenu` closes on Escape.~~ ~~5. `FilterDrawer.onRemoveFilter` optional.~~
 
-### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`)
-1. `formats.locale` (BCP-47) for number/currency grouping, replacing the hard-coded `en-IN`;
-   `formats.currency` as the default currency instead of the hard-coded `INR`.
-2. `DatePicker` `weekStart`, and month / weekday names from the locale.
-3. Table: client-side search for `preFetchedData`; `cell()` gets the raw value option.
-4. `Input type="search"` honours `label` / `error` / `helper`.
-*Decision needed:* unify the table's default time (`hh:mm A`) with the picker's (24-hour)?
+### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`) — done, staged
+~~1. `formats.locale` / `formats.currency`.~~ ~~2. `weekStart`, locale month/weekday names.~~ ~~3.
+Table client-side search (and paging) for `preFetchedData`; `cell()` raw value.~~ ~~4. `Input
+type="search"` label/error/helper.~~ ~~Time default unified: 12-hour `hh:mm A` everywhere.~~
 
 ### `4.5.0` — copy and localisation
 User-facing strings ("Cancel", "Showing x to y of z results", aria labels…) become constants and
@@ -795,8 +837,8 @@ drawer; measured (not declared-width) sticky offsets; closed `Drawer` children u
 first); *decision needed:* should a nested `NoviqUIConfigProvider` merge with its parent?
 
 ### `5.0.0` — only if a real adopter forces it
-Rename `Form`'s `formik` prop (keep an alias), merge nested providers, unify time defaults,
-unmount closed drawers by default. Batch all behavioural breaks here, not one at a time.
+Rename `Form`'s `formik` prop (keep an alias), merge nested providers, unmount closed drawers by
+default. Batch all behavioural breaks here, not one at a time.
 
 ### Alongside (no release of their own)
 - **Quality gates:** `eslint.config.js` (lint is broken), CI running tsc + tests + build + the
