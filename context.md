@@ -3,7 +3,7 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v4.0.0** on npm, with **v4.1.0 built/tested/staged but not yet published** (`1.1.0` shipped
+**v4.3.0** on npm (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
@@ -11,9 +11,12 @@ second, related overflow bug found in Edge on a full-width window; `3.0.0` is th
 `NoviqUIConfigProvider` release plus the `types` export-condition fix — see "Config provider"
 below; `4.0.0` adds `TimePicker` (24/12-hour), drops the `formik`/`react-hot-toast` dependencies,
 adds `config.notify`, and fixes a spurious dev warning; `4.1.0` adds `DatePicker`/`MonthPicker`,
-the `datePicker`/`timePicker`/`monthPicker` `Input` types, and the `src/constants.ts` consolidation —
-which is **not** in the published 4.0.0 even though the tree said 4.0.0 for a while: verify what is
-on the registry with `npm view` / a bundle hash before assuming). The `2.5.x` fixes were found via
+the `datePicker`/`timePicker`/`monthPicker` `Input` types, and the `src/constants.ts` consolidation
+(which was **not** in the published 4.0.0 even though the tree said 4.0.0 for a while: verify what
+is on the registry with `npm view` / a bundle hash before assuming); `4.2.0` adds `FullPageSection`;
+`4.3.0` adds configurable date/time formats and carries the Escape-layering, phone-pagination and
+dead-field-type fixes — see "Date and time formats" and "Overlays and Escape" below). The `2.5.x`
+fixes were found via
 `noviq-ui-demo`, a standalone sibling project that installs the real published package against a
 real backend. See `progress.md` for the
 phase-by-phase history. Intended to be installed as a dependency

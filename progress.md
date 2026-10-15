@@ -642,19 +642,14 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - `4.2.0` — live on npm (confirmed with `npm view`; the registry bundle is byte-identical to the
   tarball verified before publishing, 51 files). Additive: `FullPageSection`.
 
+- `4.3.0` — live on npm (confirmed with `npm view`; registry bundle byte-identical to the staged
+  tarball, 56 files). Configurable date/time/date-time `formats` on `NoviqUIConfigProvider`;
+  absorbs the never-published `4.2.1` (Escape layering, phone pagination, dead field types
+  removed) and the zero-based 12-hour / every-minute TimePicker. `noviq-ui-demo/web` is on
+  `^4.3.0` from the registry (typecheck, build and 52 consumer tests green).
+
 ## Ready to publish
-- `4.3.0` — **additive feature release.** Folds in the never-published `4.2.1` (so it also carries:
-  Escape closes only the topmost overlay; Table pagination wraps on phones; five never-implemented
-  field types — `rowsPerPage`, `multiText`, `custom`, `dateRange`, `reactQuill` — removed from
-  `INPUT_TYPE`, an unknown `type` names itself; TimePicker's zero-based 12-hour clock and
-  every-minute default). **New:** `NoviqUIConfigProvider` `formats` (date / time / dateTime)
-  applied across Table cells, export, filter chips and the pickers, `displayFormat` props,
-  `useDateTimeFormatters()`; **fixed:** date-only values shown a day early west of UTC.
-  *Release-note caveats:* the `INPUT_TYPE` removals can break code that referenced them; the
-  Table's default time (`hh:mm A`) and the TimePicker's default (24-hour) still differ until an app
-  sets `formats.time`. Gate: `tsc` clean, 626/626 library tests, build, `npm pack` (56 files), demo
-  typecheck + build + 52 consumer tests against the packed tarball, real-browser checks.
-  Awaiting explicit go-ahead to `npm publish`.
+_Nothing staged._
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
@@ -671,8 +666,6 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
       without another breaking change.
 
 ## Known bugs / limitations
-- `Input`: unrecognized `type` prop renders the literal text `"Worng input type provided"` (typo,
-  pre-existing, intentionally not fixed).
 - `Table`: the built-in search box has no effect when using `preFetchedData` (client-controlled
   mode) — matches the source's own behavior (search was always server-side-only in HRMS too), but
   worth fixing at some point since it's a slightly confusing rough edge for a "fully controlled"
@@ -719,8 +712,8 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   object — kept to avoid a rename for existing callers.
 - `Input type="time" | "date" | "month"` still render the browser's native inputs on purpose; the
   custom pickers are the separate `timePicker` / `datePicker` / `monthPicker` types.
-- `DatePicker` shows dates as `DD/MM/YYYY` and weeks start on Sunday; both are fixed constants, not
-  props (no `displayFormat` / `weekStart` / locale support yet).
+- `DatePicker` weeks always start on Sunday, and month/weekday names are English: no `weekStart`
+  or locale option yet. (The display *format* is configurable since `4.3.0`.)
 - **A response that doesn't match the declared `responseFormat` fails soft.** If `rowsPath`/
   `totalPath` (or `getRows`/`getTotal`) doesn't resolve against what the backend actually
   returned, `Table` renders "No data found" with total `0` and only `console.warn`s — and only
@@ -732,8 +725,16 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   typecheck, so type-level regressions (like the `Form` `formik` prop typing fixed in `3.0.0`)
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
-### Found by the 4.2.0 integration test — still open after `4.2.1`
-(Escape layering, pagination clipping and the dead field types were fixed in `4.2.1`.)
+### Open defects and gotchas (as of `4.3.0`)
+(From the 4.2.0 integration test, minus what `4.2.1`/`4.3.0` fixed, plus two verified since.)
+- **Currency is always formatted with Indian digit grouping.** `TableCell` hard-codes
+  `Intl.NumberFormat("en-IN", …)` for every currency, so USD renders `$12,34,567.50` and EUR
+  `€98,76,543.21`; a US/EU app expects `$1,234,567.50` / `9.876.543,21 €`. The default currency is
+  also hard-coded to `INR`. (Verified.)
+- **`Table` `isPrefetchedDataLoading` does nothing while the array is empty.** Prefetched mode is
+  decided by `preFetchedData.length > 0`, so the common `preFetchedData={data ?? []}` +
+  `isPrefetchedDataLoading={isFetching}` shows "No data found" instead of the loading state until
+  the first rows arrive. (Verified.)
 - **Body scroll lock isn't reference-counted** (found while fixing Escape). `Modal`/`Drawer` each
   write `document.body.style.overflow = isOpen ? "hidden" : ""`. Closing a nested Drawer unlocks
   page scroll under an open Modal, and a closed Drawer whose effect runs after an open Modal's
@@ -752,30 +753,43 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
   the browser); only the CSV bytes are asserted.
 
-## Suggested next steps (prioritised; as of `4.2.0`)
-**Fix the rest of what the integration test found** (a `4.2.2`):
-1. ~~Escape closes only the topmost layer~~ — done in `4.2.1`.
-2. ~~Table pagination wraps on phone widths~~ — done in `4.2.1`.
-3. ~~Dead `INPUT_TYPE` values~~ — removed in `4.2.1`.
-4. **Reference-counted body scroll lock** (small; found while doing 1) — then unmount a closed
-   `Drawer`'s children, or make it an option (duplicate ids, live hidden forms).
-5. Small API cleanups: `Input type="search"` label/error, `cell()` placeholder gotcha, unused
-   `FilterDrawer.onRemoveFilter`, `DropdownMenu` Escape.
+## Roadmap (as of `4.3.0`)
+Each release is one theme, small enough to verify in the demo before publishing. Order is by
+user-visible damage first, then by how much later work depends on it.
 
-**Quality gates** (cheap, protect everything above):
-6. Add `eslint.config.js` so `npm run lint` runs; add CI that runs tsc + tests + build + the
-   constants guard on every push (there is none).
-7. A typecheck gate for the library's own tests (they're excluded from `tsconfig.json`, which is how
-   the `Form` typing bug shipped).
-8. Make the demo's consumer suite part of the release gate (`npm test` in `noviq-ui-demo/web`
-   against the packed tarball) and put the demo under git.
+### `4.3.1` — correctness patch (no API change)
+1. Reference-counted body scroll lock (nested overlays stop unlocking page scroll).
+2. `Table`: `isPrefetchedDataLoading` honoured while the array is still empty.
+3. `Checkbox`: don't rely on `style.css` to hide the native input (a11y without the stylesheet).
+4. `DropdownMenu`: close on Escape (join the overlay layer stack).
+5. `FilterDrawer`: make the unused `onRemoveFilter` prop optional.
 
-**Features / scope decisions:**
-9. User-facing copy → constants (`DEFAULT_TEXT`) and `config.i18n`.
-10. `DatePicker` `displayFormat` / `weekStart`.
-11. Verify the Excel export file end-to-end; run Firefox/Safari and a screen-reader pass.
+### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`)
+1. `formats.locale` (BCP-47) for number/currency grouping, replacing the hard-coded `en-IN`;
+   `formats.currency` as the default currency instead of the hard-coded `INR`.
+2. `DatePicker` `weekStart`, and month / weekday names from the locale.
+3. Table: client-side search for `preFetchedData`; `cell()` gets the raw value option.
+4. `Input type="search"` honours `label` / `error` / `helper`.
+*Decision needed:* unify the table's default time (`hh:mm A`) with the picker's (24-hour)?
 
-**Adoption** (the actual goal of the package): swap `noviq-ui` into one real frontend. All four are
-Vite; `noviq-lms-admin-ui` / `noviq-lms-learner-ui` / `noviq-hrms-ui` are React 18 (verified
-compatible), AMS web is React 19. Needs your go-ahead, since you asked me not to touch running
-projects. Fix `CLAUDE.md`'s claim that hrms-ui is CRA first.
+### `4.5.0` — copy and localisation
+User-facing strings ("Cancel", "Showing x to y of z results", aria labels…) become constants and
+are overridable through `config.text` (the `config.i18n` item from the original spec). Unblocks
+any non-English app. Largest remaining sweep in the library.
+
+### `4.6.0` — Table ergonomics
+Server-side sort option (today sort only reorders the loaded page); chip click reopens the filter
+drawer; measured (not declared-width) sticky offsets; closed `Drawer` children unmounted (option
+first); *decision needed:* should a nested `NoviqUIConfigProvider` merge with its parent?
+
+### `5.0.0` — only if a real adopter forces it
+Rename `Form`'s `formik` prop (keep an alias), merge nested providers, unify time defaults,
+unmount closed drawers by default. Batch all behavioural breaks here, not one at a time.
+
+### Alongside (no release of their own)
+- **Quality gates:** `eslint.config.js` (lint is broken), CI running tsc + tests + build + the
+  constants guard + the demo's consumer suite against the packed tarball, a typecheck gate for the
+  library's own tests, `noviq-ui-demo` under git.
+- **Verification gaps:** Firefox/Safari, a screen-reader pass, RTL, and opening a real `.xlsx`.
+- **Adoption (needs your go-ahead):** pilot in one Vite app — `noviq-lms-admin-ui` (React 18) —
+  because real use should reorder everything above.
