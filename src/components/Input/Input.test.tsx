@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Input from "./Input";
 import { INPUT_TYPE } from "../../constants";
@@ -215,7 +215,8 @@ describe("Input", () => {
       expect(screen.getByLabelText("Start")).toHaveTextContent("02:30 PM");
 
       await user.click(triggerOf());
-      expect(screen.getAllByRole("option", { name: /^(00|15|30|45)$/ })).toHaveLength(4);
+      const minutes = within(screen.getByRole("listbox", { name: "Minutes" })).getAllByRole("option");
+      expect(minutes.map((o) => o.textContent)).toEqual(["00", "15", "30", "45"]);
       await user.click(screen.getByRole("option", { name: "PM" }));
       await user.click(screen.getByRole("option", { name: "05" }));
       expect(onChange).toHaveBeenLastCalledWith("17:30");

@@ -254,11 +254,13 @@ function Example() {
   the display mode. Clearing calls `onChange("")`. An empty (or unparseable) value shows the
   placeholder — never a misleading `00:00`. A value with seconds (`"09:30:45"`) is accepted and
   displayed without them; the picker emits `HH:mm` only.
-- `hourCycle`: `24` (default) lists hours 00–23. `12` lists 12, 01 … 11 and adds an AM/PM
-  column. Picking an hour keeps the current AM/PM; picking AM/PM keeps the hour and minute.
-  `12:xx AM` is `00:xx`, and `12:xx PM` is `12:xx`.
-- `minuteStep` sets the minute column's granularity (default `5`). A value that isn't on the grid
-  (`"09:32"` with a step of 5) is still displayed as-is.
+- `hourCycle`: `24` (default) lists hours 00–23. `12` lists hours **00 … 11** and adds an AM/PM
+  column — the zero-based 12-hour clock (Intl's `h11`), so there is no "12": `00 AM` is midnight
+  and `00 PM` is noon (stored as `00:xx` and `12:xx`). Picking an hour keeps the current AM/PM;
+  picking AM/PM keeps the hour and minute.
+- The minute column lists **every minute, 00–59**, in both clocks. `minuteStep` makes it coarser
+  (`minuteStep={15}` → 00, 15, 30, 45). A value that isn't on the grid (`"09:32"` with a step of 5)
+  is still displayed as-is.
 - Opens on click, or `ArrowDown`/`ArrowUp`/`Enter`/`Space` from the keyboard — not on bare focus, so
   tabbing through a form doesn't pop pickers open. Inside: `ArrowUp`/`ArrowDown` move within a
   column, `ArrowLeft`/`ArrowRight` switch column, and `Enter` commits the highlighted option and
@@ -267,7 +269,8 @@ function Example() {
 - Props: `value`, `onChange`, `hourCycle`, `minuteStep`, `placeholder`, `disabled`, `error`,
   `clearable` (default `true`), `id`, `name`, `className`, `aria-label`.
 - Selecting an hour on an empty field starts the minute at `00` (a minute first starts the hour at
-  `00`, i.e. 12 AM; AM/PM first on an empty field gives `12:00`, noon, for PM).
+  `00`; AM/PM first on an empty field gives `00:00` for AM and `12:00` — noon, shown `00:00 PM` —
+  for PM).
 - Also available as a form field: `<Input type="timePicker" hourCycle={12} minuteStep={15} />` (and
   in `Form`'s `inputList`). `<Input type="time" />` is unchanged and still the native input.
 

@@ -23,12 +23,12 @@ export interface TimePickerProps {
   /** Called with the new `"HH:mm"` 24-hour value, or `""` when cleared. */
   onChange?: (value: string) => void;
   /**
-   * How the time is displayed and picked. `24` (default): hours 00–23. `12`: hours 12, 01–11 with
-   * an AM/PM column. Only presentation changes — `value`/`onChange` stay 24-hour `"HH:mm"`, which
+   * How the time is displayed and picked. `24` (default): hours 00–23. `12`: hours 00–11 with
+   * an AM/PM column (00 AM is midnight, 00 PM is noon). Only presentation changes — `value`/`onChange` stay 24-hour `"HH:mm"`, which
    * is what forms and backends exchange.
    */
   hourCycle?: HourCycle;
-  /** Minute-column granularity. Defaults to 5. */
+  /** Minute-column granularity. Defaults to 1, i.e. every minute 00–59. */
   minuteStep?: number;
   placeholder?: string;
   disabled?: boolean;
@@ -56,8 +56,9 @@ function parseTime(value?: string): { hour: string; minute: string } | null {
 }
 
 const HOURS_24 = Array.from({ length: 24 }, (_, i) => pad(i));
-// 12, 01 … 11 (not 01 … 12): the index equals `hour24 % 12`, and 12 AM — midnight — sits first.
-const HOURS_12 = ["12", ...Array.from({ length: 11 }, (_, i) => pad(i + 1))];
+// 00 … 11: the 12-hour clock is zero-based, so the first hour reads 00 (not 12) in both halves of
+// the day — 00 AM is midnight, 00 PM is noon. The index equals `hour24 % 12`.
+const HOURS_12 = HOURS_24.slice(0, 12);
 const PERIODS: string[] = [TIME_PERIOD.AM, TIME_PERIOD.PM];
 
 function buildMinutes(step: number) {

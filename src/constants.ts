@@ -141,7 +141,7 @@ export const FLOATING_PANEL_VIEWPORT_MARGIN = 8;
 
 // ─── TimePicker ────────────────────────────────────────────────────────────────────────────────
 
-/** 24-hour (hours 00–23) or 12-hour (hours 12, 01…11 plus an AM/PM column). */
+/** 24-hour (hours 00–23) or 12-hour (hours 00–11 plus an AM/PM column; 00 PM is noon). */
 export const HOUR_CYCLE = {
   H12: 12,
   H24: 24,
@@ -163,7 +163,7 @@ export const TIME_COLUMN = {
 export type TimeColumn = ValueOf<typeof TIME_COLUMN>;
 
 /** @internal */
-export const DEFAULT_MINUTE_STEP = 5;
+export const DEFAULT_MINUTE_STEP = 1;
 /** @internal Height in px of each scrollable column in the time picker's dropdown. */
 export const TIME_PICKER_COLUMN_HEIGHT = 180;
 

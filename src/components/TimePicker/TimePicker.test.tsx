@@ -87,11 +87,27 @@ describe("TimePicker", () => {
       expect(minutes.map((o) => o.textContent)).toEqual(["00", "15", "30", "45"]);
     });
 
-    it("falls back to a 5-minute step for an invalid minuteStep", async () => {
+    it.each([
+      ["24-hour", 24],
+      ["12-hour", 12],
+    ] as const)("lists every minute 00–59 by default in %s mode", async (_label, hourCycle) => {
+      const user = userEvent.setup();
+      render(<TimePicker value="" hourCycle={hourCycle} />);
+      await user.click(trigger());
+      const minutes = within(screen.getByRole("listbox", { name: "Minutes" }))
+        .getAllByRole("option")
+        .map((o) => o.textContent);
+      expect(minutes).toHaveLength(60);
+      expect(minutes[0]).toBe("00");
+      expect(minutes[1]).toBe("01");
+      expect(minutes[59]).toBe("59");
+    });
+
+    it("falls back to every minute for an invalid minuteStep", async () => {
       const user = userEvent.setup();
       render(<TimePicker value="" minuteStep={0} />);
       await user.click(trigger());
-      expect(within(screen.getByRole("listbox", { name: "Minutes" })).getAllByRole("option")).toHaveLength(12);
+      expect(within(screen.getByRole("listbox", { name: "Minutes" })).getAllByRole("option")).toHaveLength(60);
     });
 
     it("marks the current hour and minute as selected", async () => {
@@ -217,12 +233,12 @@ describe("TimePicker", () => {
       render(<Controlled initial="09:00" onChange={onChange} />);
       trigger().focus();
       await user.keyboard("{ArrowDown}{ArrowRight}{ArrowDown}{Enter}");
-      expect(onChange).toHaveBeenLastCalledWith("09:05");
+      expect(onChange).toHaveBeenLastCalledWith("09:01");
 
       // reopen, then go back left: Enter now commits an hour again
       trigger().focus();
       await user.keyboard("{ArrowDown}{ArrowRight}{ArrowLeft}{ArrowDown}{Enter}");
-      expect(onChange).toHaveBeenLastCalledWith("10:05");
+      expect(onChange).toHaveBeenLastCalledWith("10:01");
     });
 
     it("does not run past either end of a column", async () => {
@@ -311,9 +327,9 @@ describe("TimePicker", () => {
   describe("12-hour clock", () => {
     it("shows the time with an AM/PM suffix", () => {
       const cases: [string, string][] = [
-        ["00:00", "12:00 AM"], // midnight
+        ["00:00", "00:00 AM"], // midnight
         ["09:05", "09:05 AM"],
-        ["12:15", "12:15 PM"], // noon
+        ["12:15", "00:15 PM"], // noon: 00 PM
         ["14:30", "02:30 PM"],
         ["23:59", "11:59 PM"],
       ];
@@ -330,12 +346,12 @@ describe("TimePicker", () => {
       expect(trigger()).not.toHaveTextContent("PM");
     });
 
-    it("lists hours as 12, 01 … 11 and adds an AM/PM column", async () => {
+    it("lists hours as 00 … 11 and adds an AM/PM column", async () => {
       const user = userEvent.setup();
       render(<TimePicker value="" hourCycle={12} />);
       await user.click(trigger());
       expect(optionTexts("Hours")).toEqual([
-        "12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+        "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
       ]);
       expect(optionTexts("AM/PM")).toEqual(["AM", "PM"]);
     });
@@ -358,11 +374,11 @@ describe("TimePicker", () => {
       expect(periodOption("AM")).toHaveAttribute("aria-selected", "false");
     });
 
-    it("treats 00:xx as 12 AM", async () => {
+    it("treats 00:xx as 00 AM", async () => {
       const user = userEvent.setup();
       render(<TimePicker value="00:10" hourCycle={12} />);
       await user.click(trigger());
-      expect(hourOption("12")).toHaveAttribute("aria-selected", "true");
+      expect(hourOption("00")).toHaveAttribute("aria-selected", "true");
       expect(periodOption("AM")).toHaveAttribute("aria-selected", "true");
     });
 
@@ -375,16 +391,16 @@ describe("TimePicker", () => {
       await user.click(hourOption("05"));
       expect(onChange).toHaveBeenLastCalledWith("17:30"); // 5 PM
 
-      await user.click(hourOption("12"));
-      expect(onChange).toHaveBeenLastCalledWith("12:30"); // 12 PM is noon, not 24:30
+      await user.click(hourOption("00"));
+      expect(onChange).toHaveBeenLastCalledWith("12:30"); // 00 PM is noon, not 24:30
     });
 
-    it("picking 12 while AM gives hour 00", async () => {
+    it("picking 00 while AM gives hour 00", async () => {
       const user = userEvent.setup();
       const onChange = vi.fn();
       render(<Controlled initial="09:30" hourCycle={12} onChange={onChange} />);
       await user.click(trigger());
-      await user.click(hourOption("12"));
+      await user.click(hourOption("00"));
       expect(onChange).toHaveBeenLastCalledWith("00:30");
     });
 
@@ -415,7 +431,7 @@ describe("TimePicker", () => {
       expect(onChange).toHaveBeenLastCalledWith("00:15"); // and back
     });
 
-    it("builds a time from an empty field, defaulting the unset parts to 12:00 AM", async () => {
+    it("builds a time from an empty field, defaulting the unset parts to 00:00 AM", async () => {
       const user = userEvent.setup();
       const onChange = vi.fn();
       render(<Controlled hourCycle={12} onChange={onChange} />);
@@ -442,8 +458,8 @@ describe("TimePicker", () => {
       const onChange = vi.fn();
       render(<Controlled hourCycle={12} minuteStep={15} onChange={onChange} />);
       trigger().focus();
-      await user.keyboard("{ArrowDown}"); // open, focus on "12"
-      await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{Enter}"); // 12 → 01 → 02 → 03
+      await user.keyboard("{ArrowDown}"); // open, focus on "00"
+      await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{Enter}"); // 00 → 01 → 02 → 03
       expect(onChange).toHaveBeenLastCalledWith("03:00");
 
       await user.keyboard("{ArrowDown}{ArrowDown}{Enter}"); // 00 → 15 → 30
@@ -473,7 +489,7 @@ describe("TimePicker", () => {
       render(<Controlled initial="09:00" onChange={onChange} />);
       trigger().focus();
       await user.keyboard("{ArrowDown}{ArrowRight}{ArrowRight}{ArrowDown}{Enter}");
-      expect(onChange).toHaveBeenLastCalledWith("09:05");
+      expect(onChange).toHaveBeenLastCalledWith("09:01");
       expect(screen.queryByRole("listbox", { name: "Hours" })).not.toBeInTheDocument();
     });
 

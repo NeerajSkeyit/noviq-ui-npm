@@ -553,10 +553,18 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         against `4.2.1` all pass — my first version of two of them passed on 4.2.0 (vacuous: the
         Modal lingers in the DOM while animating out; the fallback text had changed), so they were
         rewritten to key off `body` scroll lock and the shared `title` attribute.
+  - [x] **`TimePicker` display changes, requested from a screenshot of the 12-hour picker** (folded
+        into the still-unpublished 4.2.1): the 12-hour clock's first hour now reads **`00`** instead
+        of `12` (zero-based, 00–11; `00 PM` is noon, stored `12:xx`), and the minute column lists
+        **every minute 00–59** by default in both clocks (`DEFAULT_MINUTE_STEP` 5 → 1; the demo had
+        also been forcing `minuteStep: 15`). `value`/`onChange` are unchanged (24-hour `HH:mm`). A
+        trade-off worth knowing: noon now displays as `00:30 PM`, which is unconventional in
+        English-language UIs (it is how Japan writes it); and arrowing through 60 minutes is slower
+        — `minuteStep` is the escape hatch.
   - [x] Found while documenting, **not fixed** (outside the three items): body scroll lock isn't
         reference-counted — closing a nested Drawer unlocks page scroll under an open Modal, and a
         closed Drawer mounted after an open Modal cancels its lock. See "Known bugs".
-  - [x] Test suite 523 (up from 483 at 4.2.0); demo suite 44. Bundle 133.1 → 133.3 kB gzip; 54
+  - [x] Test suite 525 (up from 483 at 4.2.0); demo suite 44. Bundle 133.1 → 133.3 kB gzip; 54
         files in the tarball (3 new type files).
 
 ## Published
@@ -612,9 +620,10 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - `4.2.1` — **patch.** Escape closes only the topmost layer (pickers/select menus inside a
   Modal/Drawer, a Drawer opened from a Modal); Table pagination wraps on phone widths; five
   never-implemented field types (`rowsPerPage`, `multiText`, `custom`, `dateRange`, `reactQuill`)
-  removed from `INPUT_TYPE`, and an unknown `type` now names itself. **Note for the release
+  removed from `INPUT_TYPE`, and an unknown `type` now names itself; `TimePicker`'s 12-hour clock
+  is zero-based (00–11) and its minute column lists every minute by default. **Note for the release
   notes:** the last item removes public constants in a patch — they never rendered a field, but
-  code referencing them will stop compiling. Gate: `tsc` clean, 523/523 tests, build, `npm pack`
+  code referencing them will stop compiling. Gate: `tsc` clean, 525/525 tests, build, `npm pack`
   (54 files), demo typecheck + build + 44 consumer tests against the packed tarball (7 of them
   fail on 4.2.0), real-browser checks of Escape layering and of pagination at 375px/320px.
   Awaiting explicit go-ahead to `npm publish`.

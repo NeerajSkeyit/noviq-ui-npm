@@ -41,7 +41,7 @@ export interface InputProps {
   maxDate?: string;
   /** `timePicker` only: 24-hour (default) or 12-hour with AM/PM. The value stays 24-hour `"HH:mm"`. */
   hourCycle?: HourCycle;
-  /** `timePicker` only: minute column granularity. Defaults to 5. */
+  /** `timePicker` only: minute column granularity. Defaults to 1 (every minute 00–59). */
   minuteStep?: number;
   maxLength?: number;
   autoFocus?: boolean;

@@ -217,10 +217,14 @@ on scroll/resize and flips above near the viewport bottom; ARIA combobox/listbox
 `aria-activedescendant`; uses the library's own `ScrollArea` instead of `simplebar-react`. The
 source's `minDate`/`maxDate` props were accepted but ignored, so they aren't ported.
 
-`hourCycle={12}` (not in the source) shows hours as `12, 01 … 11` plus an AM/PM column. **`value`/
+`hourCycle={12}` (not in the source) shows hours as `00 … 11` plus an AM/PM column — the
+zero-based 12-hour clock (Intl's `h11`), chosen explicitly by the user over the conventional
+`12, 01 … 11`: `00 AM` is midnight, `00 PM` is noon (shown `00:30 PM` for 12:30). The minute column
+lists every minute 00–59 by default in both clocks (`DEFAULT_MINUTE_STEP = 1`; it was 5 before
+`4.2.1`; `minuteStep` still coarsens it). **`value`/
 `onChange` are 24-hour `"HH:mm"` in both modes** — the cycle is presentation only, so what a form
 stores doesn't depend on the display. Hours are ordered 12-first so the list index equals
-`hour24 % 12`; `12 AM` is `00`, `12 PM` is `12`. Enter walks hour → minute → (12h) AM/PM and closes
+`hour24 % 12`; `00 AM` is `00`, `00 PM` is `12`. Enter walks hour → minute → (12h) AM/PM and closes
 after the last column.
 
 ### `DatePicker` / `MonthPicker`
