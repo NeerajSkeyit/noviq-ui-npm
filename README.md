@@ -178,6 +178,12 @@ function Example() {
 }
 ```
 
+**Escape closes only the topmost layer.** With a date/time/month picker or a select's menu open
+inside a `Modal` or `Drawer`, the first Escape closes that picker or menu and the second closes
+the overlay. A `Drawer` opened from a `Modal` closes before the `Modal` does, and an open `Drawer`
+without `closeOnOutside` ignores Escape but still shields the `Modal` beneath it. (A `Modal`
+always closes on Escape; a `Drawer` only with `closeOnOutside`.)
+
 ### Form + Formik
 
 `Form` renders a config-driven list of `Input`s wired to a [Formik](https://formik.org/) instance

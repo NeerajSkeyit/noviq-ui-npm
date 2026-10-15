@@ -15,9 +15,8 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
    - The multi-step wizard shell (`FullPageForm`/`SingleStepForm`/`FormSidebar`) is **dropped, not
      deferred**: `FullPageForm` has zero importers in HRMS. Its single-step sibling
      `FullPageSection` (8 call sites) was ported instead — see `4.2.0`.
-   - Note: `INPUT_TYPE.DATE_RANGE` is declared in `src/constants.ts` but `Input` has no render
-     branch (an unknown type falls through to the "Worng input type provided" text) — HRMS itself
-     only ever had a comment for it, never an implementation.
+   - Note: `INPUT_TYPE.DATE_RANGE` (and four others) were declared but never rendered; removed in
+     `4.2.1`. A date-range *field* is still unbuilt — `DatePicker` ×2 would be the basis.
 4. **Phase 3 — Table**, split into sub-phases:
    - **3a — Core table** ✅ done, **published as `2.1.0`**. Sortable/searchable/paginated table,
      `apiFunction`/`preFetchedData` data sources, `date`/`dateRange`/`dateTime`/`time`/`duration`/
@@ -527,6 +526,39 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `CLAUDE.md` still says CRA). All four target frontends are Vite, three on React 18 and
         hrms-ui on TypeScript 4.9 — both now verified compatible.
 
+- [x] **`4.2.1` — fixes for the first three findings of the 4.2.0 integration test** (staged, see
+      "Ready to publish"). Patch release; behavior fixes plus one deliberate removal.
+  - [x] **Escape closes only the topmost layer.** `Modal` listened on `window` and `Drawer` on
+        `document`, each independently, so any nested layer closed together with its parent: a
+        picker inside a modal, a select's open menu, a drawer opened from a modal. Now a module-level
+        layer stack (`hooks/useEscapeLayer`) lets only the topmost overlay react; pickers, select
+        menus (`hooks/useSelectEscapeGuard`) and `RejectAction` consume the Escape they own. An open
+        `Drawer` without `closeOnOutside` ignores Escape but still shields a `Modal` beneath it.
+        12 library tests (8 failed before the fix) + 5 mutation checks, each caught.
+  - [x] **Table pagination wraps on phones.** The right-hand controls didn't wrap and the table
+        wrapper clips overflow, so the last-page button was cut off at ~430px. Now the bar stacks
+        under 640px, the controls wrap, and on ≤400px the "Page 1 of N" label takes its own row so
+        the four buttons stay together. Measured in a real browser at 375px and 320px on every
+        table (page overflow 0). jsdom can't lay out, so a CSS-contract test pins the declarations.
+  - [x] **The five dead field types are gone from `INPUT_TYPE`** (`rowsPerPage`, `multiText`,
+        `custom`, `dateRange`, `reactQuill`). None had a render branch in the HRMS `Input` that was
+        ported; they only existed as inherited constants. Removed rather than implemented
+        (`select` covers rows-per-page; rich text would need `react-quill`). This **removes public
+        members in a patch** — they never rendered anything but an error string, and it's called
+        out. An unknown `type` now renders `Unsupported input type: <type>` (was the typo'd
+        "Worng input type provided") and logs one dev `console.error` per type. A test renders
+        every remaining `INPUT_TYPE` so the list can't drift from the implementation again.
+  - [x] **Consumer-side regression suite** in `noviq-ui-demo` (7 tests, 44 total) asserting the
+        three fixes against the *installed package*. Run against the published `4.2.0` all 7 fail;
+        against `4.2.1` all pass — my first version of two of them passed on 4.2.0 (vacuous: the
+        Modal lingers in the DOM while animating out; the fallback text had changed), so they were
+        rewritten to key off `body` scroll lock and the shared `title` attribute.
+  - [x] Found while documenting, **not fixed** (outside the three items): body scroll lock isn't
+        reference-counted — closing a nested Drawer unlocks page scroll under an open Modal, and a
+        closed Drawer mounted after an open Modal cancels its lock. See "Known bugs".
+  - [x] Test suite 523 (up from 483 at 4.2.0); demo suite 44. Bundle 133.1 → 133.3 kB gzip; 54
+        files in the tarball (3 new type files).
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -577,7 +609,15 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   tarball verified before publishing, 51 files). Additive: `FullPageSection`.
 
 ## Ready to publish
-_Nothing staged._
+- `4.2.1` — **patch.** Escape closes only the topmost layer (pickers/select menus inside a
+  Modal/Drawer, a Drawer opened from a Modal); Table pagination wraps on phone widths; five
+  never-implemented field types (`rowsPerPage`, `multiText`, `custom`, `dateRange`, `reactQuill`)
+  removed from `INPUT_TYPE`, and an unknown `type` now names itself. **Note for the release
+  notes:** the last item removes public constants in a patch — they never rendered a field, but
+  code referencing them will stop compiling. Gate: `tsc` clean, 523/523 tests, build, `npm pack`
+  (54 files), demo typecheck + build + 44 consumer tests against the packed tarball (7 of them
+  fail on 4.2.0), real-browser checks of Escape layering and of pagination at 375px/320px.
+  Awaiting explicit go-ahead to `npm publish`.
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
@@ -655,20 +695,16 @@ _Nothing staged._
   typecheck, so type-level regressions (like the `Form` `formik` prop typing fixed in `3.0.0`)
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
-### Found by the 4.2.0 integration test (real browser unless noted)
-- **Escape closes the Modal *and* the picker open inside it.** Pickers close on Escape but don't
-  stop the event, and `Modal` listens on `window`, so dismissing a date/time picker inside a modal
-  also dismisses the modal (losing its form state). Escape should close only the topmost layer.
-  Same shape applies to `Drawer` with `closeOnOutside`.
-- **Table pagination's right-hand controls don't wrap on phone widths.** At ~430px the "last page"
-  button is clipped by 27px (`.table-pagination-right` is one non-wrapping row ~391px wide inside
-  `.table-wrapper { overflow-x: hidden }`), so it can be unreachable.
-- **A closed `Drawer` keeps its children mounted** (hidden, `aria-hidden`). Each `Table` therefore
-  mounts two hidden drawers (columns, filters); a form inside a closed Drawer stays live
+### Found by the 4.2.0 integration test — still open after `4.2.1`
+(Escape layering, pagination clipping and the dead field types were fixed in `4.2.1`.)
+- **Body scroll lock isn't reference-counted** (found while fixing Escape). `Modal`/`Drawer` each
+  write `document.body.style.overflow = isOpen ? "hidden" : ""`. Closing a nested Drawer unlocks
+  page scroll under an open Modal, and a closed Drawer whose effect runs after an open Modal's
+  (every `Table` mounts two hidden drawers) cancels the Modal's lock. Verified in jsdom.
+- **A closed `Drawer` keeps its children mounted** (hidden, `aria-hidden`). Each `Table`
+  therefore mounts two hidden drawers (columns, filters); a form inside a closed Drawer stays live
   (state, effects, autofocus), and two drawers rendering the same `id` produce duplicate ids.
-- **5 of 26 `INPUT_TYPE` values have no implementation** and render "Worng input type provided":
-  `ROWS_PER_PAGE`, `MULTI_TEXT`, `CUSTOM`, `DATE_RANGE`, `REACT_QUILL`. They're public constants
-  now, so a consumer will reasonably reach for them.
+- `DropdownMenu` has no Escape handling.
 - `Input type="search"` ignores `label`, `error` and `helper` (renders no field container).
 - `TableColumn.cell(row, cellValue)` receives the library's placeholder `"-"` for an empty value,
   not `""` — easy to get backwards (`value ? … : …` is always truthy).
@@ -680,13 +716,14 @@ _Nothing staged._
   the browser); only the CSV bytes are asserted.
 
 ## Suggested next steps (prioritised; as of `4.2.0`)
-**Fix what the integration test found** (each is small; together a `4.2.1`/`4.3.0`):
-1. Escape closes only the topmost layer (pickers inside a Modal/Drawer).
-2. Table pagination wraps on phone widths so "last page" is reachable.
-3. Decide the 5 unimplemented `INPUT_TYPE` values: implement or remove them from the public constants.
-4. Unmount a closed `Drawer`'s children (or document/offer an option) — duplicate ids, live hidden forms.
+**Fix the rest of what the integration test found** (a `4.2.2`):
+1. ~~Escape closes only the topmost layer~~ — done in `4.2.1`.
+2. ~~Table pagination wraps on phone widths~~ — done in `4.2.1`.
+3. ~~Dead `INPUT_TYPE` values~~ — removed in `4.2.1`.
+4. **Reference-counted body scroll lock** (small; found while doing 1) — then unmount a closed
+   `Drawer`'s children, or make it an option (duplicate ids, live hidden forms).
 5. Small API cleanups: `Input type="search"` label/error, `cell()` placeholder gotcha, unused
-   `FilterDrawer.onRemoveFilter`.
+   `FilterDrawer.onRemoveFilter`, `DropdownMenu` Escape.
 
 **Quality gates** (cheap, protect everything above):
 6. Add `eslint.config.js` so `npm run lint` runs; add CI that runs tsc + tests + build + the

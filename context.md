@@ -165,11 +165,17 @@ didn't. Icons consolidated onto `lucide-react` only (source mixed in `react-icon
 icons — dropped). No i18n dependency (`react-i18next` dropped; 2 strings hardcoded, matching the
 rest of the component's existing convention). `excelUpload` re-themed onto the same dropzone
 visual language as `file`/`multipleFile` instead of porting raw Bootstrap utility classes.
-Fallback: an unrecognized `type` renders literal text `"Worng input type provided"` (typo,
-pre-existing, intentionally not fixed).
+Fallback: an unrecognized `type` renders `Unsupported input type: <type>` (it used to be the
+literal `"Worng input type provided"`), and logs one `console.error` per type in development.
 
-Explicitly out of scope, reserved in the `INPUT_TYPE` constant but unimplemented: `dateRange`,
-`rowsPerPage`, `multiText`, `custom`, `reactQuill`.
+**`INPUT_TYPE` lists only types `Input` actually renders** — `Input.test.tsx` renders every value.
+Until `4.2.1` it also declared `dateRange`, `rowsPerPage`, `multiText`, `custom` and `reactQuill`,
+inherited from HRMS where none of them had a render branch in the `Input` that was ported
+(`rowsPerPage`/`reactQuill` existed only in a legacy `common/Input.js`, `multiText` only in the
+legacy `BasicForm`, `custom` and `dateRange` nowhere). They were removed rather than implemented:
+`select` covers rows-per-page, and rich text would need the heavy `react-quill`. This is the one
+place a public export was removed in a patch — justified because they never worked, and called
+out in the release notes.
 
 ### `Button`
 Ported from `noviq-hrms-ui/src/components/ui/Button.jsx`. Variants: `default, outline,
@@ -539,6 +545,25 @@ messages from earlier server lifetimes, e.g. Vite HMR errors from before a depen
 `npx tsc --noEmit` there checks nothing and always "passes." Use `npx tsc -p tsconfig.app.json
 --noEmit` or `npm run build` (which runs `tsc -b`). That vacuous check is why the missing `types`
 export condition (fixed in `3.0.0`) went unnoticed through five published releases.
+
+## Overlays and Escape
+`Modal` and `Drawer` register on a module-level **layer stack** (`hooks/useEscapeLayer.ts`): one
+window `keydown` listener, and only the topmost open overlay reacts to Escape. A `Drawer` that is
+open but not Escape-dismissable (no `closeOnOutside`) still occupies a layer, so it shields a
+`Modal` beneath it. Things that own an Escape *inside* an overlay consume it themselves with
+`stopPropagation()` so they close first: the three pickers (trigger and, for DatePicker/MonthPicker,
+the panel, because focus moves into the header `<select>`s after a mouse interaction), react-select
+menus (`hooks/useSelectEscapeGuard.ts`, used by `Input` and `TablePagination`), and `RejectAction`'s
+popover. The stack is ordered by *open* order, so a callback's identity is kept in a ref — registering
+again on each render would move the layer to the top.
+Known gaps (verified, not fixed in `4.2.1`):
+- `DropdownMenu` has no Escape handling at all.
+- **Body scroll lock is not reference-counted.** `Modal` and `Drawer` each write
+  `document.body.style.overflow = isOpen ? "hidden" : ""` from their own effect. So (a) closing a
+  nested Drawer re-enables page scroll under a Modal that is still open, and (b) a *closed* Drawer
+  whose effect runs after an open Modal's (e.g. the hidden column/filter drawers every `Table`
+  mounts, or both present at first render) cancels the Modal's lock. Fix = a shared counter hook
+  that locks while any overlay is open and restores the previous value at zero.
 
 ## Constants — the standing convention
 **Every fixed value goes in `src/constants.ts`; component code never repeats it as a bare
