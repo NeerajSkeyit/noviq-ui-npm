@@ -21,7 +21,25 @@
 .table-pagination-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  /* "Rows per page" and the page controls are ~390px together, wider than a phone's table. They
+     must be able to wrap onto two lines; the wrapper clips overflow, so without this the last-page
+     button was cut off. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px 20px;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .table-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-pagination-right {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .table-pagination-page-size {
@@ -37,6 +55,8 @@
 .table-pagination-controls {
   display: flex;
   align-items: center;
+  /* The page label plus four icon buttons are ~270px: wrap on the narrowest phones (320px). */
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -45,4 +65,12 @@
   color: var(--muted);
   margin-right: 6px;
   white-space: nowrap;
+}
+
+/* On the narrowest phones the label and the four buttons can't share a row without orphaning the
+   last button, so give the label its own row and keep the buttons together. */
+@media (max-width: 400px) {
+  .table-pagination-page-info {
+    flex-basis: 100%;
+  }
 }
