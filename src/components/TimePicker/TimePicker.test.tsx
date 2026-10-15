@@ -2,7 +2,18 @@ import React, { useState } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import TimePicker from "./TimePicker";
+import TimePickerBase from "./TimePicker";
+import { NoviqUIConfigProvider } from "../../config/NoviqUIConfigProvider";
+import { useDateTimeFormatters } from "../../hooks/useDateTimeFormats";
+import type { NoviqUIFormats } from "../../config/types";
+
+/**
+ * Most tests below exercise the 24-hour mechanics, so they ask for that clock explicitly: left
+ * unset, the clock follows `formats.time`, whose default `hh:mm A` is 12-hour (see "default clock").
+ */
+const TimePicker = (props: React.ComponentProps<typeof TimePickerBase>) => (
+  <TimePickerBase hourCycle={24} {...props} />
+);
 
 /** Holds the value in state the way a real form would, so display updates after onChange. */
 function Controlled({
@@ -340,12 +351,6 @@ describe("TimePicker", () => {
       }
     });
 
-    it("still shows plain 24-hour time by default", () => {
-      render(<TimePicker value="14:30" />);
-      expect(trigger()).toHaveTextContent("14:30");
-      expect(trigger()).not.toHaveTextContent("PM");
-    });
-
     it("lists hours as 00 … 11 and adds an AM/PM column", async () => {
       const user = userEvent.setup();
       render(<TimePicker value="" hourCycle={12} />);
@@ -522,5 +527,71 @@ describe("TimePicker", () => {
       </div>
     );
     expect(screen.getByLabelText("Shift start")).toBe(trigger());
+  });
+});
+
+describe("TimePicker — default clock follows formats.time", () => {
+  const withFormats = (formats: NoviqUIFormats | undefined, ui: React.ReactElement) => (
+    <NoviqUIConfigProvider config={{ formats }}>{ui}</NoviqUIConfigProvider>
+  );
+
+  it("is 12-hour with nothing configured, like the Table", () => {
+    render(<TimePickerBase value="14:30" />);
+    expect(trigger()).toHaveTextContent("02:30 PM");
+  });
+
+  it("reads the same text a Table time cell shows for the same value", () => {
+    function Cell({ value }: { value: string }) {
+      const { formatTime } = useDateTimeFormatters();
+      return <span data-testid="cell">{formatTime(value)}</span>;
+    }
+    for (const value of ["00:05", "09:30", "12:00", "14:30", "23:59"]) {
+      const { unmount } = render(
+        <>
+          <TimePickerBase value={value} />
+          <Cell value={value} />
+        </>
+      );
+      expect(trigger().textContent).toContain(screen.getByTestId("cell").textContent);
+      unmount();
+    }
+  });
+
+  it("lists 12, 01 … 11 with an AM/PM column", async () => {
+    const user = userEvent.setup();
+    render(<TimePickerBase value="14:30" />);
+    await user.click(trigger());
+    expect(optionTexts("Hours")).toEqual(
+      ["12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]
+    );
+    expect(optionTexts("AM/PM")).toEqual(["AM", "PM"]);
+  });
+
+  it("still emits the 24-hour value", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<Controlled initial="09:30" onChange={onChange} hourCycle={undefined} />);
+    await user.click(trigger());
+    await user.click(periodOption("PM"));
+    expect(onChange).toHaveBeenLastCalledWith("21:30");
+  });
+
+  it("is 24-hour when the app sets a 24-hour formats.time", () => {
+    render(withFormats({ time: "HH:mm" }, <TimePickerBase value="14:30" />));
+    expect(trigger()).toHaveTextContent("14:30");
+    expect(trigger()).not.toHaveTextContent("PM");
+  });
+
+  it("is 24-hour with hourCycle={24}, whatever the app's formats", () => {
+    render(withFormats({ time: "hh:mm A" }, <TimePickerBase value="14:30" hourCycle={24} />));
+    expect(trigger()).toHaveTextContent("14:30");
+  });
+
+  it("an explicit hourCycle={12} with no configured format keeps the 00 … 11 list", async () => {
+    const user = userEvent.setup();
+    render(<TimePickerBase value="12:15" hourCycle={12} />);
+    expect(trigger()).toHaveTextContent("00:15 PM");
+    await user.click(trigger());
+    expect(optionTexts("Hours")[0]).toBe("00");
   });
 });

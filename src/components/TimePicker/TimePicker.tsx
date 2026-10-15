@@ -12,6 +12,7 @@ import {
   HOUR_STYLE,
   KEY,
   TIME_COLUMN,
+  TIME_FORMAT,
   TIME_PERIOD,
   TIME_PICKER_PATTERN,
   TIME_PICKER_COLUMN_HEIGHT,
@@ -31,8 +32,9 @@ export interface TimePickerProps {
    * time pattern uses `KK`, the zero-based form (00 AM midnight, 00 PM noon).
    *
    * Left unset it follows `NoviqUIConfigProvider`'s `formats.time` (`HH:mm` → 24, `hh:mm A` → 12),
-   * and is 24 when the app has not set one. Only presentation changes — `value`/`onChange` stay
-   * 24-hour `"HH:mm"`, which is what forms and backends exchange.
+   * and is 12 — the default `hh:mm A`, as in Table cells — when the app has not set one. Only
+   * presentation changes — `value`/`onChange` stay 24-hour `"HH:mm"`, which is what forms and
+   * backends exchange.
    */
   hourCycle?: HourCycle;
   /**
@@ -114,22 +116,27 @@ function TimePicker({
   const [activeColumn, setActiveColumn] = useState<Column>(TIME_COLUMN.HOUR);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
-  // Clock and pattern. An explicit `hourCycle` always wins. Otherwise an app-configured
-  // `formats.time` decides (`HH` → 24-hour, `hh`/`KK` → 12-hour); with neither, 24-hour as before.
-  // The pattern only supplies the *text*, so one that contradicts the clock is ignored in favour
-  // of that clock's default — the trigger must never disagree with the columns beneath it.
+  // Clock and pattern. An explicit `hourCycle` always wins. Otherwise the clock follows the time
+  // pattern in force — the app's `formats.time`, or the library default `hh:mm A`, the same one a
+  // Table cell uses — so a picker and a cell show a time the same way (`HH` → 24-hour,
+  // `hh`/`KK` → 12-hour). An explicit `hourCycle` with no configured pattern keeps the clock's own
+  // default text. The pattern only supplies the *text*, so one that contradicts the clock is
+  // ignored in favour of that clock's default — the trigger must never disagree with the columns
+  // beneath it.
   const configuredTime = useConfiguredTimePattern();
-  const configuredStyle = configuredTime ? hourStyleOf(configuredTime) : HOUR_STYLE.H24;
+  const followedPattern =
+    configuredTime ?? (hourCycleProp === undefined ? TIME_FORMAT : undefined);
   const hourCycle =
-    hourCycleProp ?? (configuredStyle === HOUR_STYLE.H24 ? HOUR_CYCLE.H24 : HOUR_CYCLE.H12);
+    hourCycleProp ??
+    (hourStyleOf(followedPattern ?? TIME_FORMAT) === HOUR_STYLE.H24 ? HOUR_CYCLE.H24 : HOUR_CYCLE.H12);
   const is12 = hourCycle === HOUR_CYCLE.H12;
 
   const fitsClock = (pattern: string | undefined): pattern is string =>
     pattern !== undefined && (hourStyleOf(pattern) !== HOUR_STYLE.H24) === is12;
   const pattern = fitsClock(displayFormat)
     ? displayFormat
-    : fitsClock(configuredTime)
-      ? configuredTime
+    : fitsClock(followedPattern)
+      ? followedPattern
       : is12
         ? TIME_PICKER_PATTERN.H12
         : TIME_PICKER_PATTERN.H24;

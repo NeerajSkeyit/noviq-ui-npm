@@ -85,9 +85,9 @@ describe("MonthPicker", () => {
 });
 
 describe("TimePicker", () => {
-  it("keeps its 24-hour default when the app set no time format", () => {
+  it("follows the library default `hh:mm A` — the Table's — when the app set no time format", () => {
     withFormats(<TimePicker value="14:30" />);
-    expect(trigger()).toHaveTextContent("14:30");
+    expect(trigger()).toHaveTextContent("02:30 PM");
   });
 
   it("keeps the zero-based 12-hour default for an explicit hourCycle with no format", async () => {
@@ -151,8 +151,13 @@ describe("TimePicker", () => {
   });
 
   it("a displayFormat prop on a 24-hour picker is used as given", () => {
-    withFormats(<TimePicker value="14:30" displayFormat="HH[h]mm" />);
+    withFormats(<TimePicker value="14:30" hourCycle={24} displayFormat="HH[h]mm" />);
     expect(trigger()).toHaveTextContent("14h30");
+  });
+
+  it("a 24-hour displayFormat is ignored on the default 12-hour clock, as any pattern that contradicts it", () => {
+    withFormats(<TimePicker value="14:30" displayFormat="HH[h]mm" />);
+    expect(trigger()).toHaveTextContent("02:30 PM");
   });
 
   it("still emits 24-hour HH:mm whatever is displayed", async () => {
