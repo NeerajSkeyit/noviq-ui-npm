@@ -368,17 +368,29 @@ function Input({
       </InputContainer>
     );
   } else if (type === INPUT_TYPE.SEARCH) {
-    return (
+    const searchInput = (
       <input
         type="text"
         id={uniqueInputId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="search-input"
+        className={`search-input ${error ? "search-input-error" : ""}`}
         placeholder={placeholder || "Search"}
         name={fieldName(label)}
         autoFocus={autoFocus}
+        disabled={disabled}
+        maxLength={maxLength}
+        aria-invalid={error ? true : undefined}
       />
+    );
+    // A bare search field (no label, helper or error) keeps its markup exactly as it was, so a
+    // toolbar search box doesn't pick up the form field's bottom margin.
+    return label || helper || error ? (
+      <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
+        {searchInput}
+      </InputContainer>
+    ) : (
+      searchInput
     );
   } else if (type === INPUT_TYPE.SELECT) {
     return (

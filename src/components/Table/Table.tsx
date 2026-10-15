@@ -54,7 +54,12 @@ export interface TableColumn<T = any> {
   id: string;
   heading: string;
   accessorKey?: string;
-  cell?: (row: T, cellValue: string, rawRow: T) => React.ReactNode;
+  /**
+   * Custom cell content. `cellValue` is the accessor's value as trimmed text (`"-"` when empty);
+   * `rawValue` is that same value untouched — a number, boolean, `null`, array… — `undefined`
+   * for a column with no `accessorKey`.
+   */
+  cell?: (row: T, cellValue: string, rawRow: T, rawValue?: unknown) => React.ReactNode;
   type?: CellType;
   sortable?: boolean;
   align?: ColumnAlign;
@@ -356,7 +361,10 @@ function TableInner<T extends Record<string, any> = any>({
   const getRenderValue = useCallback(
     (row: T, column: TableColumn<T>, cellValue: string): React.ReactNode => {
       if (!column.type) {
-        if (column.cell) return column.cell(row, cellValue, row);
+        if (column.cell) {
+          const rawValue = column.accessorKey ? (row as Record<string, unknown>)[column.accessorKey] : undefined;
+          return column.cell(row, cellValue, row, rawValue);
+        }
         return cellValue;
       }
 

@@ -1,5 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Input from "./Input";
@@ -182,6 +184,49 @@ describe("Input", () => {
     expect(screen.getByTitle("Please confirm input type attribute")).toBeInTheDocument();
   });
 
+  describe("search", () => {
+    it("keeps the bare input — no wrapper — when it has no label, helper or error", () => {
+      const { container } = render(<Input type="search" value="" onChange={() => {}} />);
+      expect(container.querySelector(".form-field")).toBeNull();
+      expect(container.querySelector("input.search-input")).toBeInTheDocument();
+    });
+
+    it("renders its label, tied to the input", async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<Input type="search" label="Find employee" value="" onChange={onChange} />);
+      await user.type(screen.getByLabelText("Find employee"), "a");
+      expect(onChange).toHaveBeenLastCalledWith("a");
+    });
+
+    it("marks a required field", () => {
+      render(<Input type="search" label="Find" required value="" onChange={() => {}} />);
+      expect(screen.getByText("*")).toBeInTheDocument();
+    });
+
+    it("shows helper text, replaced by the error when there is one", () => {
+      const { rerender } = render(
+        <Input type="search" label="Find" helper="Name or id" value="" onChange={() => {}} />
+      );
+      expect(screen.getByText("Name or id")).toBeInTheDocument();
+
+      rerender(
+        <Input type="search" label="Find" helper="Name or id" error="Too short" value="" onChange={() => {}} />
+      );
+      expect(screen.getByText("Too short")).toBeInTheDocument();
+      expect(screen.queryByText("Name or id")).not.toBeInTheDocument();
+      expect(screen.getByLabelText("Find")).toHaveAttribute("aria-invalid", "true");
+      expect(screen.getByLabelText("Find")).toHaveClass("search-input-error");
+    });
+
+    it("honours disabled and maxLength", () => {
+      render(<Input type="search" label="Find" disabled maxLength={5} value="" onChange={() => {}} />);
+      const field = screen.getByLabelText("Find");
+      expect(field).toBeDisabled();
+      expect(field).toHaveAttribute("maxlength", "5");
+    });
+  });
+
   describe("picker types", () => {
     const triggerOf = () => screen.getAllByRole("combobox").find((el) => el.tagName === "BUTTON")!;
 
@@ -325,5 +370,16 @@ describe("Input", () => {
       expect(String(reports[0][1])).toContain("Supported:");
       error.mockRestore();
     });
+  });
+});
+
+describe("Input search — error border", () => {
+  it("is declared after the base rule, so its colour wins at equal specificity", () => {
+    // jsdom does not resolve `var(--danger)`, so the cascade is checked on the stylesheet itself.
+    const css = readFileSync(resolve(process.cwd(), "src/components/Input/Input.css"), "utf8");
+    const base = css.indexOf(".search-input {");
+    const error = css.indexOf(".search-input-error {");
+    expect(base).toBeGreaterThan(-1);
+    expect(error).toBeGreaterThan(base);
   });
 });

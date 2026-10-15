@@ -74,6 +74,11 @@
   box-sizing: border-box;
 }
 
+/* After `.search-input` — equal specificity, so the later rule's border colour wins. */
+.search-input-error {
+  border-color: var(--danger);
+}
+
 .color-input {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);

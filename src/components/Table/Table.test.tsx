@@ -558,3 +558,57 @@ describe("Table: prefetched data that is still on its way", () => {
     expect(apiFunction).toHaveBeenCalled();
   });
 });
+
+describe("Table — column.cell", () => {
+  interface Item {
+    id: number;
+    qty: number | null;
+    active: boolean;
+    tags: string[];
+  }
+  const items: Item[] = [
+    { id: 1, qty: 1234.5, active: false, tags: ["a", "b"] },
+    { id: 2, qty: null, active: true, tags: [] },
+  ];
+
+  it("receives the unconverted value of the column's accessorKey as a 4th argument", () => {
+    const seen: unknown[][] = [];
+    const cols: TableColumn<Item>[] = [
+      {
+        id: "qty",
+        heading: "Qty",
+        accessorKey: "qty",
+        cell: (row, text, rawRow, rawValue) => {
+          seen.push([row.id, text, rawRow === row, rawValue]);
+          return text;
+        },
+      },
+      {
+        id: "active",
+        heading: "Active",
+        accessorKey: "active",
+        cell: (_row, _text, _rawRow, rawValue) => (rawValue === false ? "no" : "yes"),
+      },
+      {
+        id: "tags",
+        heading: "Tags",
+        accessorKey: "tags",
+        cell: (_row, _text, _rawRow, rawValue) => `${(rawValue as string[]).length} tags`,
+      },
+      {
+        id: "free",
+        heading: "Free",
+        cell: (_row, _text, _rawRow, rawValue) => (rawValue === undefined ? "no key" : "?"),
+      },
+    ];
+    render(<Table columns={cols} preFetchedData={items} isPaginationHidden />);
+
+    expect(seen).toEqual([
+      [1, "1234.5", true, 1234.5], // a number stays a number
+      [2, "-", true, null], // an empty cell is still null, not the "-" placeholder
+    ]);
+    expect(screen.getAllByText("no")).toHaveLength(1);
+    expect(screen.getByText("2 tags")).toBeInTheDocument();
+    expect(screen.getAllByText("no key")).toHaveLength(2);
+  });
+});
