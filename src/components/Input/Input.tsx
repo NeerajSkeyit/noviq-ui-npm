@@ -6,6 +6,8 @@ import Switch from "../Switch/Switch";
 import DatePicker from "../DatePicker/DatePicker";
 import MonthPicker from "../MonthPicker/MonthPicker";
 import TimePicker from "../TimePicker/TimePicker";
+import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
+import { devError } from "../../utils/devWarn";
 import { BUTTON_TYPE, INPUT_TYPE, type HourCycle } from "../../constants";
 import "./Input.css";
 
@@ -47,6 +49,9 @@ export interface InputProps {
   /** Called with the removed file's index, for `multipleFile`. */
   onRemoveFile?: (index: number) => void;
 }
+
+/** Types already reported, so a list of fields doesn't log the same mistake once per row. */
+const reportedUnsupportedTypes = new Set<string>();
 
 function fieldName(label?: string) {
   return label?.replace("*", "").trim();
@@ -185,6 +190,7 @@ function Input({
   const [dragActive, setDragActive] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const uniqueInputId = `${type}-${useId()}`;
+  const selectEscapeGuard = useSelectEscapeGuard();
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -378,6 +384,7 @@ function Input({
     return (
       <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
         <ReactSelect
+          {...selectEscapeGuard}
           options={options}
           placeholder={placeholder || "Select"}
           name={fieldName(label)}
@@ -399,6 +406,7 @@ function Input({
     return (
       <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
         <ReactSelect
+          {...selectEscapeGuard}
           options={options}
           name={fieldName(label)}
           value={value}
@@ -717,8 +725,18 @@ function Input({
     );
   }
 
+  // Unknown `type`. Say so once per type in development rather than failing silently.
+  if (!reportedUnsupportedTypes.has(type)) {
+    reportedUnsupportedTypes.add(type);
+    devError(
+      `<Input type="${type}"> is not a supported field type. Supported: ${Object.values(INPUT_TYPE).join(", ")}.`
+    );
+  }
+
   return (
-    <div title="Please confirm input type attribute">Worng input type provided</div>
+    <div title="Please confirm input type attribute" data-unsupported-input-type={type}>
+      {`Unsupported input type: ${type}`}
+    </div>
   );
 }
 

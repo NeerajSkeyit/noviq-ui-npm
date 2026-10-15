@@ -1,16 +1,5 @@
+import { devWarn } from "../utils/devWarn";
 import type { ResponseFormatFns, ResponseFormatPaths, TableResponseFormat } from "./types";
-
-/**
- * Only warns when NODE_ENV isn't "production" (checked defensively — `process` isn't guaranteed
- * to exist in every consumer's bundle target). A missing/malformed response for a single request
- * is expected traffic (an error envelope, a flaky backend), not a setup mistake — see
- * NoviqUIConfigProvider for the setup-mistake case, which throws instead of warning.
- */
-function devWarn(...args: unknown[]): void {
-  if (typeof process === "undefined" || process.env?.NODE_ENV !== "production") {
-    console.warn("[noviq-ui]", ...args);
-  }
-}
 
 function resolvePath(obj: unknown, path: string): unknown {
   return path

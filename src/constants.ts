@@ -17,28 +17,27 @@ type ValueOf<T> = T[keyof T];
 
 // ─── Input / Form ──────────────────────────────────────────────────────────────────────────────
 
-/** Field types `Input` (and `Form`'s `inputList`) can render. */
+/**
+ * Field types `Input` (and `Form`'s `inputList`) can render. Every value here has a render branch —
+ * `src/components/Input/Input.test.tsx` renders each one — so none of them falls through to the
+ * "Unsupported input type" fallback.
+ */
 export const INPUT_TYPE = {
   CHECKBOX: "checkbox",
   DATE: "date",
   EMAIL: "email",
   PASSWORD: "password",
-  ROWS_PER_PAGE: "rowsPerPage",
   SEARCH: "search",
   SELECT: "select",
   TEXT: "text",
   TIME: "time",
   FILE: "file",
   TEXTAREA: "textArea",
-  MULTI_TEXT: "multiText",
   MULTI_SELECT: "multiSelect",
-  CUSTOM: "custom",
   COLOR: "color",
   MONTH: "month",
   RADIO: "radio",
-  DATE_RANGE: "dateRange",
   MULTIPLE_FILE: "multipleFile",
-  REACT_QUILL: "reactQuill",
   NUMBER: "number",
   EXCEL_UPLOAD: "excelUpload",
   SWITCH: "switch",

@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Input from "./Input";
+import { INPUT_TYPE } from "../../constants";
 
 describe("Input", () => {
   it("text: renders label and fires onChange with the raw value", async () => {
@@ -275,6 +276,53 @@ describe("Input", () => {
       expect((screen.getByLabelText("Native date") as HTMLInputElement).type).toBe("date");
       expect((screen.getByLabelText("Native time") as HTMLInputElement).type).toBe("time");
       expect((screen.getByLabelText("Native month") as HTMLInputElement).type).toBe("month");
+    });
+  });
+
+  describe("supported types", () => {
+    // Per-type values that the field can render without choking; everything else takes "".
+    const VALUE: Record<string, unknown> = {
+      checkbox: false,
+      switch: false,
+      radio: "",
+      multiSelect: [],
+      file: null,
+      multipleFile: [],
+      excelUpload: null,
+    };
+
+    it.each(Object.values(INPUT_TYPE))("every INPUT_TYPE value renders a real field: %s", (type) => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      render(
+        <Input
+          type={type}
+          label="Field"
+          value={VALUE[type] ?? ""}
+          onChange={() => {}}
+          options={[{ label: "A", value: "a" }]}
+        />
+      );
+      expect(screen.queryByText(/Unsupported input type/)).not.toBeInTheDocument();
+      expect(error).not.toHaveBeenCalledWith("[noviq-ui]", expect.stringContaining("not a supported field type"));
+      error.mockRestore();
+    });
+
+    it("no longer declares the field types that never had an implementation", () => {
+      for (const dead of ["rowsPerPage", "multiText", "custom", "dateRange", "reactQuill"]) {
+        expect(Object.values(INPUT_TYPE)).not.toContain(dead);
+      }
+    });
+
+    it("an unknown type names itself in the fallback and is reported once in development", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const { rerender } = render(<Input type="multiText" label="Tags" value="" onChange={() => {}} />);
+      expect(screen.getByText("Unsupported input type: multiText")).toBeInTheDocument();
+
+      rerender(<Input type="multiText" label="Tags" value="x" onChange={() => {}} />);
+      const reports = error.mock.calls.filter((c) => String(c[1]).includes('type="multiText"'));
+      expect(reports).toHaveLength(1);
+      expect(String(reports[0][1])).toContain("Supported:");
+      error.mockRestore();
     });
   });
 });
