@@ -679,15 +679,29 @@ _Nothing staged._
 - The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
   the browser); only the CSV bytes are asserted.
 
-## Suggested next steps
-1. Add `eslint.config.js` so `npm run lint` actually runs — still not done, still cheap.
-2. Initialize git for `noviq-ui-demo` (the only repo here still without one).
-3. Real-frontend adoption: Table (3a-3d) and the config provider are done and published, and
-   `noviq-ui-demo` proves the package works for a typed Vite consumer against a real backend.
-   Swapping `noviq-ui` into `noviq-hrms-ui`, `noviq-lms-admin-ui`, `noviq-lms-learner-ui`, or
-   `asset-management-system/apps/web` is the next real adoption milestone — the provider is what
-   makes the three non-HRMS backends practical, since none share HRMS's response envelope.
-4. Multi-step form wizard shell (the last deferred Phase 2b item), or user-facing copy → constants /
-   `config.i18n` (offered, not started), or a `DatePicker` `displayFormat`/`weekStart`.
-5. Consider a typecheck gate for tests (a `tsconfig.test.json` + script, or Vitest's typecheck
-   mode) so type-level regressions are caught by `npm test` rather than only by the demo build.
+## Suggested next steps (prioritised; as of `4.2.0`)
+**Fix what the integration test found** (each is small; together a `4.2.1`/`4.3.0`):
+1. Escape closes only the topmost layer (pickers inside a Modal/Drawer).
+2. Table pagination wraps on phone widths so "last page" is reachable.
+3. Decide the 5 unimplemented `INPUT_TYPE` values: implement or remove them from the public constants.
+4. Unmount a closed `Drawer`'s children (or document/offer an option) — duplicate ids, live hidden forms.
+5. Small API cleanups: `Input type="search"` label/error, `cell()` placeholder gotcha, unused
+   `FilterDrawer.onRemoveFilter`.
+
+**Quality gates** (cheap, protect everything above):
+6. Add `eslint.config.js` so `npm run lint` runs; add CI that runs tsc + tests + build + the
+   constants guard on every push (there is none).
+7. A typecheck gate for the library's own tests (they're excluded from `tsconfig.json`, which is how
+   the `Form` typing bug shipped).
+8. Make the demo's consumer suite part of the release gate (`npm test` in `noviq-ui-demo/web`
+   against the packed tarball) and put the demo under git.
+
+**Features / scope decisions:**
+9. User-facing copy → constants (`DEFAULT_TEXT`) and `config.i18n`.
+10. `DatePicker` `displayFormat` / `weekStart`.
+11. Verify the Excel export file end-to-end; run Firefox/Safari and a screen-reader pass.
+
+**Adoption** (the actual goal of the package): swap `noviq-ui` into one real frontend. All four are
+Vite; `noviq-lms-admin-ui` / `noviq-lms-learner-ui` / `noviq-hrms-ui` are React 18 (verified
+compatible), AMS web is React 19. Needs your go-ahead, since you asked me not to touch running
+projects. Fix `CLAUDE.md`'s claim that hrms-ui is CRA first.
