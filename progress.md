@@ -567,6 +567,32 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Test suite 525 (up from 483 at 4.2.0); demo suite 44. Bundle 133.1 → 133.3 kB gzip; 54
         files in the tarball (3 new type files).
 
+- [x] **`4.3.0` — configurable date, time and date-time formats** (`NoviqUIConfigProvider`
+      `formats`; staged, see "Ready to publish"; absorbs the unpublished `4.2.1`).
+  - [x] `config.formats = { date, time, dateTime }` with moment-style tokens (`YYYY MM DD dddd HH
+        hh KK mm ss A a [literal]`; `KK` is the zero-based 12-hour hour). Applied to Table
+        date/time cells, Excel/CSV export, filter chips, and the Date/Month/Time pickers; plus
+        `displayFormat` props and a public `useDateTimeFormatters()` for the app's own UI.
+        Display only: emitted/stored values and backend payloads are unchanged.
+  - [x] Defaults reproduce the previous output exactly, so nothing changes unless configured.
+  - [x] **Found and fixed on the way: date-only strings were shown a day early west of UTC.** The
+        old formatter ran `"2024-03-05"` through `new Date()` (UTC midnight) and printed
+        `04/03/2024` in e.g. Los Angeles — in Table date cells and date-filter chips. Date-only
+        strings are now calendar days in every zone (tested across LA/UTC/Kolkata/Auckland; the
+        pre-fix output was reproduced first).
+  - [x] TimePicker follows `formats.time` for its clock and hour list (precedence: `hourCycle` prop
+        > configured format > 24-hour); not configured ⇒ identical to before. See context.md.
+  - [x] Provider validation: a non-string or blank pattern throws at mount, like a malformed
+        `table` config.
+  - [x] Tests: library 626 (up from 525; 101 new) — engine, resolution, hooks, provider, every
+        Table surface, export, chips, all three pickers; 7 mutation checks, all caught. Demo:
+        52 (5 new), a "Date and time formats" showcase section with live presets, and the
+        Employees page now configured with `DD MMM YYYY`. Verified in a real browser: grid
+        cells, export file (`01 Jan 2023`), picker labels and all four presets.
+  - [x] Design calls worth knowing: month display is *derived* from the date pattern (no
+        `formats.month`); a nested provider *replaces* its parent's config (does not merge);
+        native date/time inputs can't be reformatted.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -617,15 +643,17 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   tarball verified before publishing, 51 files). Additive: `FullPageSection`.
 
 ## Ready to publish
-- `4.2.1` — **patch.** Escape closes only the topmost layer (pickers/select menus inside a
-  Modal/Drawer, a Drawer opened from a Modal); Table pagination wraps on phone widths; five
-  never-implemented field types (`rowsPerPage`, `multiText`, `custom`, `dateRange`, `reactQuill`)
-  removed from `INPUT_TYPE`, and an unknown `type` now names itself; `TimePicker`'s 12-hour clock
-  is zero-based (00–11) and its minute column lists every minute by default. **Note for the release
-  notes:** the last item removes public constants in a patch — they never rendered a field, but
-  code referencing them will stop compiling. Gate: `tsc` clean, 525/525 tests, build, `npm pack`
-  (54 files), demo typecheck + build + 44 consumer tests against the packed tarball (7 of them
-  fail on 4.2.0), real-browser checks of Escape layering and of pagination at 375px/320px.
+- `4.3.0` — **additive feature release.** Folds in the never-published `4.2.1` (so it also carries:
+  Escape closes only the topmost overlay; Table pagination wraps on phones; five never-implemented
+  field types — `rowsPerPage`, `multiText`, `custom`, `dateRange`, `reactQuill` — removed from
+  `INPUT_TYPE`, an unknown `type` names itself; TimePicker's zero-based 12-hour clock and
+  every-minute default). **New:** `NoviqUIConfigProvider` `formats` (date / time / dateTime)
+  applied across Table cells, export, filter chips and the pickers, `displayFormat` props,
+  `useDateTimeFormatters()`; **fixed:** date-only values shown a day early west of UTC.
+  *Release-note caveats:* the `INPUT_TYPE` removals can break code that referenced them; the
+  Table's default time (`hh:mm A`) and the TimePicker's default (24-hour) still differ until an app
+  sets `formats.time`. Gate: `tsc` clean, 626/626 library tests, build, `npm pack` (56 files), demo
+  typecheck + build + 52 consumer tests against the packed tarball, real-browser checks.
   Awaiting explicit go-ahead to `npm publish`.
 
 ## Not started

@@ -548,6 +548,76 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
   instead (and hides the CSV option) — useful if your backend already produces the file.
 - `Export` and the `useTableExport` hook it's built on are also exported standalone.
 
+## Date and time formats
+
+Declare how dates and times read **once**, on `NoviqUIConfigProvider`, and every place the UI shows
+one follows it:
+
+```javascript
+<NoviqUIConfigProvider
+  config={{
+    formats: {
+      date: "DD MMM YYYY",          // 05 Mar 2024        (default "DD/MM/YYYY")
+      time: "HH:mm",                // 14:30              (default "hh:mm A")
+      dateTime: "DD MMM YYYY, HH:mm", // 05 Mar 2024, 14:30 (default: date + " " + time)
+    },
+  }}
+>
+```
+
+All three are optional. `dateTime` follows a customised `date` and `time` unless you set it.
+
+**Where it applies:** `Table` date / date-range / date-time / date-time-range / time / time-range
+cells; the Excel and CSV export (so a file matches the screen); filter chips; and `DatePicker`,
+`MonthPicker` and `TimePicker`. In your own components use the same patterns with the hook:
+
+```javascript
+const { formatDate, formatTime, formatDateTime } = useDateTimeFormatters();
+formatDate("2024-03-05");                       // "05 Mar 2024"
+formatDateTime("2024-03-05T14:30:00");          // "05 Mar 2024, 14:30"
+formatDateTime(isoFromApi, { isUtc: true });    // treat a zone-less value as UTC
+```
+
+**Display only.** Values never change shape: pickers still emit `"YYYY-MM-DD"`, `"HH:mm"` and
+`"YYYY-MM"`, and filter payloads sent to your backend stay ISO. A value that can't be read as a
+date or time is shown as it was, not as `NaN/NaN/NaN`.
+
+### Tokens
+
+| Token | Output | Token | Output |
+| --- | --- | --- | --- |
+| `YYYY` / `YY` | `2024` / `24` | `HH` / `H` | `00`–`23` / `0`–`23` |
+| `MMMM` / `MMM` | `March` / `Mar` | `hh` / `h` | `01`–`12` / `1`–`12` (12 = midnight/noon) |
+| `MM` / `M` | `03` / `3` | `KK` / `K` | `00`–`11` / `0`–`11` (zero-based) |
+| `DD` / `D` | `05` / `5` | `mm` / `m` | `07` / `7` |
+| `dddd` / `ddd` | `Tuesday` / `Tue` | `ss` / `s` | `09` / `9` |
+| `A` / `a` | `PM` / `pm` | `[text]` | `text`, literally |
+
+Anything else is printed as written. Escape words that contain a token letter — `"DD MMM [at]
+HH:mm"` — exactly as you would in moment. `KK` is the one token moment doesn't have; it's the
+zero-based 12-hour clock where midnight and noon read `00`.
+
+### How the pickers use it
+- **`DatePicker`** shows `formats.date`; the calendar days are labelled the same way.
+  `displayFormat="…"` overrides it for one picker.
+- **`MonthPicker`** shows `formats.date` with the day removed (`DD/MM/YYYY` → `MM/YYYY`,
+  `YYYY-MM-DD` → `YYYY-MM`, `dddd, DD MMMM YYYY` → `MMMM YYYY`). `displayFormat` overrides it.
+- **`TimePicker`** takes both its **clock** and its text from `formats.time`: `HH:mm` is a
+  24-hour picker, `hh:mm A` a 12-hour one listing `12, 01 … 11`, `KK:mm A` a 12-hour one listing
+  `00 … 11`. An explicit `hourCycle` prop always wins, and a pattern that contradicts the clock is
+  ignored. With no `formats.time` configured it stays 24-hour (and `hourCycle={12}` uses the
+  zero-based `KK:mm A`), exactly as before.
+
+### Nested providers replace, they don't merge
+A `NoviqUIConfigProvider` inside another one *replaces* the outer config for its subtree. To change
+only the formats for one screen, repeat `table` (and `notify`) if anything beneath it needs them —
+a `<Table apiFunction>` there without a `responseFormat` would throw.
+
+### Not covered
+The browser's own `<input type="date|time|month">` (`Input type="date"`, the date fields inside the
+filter drawer) is rendered by the browser in the user's locale and can't be reformatted. Use
+`datePicker` / `timePicker` / `monthPicker` where the format has to match.
+
 ## Currently available components
 
 - `<Input />` — type-switching input field. Supported `type`s: `text`, `email`, `password`,

@@ -550,6 +550,36 @@ messages from earlier server lifetimes, e.g. Vite HMR errors from before a depen
 --noEmit` or `npm run build` (which runs `tsc -b`). That vacuous check is why the missing `types`
 export condition (fixed in `3.0.0`) went unnoticed through five published releases.
 
+## Date and time formats (`config.formats`, `4.3.0`)
+`NoviqUIConfig.formats = { date?, time?, dateTime? }`: display patterns, moment-style tokens
+(`YYYY MM DD dddd HH hh KK mm ss A a [literal]`). **Display only** — pickers still emit
+`"YYYY-MM-DD"`/`"HH:mm"`/`"YYYY-MM"` and filter payloads stay ISO.
+- **Engine**: `utils/dateTimeFormat.ts` — a small hand-written tokenizer (no moment/date-fns;
+  that stays a dependency-free library). `resolveFormats()` applies defaults (`DATE_FORMAT`,
+  `TIME_FORMAT`) and derives `dateTime = "<date> <time>"` unless set. `hooks/useDateTimeFormats.ts`
+  resolves from context (memoised on the three strings — apps pass inline `config={{...}}`) and
+  exposes the public `useDateTimeFormatters()`.
+- **Applied in**: `formatTableCellValues(type, options, formats?)` (cells, via `TableCell`, and
+  export via `getExportCellValue`), `buildActiveFilter(config, raw, formats?)` (chips), and
+  `DatePicker`/`MonthPicker`/`TimePicker` (+ `displayFormat` props). Defaults are unchanged.
+- **MonthPicker** derives its pattern from `formats.date` with the day token (and the adjacent
+  separator) removed (`deriveMonthPattern`); there is deliberately no `formats.month`.
+- **TimePicker is the subtle one.** Its *clock* and hour list follow `formats.time` when the app set
+  one: `HH` → 24-hour, `hh`/`h` → 12-hour listing `12, 01…11`, `KK`/`K` → 12-hour listing `00…11`.
+  Precedence: explicit `hourCycle` prop > configured `formats.time` > 24-hour. A pattern that
+  contradicts the clock is ignored for that clock's default (`HH:mm` / `KK:mm A`) so the field
+  never disagrees with its columns. Not configured ⇒ identical to `4.2.x` (24-hour; `hourCycle={12}`
+  is zero-based). This is why the *table's* default time (`hh:mm A`, 12:30 PM) and the *picker's*
+  default (`00:30 PM` in 12-hour) differ until an app sets `formats.time`: unifying them silently
+  would have changed existing output.
+- **Date-only strings are calendar days.** `"2024-03-05"` is read as that day in every zone. The old
+  formatter ran it through `new Date()` (UTC midnight) and showed `04/03/2024` west of Greenwich —
+  a real bug in Table cells and filter chips, fixed by the same change. A bare `"HH:mm[:ss]"` is
+  also accepted now (what a TimePicker produces).
+- Unreadable values are returned as they were (was `NaN/NaN/NaN`).
+- **Nested providers replace** the parent's config; they do not merge.
+- Not covered: native `<input type=date|time|month>` render in the browser's locale.
+
 ## Overlays and Escape
 `Modal` and `Drawer` register on a module-level **layer stack** (`hooks/useEscapeLayer.ts`): one
 window `keydown` listener, and only the topmost open overlay reacts to Escape. A `Drawer` that is
