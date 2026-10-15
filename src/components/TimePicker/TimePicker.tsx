@@ -3,13 +3,17 @@ import { createPortal } from "react-dom";
 import { Clock, X } from "lucide-react";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
+import { useConfiguredTimePattern } from "../../hooks/useDateTimeFormats";
+import { formatParts, hourStyleOf } from "../../utils/dateTimeFormat";
 import {
   BUTTON_TYPE,
   DEFAULT_MINUTE_STEP,
   HOUR_CYCLE,
+  HOUR_STYLE,
   KEY,
   TIME_COLUMN,
   TIME_PERIOD,
+  TIME_PICKER_PATTERN,
   TIME_PICKER_COLUMN_HEIGHT,
   type HourCycle,
   type TimeColumn,
@@ -23,11 +27,19 @@ export interface TimePickerProps {
   /** Called with the new `"HH:mm"` 24-hour value, or `""` when cleared. */
   onChange?: (value: string) => void;
   /**
-   * How the time is displayed and picked. `24` (default): hours 00–23. `12`: hours 00–11 with
-   * an AM/PM column (00 AM is midnight, 00 PM is noon). Only presentation changes — `value`/`onChange` stay 24-hour `"HH:mm"`, which
-   * is what forms and backends exchange.
+   * The clock. `24`: hours 00–23. `12`: an AM/PM column and hours 12, 01–11 — or 00–11 when the
+   * time pattern uses `KK`, the zero-based form (00 AM midnight, 00 PM noon).
+   *
+   * Left unset it follows `NoviqUIConfigProvider`'s `formats.time` (`HH:mm` → 24, `hh:mm A` → 12),
+   * and is 24 when the app has not set one. Only presentation changes — `value`/`onChange` stay
+   * 24-hour `"HH:mm"`, which is what forms and backends exchange.
    */
   hourCycle?: HourCycle;
+  /**
+   * How the chosen time reads in the field, e.g. `"HH[h]mm"`. Defaults to `formats.time`. It must
+   * agree with the clock (a 12-hour pattern on a 24-hour picker is ignored).
+   */
+  displayFormat?: string;
   /** Minute-column granularity. Defaults to 1, i.e. every minute 00–59. */
   minuteStep?: number;
   placeholder?: string;
@@ -56,9 +68,11 @@ function parseTime(value?: string): { hour: string; minute: string } | null {
 }
 
 const HOURS_24 = Array.from({ length: 24 }, (_, i) => pad(i));
-// 00 … 11: the 12-hour clock is zero-based, so the first hour reads 00 (not 12) in both halves of
-// the day — 00 AM is midnight, 00 PM is noon. The index equals `hour24 % 12`.
-const HOURS_12 = HOURS_24.slice(0, 12);
+// The two 12-hour lists. Either way the index equals `hour24 % 12`, so midnight and noon sit first.
+// Conventional (`hh`/`h` patterns): 12, 01 … 11.   Zero-based (`KK`/`K`): 00 … 11 — 00 AM is
+// midnight, 00 PM is noon. Which one applies is decided by the time pattern in force.
+const HOURS_12_CONVENTIONAL = ["12", ...HOURS_24.slice(1, 12)];
+const HOURS_12_ZERO_BASED = HOURS_24.slice(0, 12);
 const PERIODS: string[] = [TIME_PERIOD.AM, TIME_PERIOD.PM];
 
 function buildMinutes(step: number) {
@@ -73,7 +87,8 @@ type Column = TimeColumn;
 function TimePicker({
   value = "",
   onChange,
-  hourCycle = HOUR_CYCLE.H24,
+  hourCycle: hourCycleProp,
+  displayFormat,
   minuteStep = DEFAULT_MINUTE_STEP,
   placeholder = "Select time",
   disabled = false,
@@ -99,7 +114,26 @@ function TimePicker({
   const [activeColumn, setActiveColumn] = useState<Column>(TIME_COLUMN.HOUR);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
+  // Clock and pattern. An explicit `hourCycle` always wins. Otherwise an app-configured
+  // `formats.time` decides (`HH` → 24-hour, `hh`/`KK` → 12-hour); with neither, 24-hour as before.
+  // The pattern only supplies the *text*, so one that contradicts the clock is ignored in favour
+  // of that clock's default — the trigger must never disagree with the columns beneath it.
+  const configuredTime = useConfiguredTimePattern();
+  const configuredStyle = configuredTime ? hourStyleOf(configuredTime) : HOUR_STYLE.H24;
+  const hourCycle =
+    hourCycleProp ?? (configuredStyle === HOUR_STYLE.H24 ? HOUR_CYCLE.H24 : HOUR_CYCLE.H12);
   const is12 = hourCycle === HOUR_CYCLE.H12;
+
+  const fitsClock = (pattern: string | undefined): pattern is string =>
+    pattern !== undefined && (hourStyleOf(pattern) !== HOUR_STYLE.H24) === is12;
+  const pattern = fitsClock(displayFormat)
+    ? displayFormat
+    : fitsClock(configuredTime)
+      ? configuredTime
+      : is12
+        ? TIME_PICKER_PATTERN.H12
+        : TIME_PICKER_PATTERN.H24;
+  const zeroBasedHours = is12 && hourStyleOf(pattern) === HOUR_STYLE.H12_ZERO_BASED;
 
   const parsed = parseTime(value);
   const hasValue = parsed !== null;
@@ -108,7 +142,7 @@ function TimePicker({
   const period = hour24 >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
 
   const minutes = useMemo(() => buildMinutes(minuteStep), [minuteStep]);
-  const hourItems = is12 ? HOURS_12 : HOURS_24;
+  const hourItems = is12 ? (zeroBasedHours ? HOURS_12_ZERO_BASED : HOURS_12_CONVENTIONAL) : HOURS_24;
   const hourIndex = is12 ? hour24 % 12 : hour24;
   const hourLabel = hourItems[hourIndex];
 
@@ -289,9 +323,18 @@ function TimePicker({
   );
 
   const displayValue = hasValue
-    ? is12
-      ? `${hourLabel}:${minute} ${period}`
-      : `${hourLabel}:${minute}`
+    ? formatParts(
+        {
+          year: 1970,
+          month: 1,
+          day: 1,
+          hour: hour24,
+          minute: Number(minute),
+          second: 0,
+          weekday: 4,
+        },
+        pattern
+      )
     : placeholder;
 
   return (

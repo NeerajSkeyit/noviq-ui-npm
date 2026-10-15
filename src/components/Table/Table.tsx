@@ -36,6 +36,7 @@ import {
 } from "../../constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
+import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { extractRows, extractTotal } from "../../config/responseFormat";
 import type { TableResponseFormat } from "../../config/types";
 import "./Table.css";
@@ -242,10 +243,11 @@ function TableInner<T extends Record<string, any> = any>({
   // Session-only, in-memory (unlike column settings, filters don't persist to
   // localStorage — resetting on remount avoids a surprising "why is this still
   // filtered?" experience across reloads).
+  const dateTimeFormats = useDateTimeFormats();
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>(() =>
     filterConfigs
       .filter((c) => c.defaultValue !== undefined)
-      .map((c) => buildActiveFilter(c, c.defaultValue))
+      .map((c) => buildActiveFilter(c, c.defaultValue, dateTimeFormats))
       .filter((f): f is ActiveFilter => f !== null)
   );
 

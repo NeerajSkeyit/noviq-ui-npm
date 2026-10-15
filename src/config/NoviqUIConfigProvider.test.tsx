@@ -83,4 +83,31 @@ describe("NoviqUIConfigProvider", () => {
       )
     ).toThrow(/exactly one of/);
   });
+
+  describe("formats", () => {
+    const mount = (config: any) =>
+      render(
+        <NoviqUIConfigProvider config={config}>
+          <Consumer />
+        </NoviqUIConfigProvider>
+      );
+
+    it("accepts a config that sets only formats", () => {
+      mount({ formats: { date: "YYYY-MM-DD", time: "HH:mm", dateTime: "YYYY-MM-DD HH:mm" } });
+      expect(screen.getByText("has-config")).toBeInTheDocument();
+    });
+
+    it("accepts any subset of the three patterns", () => {
+      mount({ formats: { time: "HH:mm" } });
+      expect(screen.getByText("has-config")).toBeInTheDocument();
+    });
+
+    it.each(["date", "time", "dateTime"])("throws when %s is not a string", (key) => {
+      expect(() => mount({ formats: { [key]: 42 } })).toThrow(new RegExp(`config\\.formats\\.${key}`));
+    });
+
+    it.each(["date", "time", "dateTime"])("throws when %s is empty", (key) => {
+      expect(() => mount({ formats: { [key]: "   " } })).toThrow(/non-empty format string/);
+    });
+  });
 });

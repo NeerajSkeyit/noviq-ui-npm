@@ -164,6 +164,27 @@ export type TimeColumn = ValueOf<typeof TIME_COLUMN>;
 
 /** @internal */
 export const DEFAULT_MINUTE_STEP = 1;
+
+/**
+ * @internal How a time pattern writes the hour, which decides the TimePicker's clock and the hour
+ * list: `H`/`HH` are 0–23; `h`/`hh` are 12-hour with 12 for midnight/noon; `K`/`KK` are the
+ * zero-based 12-hour clock (00 for midnight/noon).
+ */
+export const HOUR_STYLE = {
+  H24: "24",
+  H12: "12",
+  H12_ZERO_BASED: "12-zero",
+} as const;
+export type HourStyle = ValueOf<typeof HOUR_STYLE>;
+
+/**
+ * @internal What the TimePicker shows when the app has not configured `formats.time`: 24-hour
+ * `HH:mm`, or the zero-based 12-hour `KK:mm A` (00 AM = midnight, 00 PM = noon).
+ */
+export const TIME_PICKER_PATTERN = {
+  H24: "HH:mm",
+  H12: "KK:mm A",
+} as const;
 /** @internal Height in px of each scrollable column in the time picker's dropdown. */
 export const TIME_PICKER_COLUMN_HEIGHT = 180;
 
@@ -181,6 +202,10 @@ export const MONTH_NAMES_SHORT: readonly string[] = [
 ];
 /** @internal Sunday first, matching `Date#getDay()`. */
 export const WEEKDAY_LABELS: readonly string[] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+/** @internal Full weekday names, Sunday first (the `dddd` / `ddd` format tokens). */
+export const WEEKDAY_NAMES: readonly string[] = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+];
 /** @internal `0` = Sunday. */
 export const WEEK_START = 0;
 /** @internal */

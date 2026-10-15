@@ -17,6 +17,7 @@ import {
   FILTER_TYPE,
   type FilterType,
 } from "../../constants";
+import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import "./FilterDrawer.css";
 
 export type { FilterConfig, FilterOption, ActiveFilter, DateRangeValue } from "./buildActiveFilter";
@@ -147,6 +148,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
 }
 
 function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: FilterDrawerProps) {
+  const formats = useDateTimeFormats();
   const [open, setOpen] = useState(false);
   const [draftValues, setDraftValues] = useState<Record<string, unknown>>({});
 
@@ -165,7 +167,7 @@ function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: Fil
 
   const handleApply = () => {
     const built = filters
-      .map((config) => buildActiveFilter(config, draftValues[config.id]))
+      .map((config) => buildActiveFilter(config, draftValues[config.id], formats))
       .filter((f): f is ActiveFilter => f !== null);
     onApplyFilter(built);
     setOpen(false);

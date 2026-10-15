@@ -1,4 +1,4 @@
-import { formatDatePart } from "./dateFormat";
+import { formatValue, resolveFormats, type ResolvedFormats } from "../../utils/dateTimeFormat";
 import { FILTER_PAYLOAD_KEY, FILTER_TYPE, MONTH_NAMES, type FilterType } from "../../constants";
 
 export interface FilterOption {
@@ -40,7 +40,16 @@ function isBlank(value: unknown): boolean {
   return value === undefined || value === null || value === "";
 }
 
-export function buildActiveFilter(config: FilterConfig, rawValue: unknown): ActiveFilter | null {
+/**
+ * Turns a filter's raw value into an active filter: a chip label plus the payload for the backend.
+ * `formats` decide how dates read in the chip; the payload keeps the raw `"YYYY-MM-DD"` values.
+ */
+export function buildActiveFilter(
+  config: FilterConfig,
+  rawValue: unknown,
+  formats: ResolvedFormats = resolveFormats()
+): ActiveFilter | null {
+  const formatDate = (value: string) => formatValue(value, formats.date);
   const base = { id: config.id, label: config.label, mandatory: config.mandatory };
 
   switch (config.type) {
@@ -66,11 +75,11 @@ export function buildActiveFilter(config: FilterConfig, rawValue: unknown): Acti
 
       let displayValue: string;
       if (!isBlank(from) && !isBlank(to)) {
-        displayValue = `${formatDatePart(from!)} → ${formatDatePart(to!)}`;
+        displayValue = `${formatDate(from!)} → ${formatDate(to!)}`;
       } else if (!isBlank(from)) {
-        displayValue = `From ${formatDatePart(from!)}`;
+        displayValue = `From ${formatDate(from!)}`;
       } else {
-        displayValue = `Until ${formatDatePart(to!)}`;
+        displayValue = `Until ${formatDate(to!)}`;
       }
 
       return { ...base, displayValue, apiPayload };
@@ -95,7 +104,7 @@ export function buildActiveFilter(config: FilterConfig, rawValue: unknown): Acti
       if (isBlank(rawValue)) return null;
       return {
         ...base,
-        displayValue: formatDatePart(rawValue as string),
+        displayValue: formatDate(rawValue as string),
         apiPayload: { [config.id]: rawValue },
       };
     }

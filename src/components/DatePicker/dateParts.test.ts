@@ -7,8 +7,8 @@ import {
   clampYMD,
   compareYMD,
   daysInMonth,
-  formatDisplayDate,
-  formatDisplayMonth,
+  formatYM,
+  formatYMD,
   formatISODate,
   formatISOMonth,
   isDateDisabled,
@@ -76,9 +76,11 @@ describe("formatting", () => {
     expect(formatISOMonth({ year: 2024, month: 3 })).toBe("2024-03");
   });
 
-  it("displays dates as DD/MM/YYYY and months as MM/YYYY", () => {
-    expect(formatDisplayDate(d(2024, 3, 5))).toBe("05/03/2024");
-    expect(formatDisplayMonth({ year: 2024, month: 3 })).toBe("03/2024");
+  it("renders a date and a month with any display pattern", () => {
+    expect(formatYMD(d(2024, 3, 5), "DD/MM/YYYY")).toBe("05/03/2024");
+    expect(formatYMD(d(2024, 3, 5), "dddd, D MMMM YYYY")).toBe("Tuesday, 5 March 2024");
+    expect(formatYM({ year: 2024, month: 3 }, "MM/YYYY")).toBe("03/2024");
+    expect(formatYM({ year: 2024, month: 3 }, "MMMM YYYY")).toBe("March 2024");
   });
 });
 

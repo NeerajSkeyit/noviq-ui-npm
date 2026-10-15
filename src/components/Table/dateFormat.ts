@@ -1,43 +1,15 @@
-// Lightweight DD/MM/YYYY-family formatting to replace moment.js. Input is
-// expected to be ISO-8601 (or a Date/epoch number) — arbitrary custom-format
-// parsing (moment's `currentFormat` option) is intentionally not supported.
-
-import { TIME_PERIOD } from "../../constants";
+// Duration formatting for the `duration` cell type. Dates and times are formatted by
+// `utils/dateTimeFormat`, which honours the patterns configured on `NoviqUIConfigProvider`.
 
 const HAS_TZ_SUFFIX = /(Z|[+-]\d{2}:?\d{2})$/i;
 
-function toDate(value: string | number | Date, isUtc?: boolean): Date {
-  if (value instanceof Date) return value;
-  if (typeof value === "number") return new Date(value);
-  if (isUtc && !HAS_TZ_SUFFIX.test(value)) {
-    return new Date(`${value}Z`);
-  }
-  return new Date(value);
+function toEpochMs(value: string): number {
+  const text = HAS_TZ_SUFFIX.test(value) ? value : `${value}Z`;
+  return new Date(text).getTime();
 }
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
-}
-
-export function formatDatePart(value: string | number | Date, isUtc?: boolean): string {
-  const date = toDate(value, isUtc);
-  const day = isUtc ? date.getUTCDate() : date.getDate();
-  const month = (isUtc ? date.getUTCMonth() : date.getMonth()) + 1;
-  const year = isUtc ? date.getUTCFullYear() : date.getFullYear();
-  return `${pad(day)}/${pad(month)}/${year}`;
-}
-
-export function formatTimePart(value: string | number | Date, isUtc?: boolean): string {
-  const date = toDate(value, isUtc);
-  const minutes = isUtc ? date.getUTCMinutes() : date.getMinutes();
-  let hours = isUtc ? date.getUTCHours() : date.getHours();
-  const period = hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
-  hours = hours % 12 || 12;
-  return `${pad(hours)}:${pad(minutes)} ${period}`;
-}
-
-export function formatDateTime(value: string | number | Date, isUtc?: boolean): string {
-  return `${formatDatePart(value, isUtc)} ${formatTimePart(value, isUtc)}`;
 }
 
 // Mirrors the source's odd-but-intentional convention: a duration value that
@@ -46,9 +18,7 @@ export function formatDateTime(value: string | number | Date, isUtc?: boolean): 
 // value is a plain number of minutes.
 export function formatDuration(value: number | string): string {
   const totalMs =
-    typeof value === "string" && value.includes("T")
-      ? toDate(value, true).getTime()
-      : Number(value) * 60 * 1000;
+    typeof value === "string" && value.includes("T") ? toEpochMs(value) : Number(value) * 60 * 1000;
 
   const totalSeconds = Math.max(0, Math.floor(totalMs / 1000));
   const hours = Math.floor(totalSeconds / 3600);

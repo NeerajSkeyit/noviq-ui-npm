@@ -1,4 +1,5 @@
 import { DAYS_IN_WEEK, CALENDAR_WEEKS } from "../../constants";
+import { formatParts } from "../../utils/dateTimeFormat";
 
 /** A calendar date with no time zone: `month` is 1–12, `day` is 1–31. */
 export interface YMD {
@@ -72,14 +73,17 @@ export function formatISOMonth({ year, month }: YM): string {
   return `${pad(year, 4)}-${pad(month)}`;
 }
 
-/** `DD/MM/YYYY`, the format `Table` shows dates in. */
-export function formatDisplayDate({ year, month, day }: YMD): string {
-  return `${pad(day)}/${pad(month)}/${pad(year, 4)}`;
+/** A calendar date rendered with a display pattern such as `"DD/MM/YYYY"`. */
+export function formatYMD(date: YMD, pattern: string): string {
+  return formatParts(
+    { ...date, hour: 0, minute: 0, second: 0, weekday: weekdayOf(date) },
+    pattern
+  );
 }
 
-/** `MM/YYYY` */
-export function formatDisplayMonth({ year, month }: YM): string {
-  return `${pad(month)}/${pad(year, 4)}`;
+/** A month rendered with a display pattern such as `"MM/YYYY"` (day 1, for weekday tokens). */
+export function formatYM(month: YM, pattern: string): string {
+  return formatYMD({ ...month, day: 1 }, pattern);
 }
 
 export function todayYMD(): YMD {

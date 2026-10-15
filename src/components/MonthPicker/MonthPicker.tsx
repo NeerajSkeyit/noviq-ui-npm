@@ -2,6 +2,8 @@ import React, { useCallback, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import PickerField from "../PickerField/PickerField";
+import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import { deriveMonthPattern } from "../../utils/dateTimeFormat";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import {
   BUTTON_TYPE,
@@ -13,7 +15,7 @@ import {
 import {
   addMonthsYM,
   compareYM,
-  formatDisplayMonth,
+  formatYM,
   formatISOMonth,
   parseISOMonth,
   todayYMD,
@@ -30,6 +32,12 @@ export interface MonthPickerProps {
   minMonth?: string;
   /** Latest selectable month, same format as `minMonth`. */
   maxMonth?: string;
+  /**
+   * How the month is shown, e.g. `"MMM YYYY"`. Defaults to `formats.date` from
+   * `NoviqUIConfigProvider` with the day removed (`"DD/MM/YYYY"` → `"MM/YYYY"`). Display only:
+   * `value` stays `"YYYY-MM"`.
+   */
+  displayFormat?: string;
   placeholder?: string;
   disabled?: boolean;
   /** Paints the trigger with the error border. */
@@ -50,6 +58,7 @@ function MonthPicker({
   onChange,
   minMonth,
   maxMonth,
+  displayFormat,
   placeholder = "Select month",
   disabled = false,
   error = false,
@@ -60,6 +69,8 @@ function MonthPicker({
   "aria-label": ariaLabel,
 }: MonthPickerProps) {
   const baseId = useId();
+  const configuredFormats = useDateTimeFormats(); // unconditional: hooks can't be short-circuited
+  const pattern = displayFormat ?? deriveMonthPattern(configuredFormats.date);
   const gridId = `${baseId}-grid`;
   const cellId = (ym: YM) => `${baseId}-${formatISOMonth(ym)}`;
 
@@ -197,7 +208,7 @@ function MonthPicker({
       ariaLabel={ariaLabel}
       wrapperRef={wrapperRef}
       triggerRef={triggerRef}
-      displayValue={selected ? formatDisplayMonth(selected) : ""}
+      displayValue={selected ? formatYM(selected, pattern) : ""}
       placeholder={placeholder}
       hasValue={selected !== null}
       icon={<Calendar size={14} strokeWidth={2.5} aria-hidden />}

@@ -2,6 +2,7 @@ import React, { useCallback, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import PickerField from "../PickerField/PickerField";
+import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import {
   BUTTON_TYPE,
@@ -23,7 +24,7 @@ import {
   compareYM,
   compareYMD,
   daysInMonth,
-  formatDisplayDate,
+  formatYMD,
   formatISODate,
   isDateDisabled,
   parseISODate,
@@ -42,6 +43,11 @@ export interface DatePickerProps {
   minDate?: string;
   /** Latest selectable date, `"YYYY-MM-DD"` (inclusive). */
   maxDate?: string;
+  /**
+   * How the date is shown, e.g. `"DD MMM YYYY"`. Defaults to `NoviqUIConfigProvider`'s
+   * `formats.date` (`"DD/MM/YYYY"` if unset). Display only: `value` stays `"YYYY-MM-DD"`.
+   */
+  displayFormat?: string;
   placeholder?: string;
   disabled?: boolean;
   /** Paints the trigger with the error border. */
@@ -61,6 +67,7 @@ function DatePicker({
   onChange,
   minDate,
   maxDate,
+  displayFormat,
   placeholder = "Select date",
   disabled = false,
   error = false,
@@ -71,6 +78,8 @@ function DatePicker({
   "aria-label": ariaLabel,
 }: DatePickerProps) {
   const baseId = useId();
+  const configuredFormats = useDateTimeFormats(); // unconditional: hooks can't be short-circuited
+  const pattern = displayFormat ?? configuredFormats.date;
   const gridId = `${baseId}-grid`;
   const cellId = (date: YMD) => `${baseId}-${formatISODate(date)}`;
 
@@ -219,7 +228,7 @@ function DatePicker({
       ariaLabel={ariaLabel}
       wrapperRef={wrapperRef}
       triggerRef={triggerRef}
-      displayValue={selected ? formatDisplayDate(selected) : ""}
+      displayValue={selected ? formatYMD(selected, pattern) : ""}
       placeholder={placeholder}
       hasValue={selected !== null}
       icon={<Calendar size={14} strokeWidth={2.5} aria-hidden />}
@@ -344,7 +353,7 @@ function DatePicker({
                         role="gridcell"
                         aria-selected={isSelected}
                         aria-disabled={isDisabled || undefined}
-                        aria-label={formatDisplayDate(date)}
+                        aria-label={formatYMD(date, pattern)}
                         className={classes}
                         onClick={() => choose(date)}
                       >

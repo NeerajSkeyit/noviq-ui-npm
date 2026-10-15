@@ -34,10 +34,27 @@ export interface NoviqUITableConfig {
  */
 export type NotifyFn = (message: string, kind: NotifyKind) => void;
 
+/**
+ * Display patterns for dates and times, applied everywhere the UI shows one: Table cells, exports,
+ * filter chips, and the date / month / time pickers. Moment-style tokens — see the README for the
+ * full list; wrap literal text in `[square brackets]`. These are *display* formats only: values
+ * you pass and receive (`"YYYY-MM-DD"`, `"HH:mm"`) never change.
+ */
+export interface NoviqUIFormats {
+  /** Default `"DD/MM/YYYY"`. */
+  date?: string;
+  /** Default `"hh:mm A"`. */
+  time?: string;
+  /** Default: the date pattern, a space, then the time pattern. */
+  dateTime?: string;
+}
+
 export interface NoviqUIConfig {
   /** Required only if the app renders a `<Table apiFunction>` without a per-instance `responseFormat`. */
   table?: NoviqUITableConfig;
   /** Optional. With none configured the library stays silent (a failed export is still
    * `console.error`ed). */
   notify?: NotifyFn;
+  /** Optional. How dates, times and date-times are displayed across the UI. */
+  formats?: NoviqUIFormats;
 }

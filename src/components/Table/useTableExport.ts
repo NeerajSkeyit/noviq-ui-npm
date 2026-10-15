@@ -17,6 +17,8 @@ import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { formatTableCellValues, formatStatusLabel } from "./TableCell";
 import { extractRows } from "../../config/responseFormat";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
+import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import type { ResolvedFormats } from "../../utils/dateTimeFormat";
 import type { NotifyFn, TableRequestParamNames, TableResponseFormat } from "../../config/types";
 
 
@@ -44,7 +46,11 @@ export interface UseTableExportResult {
   exporting: boolean;
 }
 
-function getExportCellValue<T>(row: T, column: TableColumn<T>): string | number {
+function getExportCellValue<T>(
+  row: T,
+  column: TableColumn<T>,
+  formats: ResolvedFormats
+): string | number {
   if (column.exportValue) return column.exportValue(row);
 
   const cellValue = getCellValue(row, column);
@@ -52,7 +58,7 @@ function getExportCellValue<T>(row: T, column: TableColumn<T>): string | number 
   if (column.type === CELL_TYPE.STATUS) {
     return cellValue === NO_TEXT_PLACEHOLDER ? cellValue : formatStatusLabel(cellValue);
   }
-  return formatTableCellValues(column.type, buildCellFormatOptions(row, column, cellValue));
+  return formatTableCellValues(column.type, buildCellFormatOptions(row, column, cellValue), formats);
 }
 
 function useTableExport<T>({
@@ -69,6 +75,7 @@ function useTableExport<T>({
   notify: notifyArg,
 }: UseTableExportArgs<T>): UseTableExportResult {
   const [exporting, setExporting] = useState(false);
+  const formats = useDateTimeFormats(); // exports are formatted exactly as the table shows them
   const configNotify = useNoviqUIConfig()?.notify; // unconditional: hooks can't be short-circuited
   const notify = notifyArg ?? configNotify;
 
@@ -89,7 +96,7 @@ function useTableExport<T>({
 
   const buildAoa = (rows: T[]): unknown[][] => {
     const header = exportColumns.map((c) => c.heading);
-    const body = rows.map((row) => exportColumns.map((c) => getExportCellValue(row, c)));
+    const body = rows.map((row) => exportColumns.map((c) => getExportCellValue(row, c, formats)));
     return [header, ...body];
   };
 
