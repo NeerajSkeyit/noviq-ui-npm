@@ -9,9 +9,14 @@ export interface FilterChipsProps {
   filters: ActiveFilter[];
   onRemove: (filterId: string) => void;
   onClearAll: () => void;
+  /**
+   * Makes a chip's text a button and calls this with the filter's id when it is clicked — what
+   * `Table` uses to reopen the filters drawer. Without it the chips are plain text.
+   */
+  onChipClick?: (filterId: string) => void;
 }
 
-function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps) {
+function FilterChips({ filters, onRemove, onClearAll, onChipClick }: FilterChipsProps) {
   const t = useText();
   if (filters.length === 0) return null;
 
@@ -19,8 +24,22 @@ function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps) {
     <div className="filter-chips">
       {filters.map((filter) => (
         <span key={filter.id} className="filter-chip">
-          <span className="filter-chip-label">{filter.label}:</span>
-          <span className="filter-chip-value">{filter.displayValue}</span>
+          {onChipClick ? (
+            <button
+              type={BUTTON_TYPE.BUTTON}
+              className="filter-chip-body"
+              onClick={() => onChipClick(filter.id)}
+            >
+              <span className="filter-chip-label">{filter.label}:</span>
+              {/* A space for the accessible name ("State: Open"); a flex container drops it visually. */}{" "}
+              <span className="filter-chip-value">{filter.displayValue}</span>
+            </button>
+          ) : (
+            <>
+              <span className="filter-chip-label">{filter.label}:</span>
+              <span className="filter-chip-value">{filter.displayValue}</span>
+            </>
+          )}
           {!filter.mandatory && (
             <button
               type={BUTTON_TYPE.BUTTON}

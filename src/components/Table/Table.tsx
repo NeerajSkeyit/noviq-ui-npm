@@ -253,6 +253,7 @@ function TableInner<T extends Record<string, any> = any>({
   };
 
   const [searchValue, setSearchValue] = useState("");
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // so a chip can reopen it
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pagination, setPagination] = useState<TablePaginationState>({
     page: 1,
@@ -519,6 +520,8 @@ function TableInner<T extends Record<string, any> = any>({
         filters={
           filterConfigs.length > 0 ? (
             <FilterDrawer
+              open={filterDrawerOpen}
+              onOpenChange={setFilterDrawerOpen}
               filters={filterConfigs}
               activeFilters={activeFilters}
               onApplyFilter={handleApplyFilter}
@@ -555,7 +558,12 @@ function TableInner<T extends Record<string, any> = any>({
       />
 
       {activeFilters.length > 0 && (
-        <FilterChips filters={activeFilters} onRemove={handleRemoveFilter} onClearAll={handleClearAllFilters} />
+        <FilterChips
+          filters={activeFilters}
+          onRemove={handleRemoveFilter}
+          onClearAll={handleClearAllFilters}
+          onChipClick={() => setFilterDrawerOpen(true)}
+        />
       )}
 
       {isRowSelectionEnabled && (

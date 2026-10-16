@@ -23,6 +23,23 @@
   color: var(--primary);
 }
 
+/* The chip's text as a button (when chips are clickable): looks like the plain chip. */
+.filter-chip-body {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.filter-chip-body:hover .filter-chip-value {
+  text-decoration: underline;
+}
+
 .filter-chip-remove {
   display: inline-flex;
   align-items: center;

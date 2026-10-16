@@ -32,6 +32,14 @@ export interface FilterDrawerProps {
    * `onRemove`). Accepted so existing call sites keep compiling; safe to omit. */
   onRemoveFilter?: (filterId: string) => void;
   onClearAll: () => void;
+  /**
+   * Controls whether the drawer is open. Leave it out and the drawer opens and closes itself, as
+   * it always has. Give it (with `onOpenChange`) to open the drawer from elsewhere — `Table`
+   * reopens it when a filter chip is clicked.
+   */
+  open?: boolean;
+  /** Called with the next open state when the drawer asks to open or close. */
+  onOpenChange?: (open: boolean) => void;
 }
 
 function emptyDraftValue(type: FilterType): unknown {
@@ -151,11 +159,23 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
   }
 }
 
-function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: FilterDrawerProps) {
+function FilterDrawer({
+  filters,
+  activeFilters,
+  onApplyFilter,
+  onClearAll,
+  open: openProp,
+  onOpenChange,
+}: FilterDrawerProps) {
   const formats = useDateTimeFormats();
   const t = useText();
   const text = useNoviqUIConfig()?.text;
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setOpenState(next); // uncontrolled: the drawer owns its state
+    onOpenChange?.(next);
+  };
   const [draftValues, setDraftValues] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
