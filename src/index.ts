@@ -117,6 +117,7 @@ export type {
   NotifyKind,
   NoviqUIFormats,
   NoviqUIText,
+  NoviqUIInheritedConfig,
   TextValue,
   TextParams,
   TableResponseFormat,

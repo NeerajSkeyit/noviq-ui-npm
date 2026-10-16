@@ -1,5 +1,11 @@
-import React, { createContext, useContext } from "react";
-import type { NoviqUIConfig, NoviqUIFormats, NoviqUITableConfig, NoviqUIText } from "./types";
+import React, { createContext, useContext, useMemo } from "react";
+import type {
+  NoviqUIConfig,
+  NoviqUIFormats,
+  NoviqUIInheritedConfig,
+  NoviqUITableConfig,
+  NoviqUIText,
+} from "./types";
 import { devWarn } from "../utils/devWarn";
 import {
   CURRENCY_CODE_PATTERN,
@@ -103,18 +109,58 @@ function validateText(text: NoviqUIText): void {
   }
 }
 
-export function NoviqUIConfigProvider({
-  config,
-  children,
-}: {
-  config: NoviqUIConfig;
-  children: React.ReactNode;
-}) {
+/** A copy of `value` without its `undefined` entries, so an unset key never wipes an inherited one. */
+function definedEntries<T extends object>(value: T | undefined): Partial<T> {
+  return Object.fromEntries(Object.entries(value ?? {}).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/** Key-by-key merge of two optional objects; `undefined` when neither exists. */
+function mergeObjects<T extends object>(base: T | undefined, over: T | undefined): T | undefined {
+  if (base === undefined && over === undefined) return undefined;
+  return { ...definedEntries(base), ...definedEntries(over) } as T;
+}
+
+/**
+ * `child` laid over `parent`: `formats`, `text` and the table's `requestParams` merge key by key,
+ * every other key is the child's if it set one. A child `table.responseFormat` replaces the
+ * parent's as a whole — its two shapes (paths or functions) are never mixed.
+ */
+function mergeConfigs(parent: NoviqUIConfig | undefined, child: NoviqUIInheritedConfig): NoviqUIConfig {
+  if (!parent) return child as NoviqUIConfig;
+  const merged: Record<string, unknown> = { ...parent, ...definedEntries(child) };
+  const formats = mergeObjects(parent.formats, child.formats);
+  const text = mergeObjects(parent.text, child.text);
+  if (formats) merged.formats = formats;
+  if (text) merged.text = text;
+  if (parent.table || child.table) {
+    const table = { ...parent.table, ...definedEntries(child.table) } as Record<string, unknown>;
+    const requestParams = mergeObjects(parent.table?.requestParams, child.table?.requestParams);
+    if (requestParams) table.requestParams = requestParams;
+    merged.table = table;
+  }
+  return merged as NoviqUIConfig;
+}
+
+type NoviqUIConfigProviderProps =
+  | { config: NoviqUIConfig; inherit?: false; children: React.ReactNode }
+  | { config: NoviqUIInheritedConfig; inherit: true; children: React.ReactNode };
+
+/**
+ * Makes `config` available to every noviq-ui component below. A provider inside another one
+ * **replaces** its config by default; with `inherit` it is laid over the parent's instead, so a
+ * screen can change only its `text` or `formats` and keep the app's `table` format and `notify`.
+ */
+export function NoviqUIConfigProvider({ config, inherit = false, children }: NoviqUIConfigProviderProps) {
+  const parent = useContext(NoviqUIConfigContext);
+  const resolved = useMemo(
+    () => (inherit ? mergeConfigs(parent, config as NoviqUIInheritedConfig) : (config as NoviqUIConfig)),
+    [inherit, parent, config]
+  );
   // `table` is optional (an app may configure only `notify`), but if present it must be valid.
-  if (config.table !== undefined) validateTableConfig(config.table);
-  if (config.formats !== undefined) validateFormats(config.formats);
-  if (config.text !== undefined) validateText(config.text);
-  return <NoviqUIConfigContext.Provider value={config}>{children}</NoviqUIConfigContext.Provider>;
+  if (resolved.table !== undefined) validateTableConfig(resolved.table);
+  if (resolved.formats !== undefined) validateFormats(resolved.formats);
+  if (resolved.text !== undefined) validateText(resolved.text);
+  return <NoviqUIConfigContext.Provider value={resolved}>{children}</NoviqUIConfigContext.Provider>;
 }
 
 export function useNoviqUIConfig(): NoviqUIConfig | undefined {

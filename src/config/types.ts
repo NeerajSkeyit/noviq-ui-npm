@@ -85,6 +85,14 @@ export type TextValue = string | ((params: TextParams) => string);
  */
 export type NoviqUIText = Partial<Record<TextKey, TextValue>>;
 
+/**
+ * What a `<NoviqUIConfigProvider inherit>` accepts: a config in which `table` may leave out
+ * `responseFormat` (the parent's supplies it).
+ */
+export type NoviqUIInheritedConfig = Omit<NoviqUIConfig, "table"> & {
+  table?: Partial<NoviqUITableConfig>;
+};
+
 export interface NoviqUIConfig {
   /** Required only if the app renders a `<Table apiFunction>` without a per-instance `responseFormat`. */
   table?: NoviqUITableConfig;
