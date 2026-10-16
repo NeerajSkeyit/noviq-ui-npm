@@ -358,6 +358,16 @@ export const DEFAULT_REQUEST_PARAMS = {
   pageSize: "rows_per_page",
 } as const;
 
+/**
+ * Query-param names a `serverSort` table adds when a column is sorted, unless
+ * `config.table.requestParams` renames them. Kept apart from `DEFAULT_REQUEST_PARAMS`, whose
+ * three names are sent on every request; these two appear only while a sort is active.
+ */
+export const DEFAULT_SORT_REQUEST_PARAMS = {
+  sortBy: "sort_by",
+  sortDirection: "sort_order",
+} as const;
+
 // ─── Table export ──────────────────────────────────────────────────────────────────────────────
 
 /** @internal */

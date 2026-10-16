@@ -20,6 +20,10 @@ export interface TableRequestParamNames {
   search?: string;
   page?: string;
   pageSize?: string;
+  /** Only sent by a `<Table serverSort>`, and only while a column is sorted. Default `"sort_by"`. */
+  sortBy?: string;
+  /** `"asc"` or `"desc"`; sent with `sortBy`. Default `"sort_order"`. */
+  sortDirection?: string;
 }
 
 export interface NoviqUITableConfig {

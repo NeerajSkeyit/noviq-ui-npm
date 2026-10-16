@@ -26,7 +26,7 @@ import type { NoviqUIText, NotifyFn, TableRequestParamNames, TableResponseFormat
 export interface UseTableExportArgs<T> {
   apiFunction?: (params: TableQueryParams) => Promise<unknown>;
   responseFormat?: TableResponseFormat<T>;
-  requestParams?: Required<TableRequestParamNames>;
+  requestParams?: Required<Pick<TableRequestParamNames, "search" | "page" | "pageSize">>;
   usingPreFetched: boolean;
   /** The already client-sorted array, used directly (no fetch) when `usingPreFetched`. */
   preFetchedData: T[];
@@ -34,6 +34,8 @@ export interface UseTableExportArgs<T> {
   columns: TableColumn<T>[];
   search: string;
   filterParams: Record<string, unknown>;
+  /** The sort the table is showing, as request params — so an export comes out in screen order. */
+  sortParams?: Record<string, unknown>;
   apiParams?: Record<string, unknown>;
   totalItems: number;
   /** Where to report the outcome. Defaults to `NoviqUIConfigProvider`'s `config.notify`; when
@@ -73,6 +75,7 @@ function useTableExport<T>({
   columns,
   search,
   filterParams,
+  sortParams,
   apiParams,
   totalItems,
   notify: notifyArg,
@@ -91,6 +94,7 @@ function useTableExport<T>({
     const raw = await apiFunction({
       ...(apiParams as Record<string, unknown>),
       ...filterParams,
+      ...sortParams,
       [requestParams.search]: search,
       [requestParams.page]: 1,
       [requestParams.pageSize]: totalItems > 0 ? totalItems : EXPORT_FALLBACK_ROWS_PER_PAGE,

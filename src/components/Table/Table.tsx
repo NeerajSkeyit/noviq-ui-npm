@@ -24,6 +24,7 @@ import {
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SIZE_OPTIONS,
   DEFAULT_REQUEST_PARAMS,
+  DEFAULT_SORT_REQUEST_PARAMS,
   NO_TEXT_PLACEHOLDER,
   SEARCH_DEBOUNCE_MS,
   SELECT_COLUMN_WIDTH,
@@ -63,6 +64,11 @@ export interface TableColumn<T = any> {
   cell?: (row: T, cellValue: string, rawRow: T, rawValue?: unknown) => React.ReactNode;
   type?: CellType;
   sortable?: boolean;
+  /**
+   * With `serverSort`, the field name sent to the server when this column is sorted. Defaults to
+   * `accessorKey`, then to `id`.
+   */
+  sortKey?: string;
   align?: ColumnAlign;
   width?: string | number;
   capitalize?: boolean;
@@ -109,6 +115,13 @@ export interface TableProps<T = any> {
   updateList?: unknown;
   /** Disables fetching entirely (e.g. defer until a modal opens). */
   hidden?: boolean;
+  /**
+   * Sort on the server. Clicking a `sortable` header sends `sort_by` / `sort_order` (renamable via
+   * `config.table.requestParams`) with the request and shows the rows as they come back, instead
+   * of reordering the loaded page. The page goes back to 1, and an export is requested in the same
+   * order. Ignored with `preFetchedData`, which is always sorted here.
+   */
+  serverSort?: boolean;
   isSearchHidden?: boolean;
   isPaginationHidden?: boolean;
   searchPlaceholder?: string;
@@ -147,6 +160,7 @@ function TableInner<T extends Record<string, any> = any>({
   apiParams,
   updateList,
   hidden = false,
+  serverSort = false,
   isSearchHidden = false,
   isPaginationHidden = false,
   searchPlaceholder,
@@ -285,16 +299,26 @@ function TableInner<T extends Record<string, any> = any>({
   };
 
   useEffect(() => {
+    // Nothing to apply when the box already matches what was last applied — notably on mount, when
+    // the unconditional reset used to send a user who had paged within the first half second back
+    // to page 1.
+    if (searchValue === debouncedSearch) return;
     const timer = setTimeout(() => {
       setDebouncedSearch(searchValue);
       setPagination((prev) => ({ ...prev, page: 1 }));
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
+    // `debouncedSearch` is only read to skip a no-op; it must not re-arm the timer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
   const noviqConfig = useNoviqUIConfig();
   const responseFormat = responseFormatProp ?? noviqConfig?.table?.responseFormat;
-  const requestParamNames = { ...DEFAULT_REQUEST_PARAMS, ...noviqConfig?.table?.requestParams };
+  const requestParamNames = {
+    ...DEFAULT_REQUEST_PARAMS,
+    ...DEFAULT_SORT_REQUEST_PARAMS,
+    ...noviqConfig?.table?.requestParams,
+  };
 
   const isUsingApiFunction = !!apiFunction && preFetchedData.length === 0 && !hidden;
 
@@ -306,9 +330,23 @@ function TableInner<T extends Record<string, any> = any>({
     );
   }
 
+  // The sort the server is asked for: nothing until a column is sorted, and only for a table that
+  // opted in and is fetching. (Prefetched rows are sorted below.)
+  const sortByName = requestParamNames.sortBy;
+  const sortDirectionName = requestParamNames.sortDirection;
+  const sortParams = useMemo<Record<string, unknown>>(() => {
+    if (!serverSort || !isUsingApiFunction || !sort.column || !sort.direction) return {};
+    const column = columns.find((c) => c.id === sort.column);
+    if (!column) return {};
+    return {
+      [sortByName]: column.sortKey ?? column.accessorKey ?? column.id,
+      [sortDirectionName]: sort.direction,
+    };
+  }, [serverSort, isUsingApiFunction, sort, columns, sortByName, sortDirectionName]);
+
   const queryKey = useMemo(
-    () => ["noviq-ui-table", pagination, debouncedSearch, apiParams, updateList, activeFilters],
-    [pagination, debouncedSearch, apiParams, updateList, activeFilters]
+    () => ["noviq-ui-table", pagination, debouncedSearch, apiParams, updateList, activeFilters, sortParams],
+    [pagination, debouncedSearch, apiParams, updateList, activeFilters, sortParams]
   );
 
   const { data: queryResult, isLoading: isQueryLoading } = useQuery({
@@ -317,6 +355,7 @@ function TableInner<T extends Record<string, any> = any>({
       apiFunction!({
         ...(apiParams as Record<string, unknown>),
         ...getFilterParams(),
+        ...sortParams,
         [requestParamNames.search]: debouncedSearch,
         [requestParamNames.page]: pagination.page,
         [requestParamNames.pageSize]: pagination.pageSize,
@@ -384,7 +423,8 @@ function TableInner<T extends Record<string, any> = any>({
   );
 
   const sortedData = useMemo(() => {
-    if (!sort.column || !sort.direction) return searchedData;
+    // With serverSort the rows arrive in the order that was asked for; don't reorder them again.
+    if (!sort.column || !sort.direction || (serverSort && !usingPreFetched)) return searchedData;
     const column = columns.find((c) => c.id === sort.column);
     if (!column) return searchedData;
 
@@ -395,7 +435,7 @@ function TableInner<T extends Record<string, any> = any>({
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     });
-  }, [searchedData, sort, columns]);
+  }, [searchedData, sort, columns, serverSort, usingPreFetched]);
 
   // Handed-over rows are all here at once, so the pager is honoured client-side: one page of the
   // searched, sorted rows. A hidden pager means the caller wants every row shown. A page left
@@ -420,11 +460,14 @@ function TableInner<T extends Record<string, any> = any>({
     columns: displayColumns,
     search: debouncedSearch,
     filterParams: getFilterParams(),
+    sortParams,
     apiParams,
     totalItems,
   });
 
   const handleSort = (columnId: string) => {
+    // A different order on the server means different rows on every page: start again at page 1.
+    if (serverSort && !usingPreFetched) setPagination((p) => ({ ...p, page: 1 }));
     setSort((prev) => {
       if (prev.column !== columnId) return { column: columnId, direction: SORT_DIRECTION.ASC };
       if (prev.direction === SORT_DIRECTION.ASC) return { column: columnId, direction: SORT_DIRECTION.DESC };
