@@ -80,7 +80,7 @@ function RowActionsMenu<T = any>({
 
   if (isWithoutDropdown) {
     return (
-      <div className="row-actions-inline">
+      <div className="nq-row-actions-inline">
         {actions.map((action, index) => {
           const Icon = action.icon;
 
@@ -157,7 +157,7 @@ function RowActionsMenu<T = any>({
   const inlineActions = actions.filter(isInlineType);
 
   return (
-    <div className="row-actions-inline">
+    <div className="nq-row-actions-inline">
       <DropdownMenu
         isOpen={isOpen}
         setIsOpen={setIsOpen}

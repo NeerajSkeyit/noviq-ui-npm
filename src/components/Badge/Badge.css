@@ -1,4 +1,4 @@
-.badge {
+.nq-badge {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
@@ -10,22 +10,22 @@
   white-space: nowrap;
 }
 
-.badge-default {
+.nq-badge-default {
   background-color: var(--primary);
   color: var(--light);
 }
 
-.badge-secondary {
+.nq-badge-secondary {
   background-color: var(--muted);
   color: var(--light);
 }
 
-.badge-destructive {
+.nq-badge-destructive {
   background-color: var(--danger);
   color: var(--light);
 }
 
-.badge-outline {
+.nq-badge-outline {
   background: transparent;
   border-color: var(--border-color);
   color: var(--heading);

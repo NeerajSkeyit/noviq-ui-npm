@@ -10,7 +10,7 @@ export interface EmptyStateProps {
 function EmptyState({ message }: EmptyStateProps) {
   const t = useText();
   return (
-    <div className="table-empty-state">
+    <div className="nq-table-empty-state">
       <Inbox size={32} />
       <p>{message ?? t("tableEmpty")}</p>
     </div>

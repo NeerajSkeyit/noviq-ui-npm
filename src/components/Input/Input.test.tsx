@@ -40,7 +40,7 @@ describe("Input", () => {
     fireEvent.change(field, { target: { value: "secret" } });
     expect(onChange).toHaveBeenCalledWith("secret");
 
-    await user.click(container.querySelector(".password-toggle") as HTMLElement);
+    await user.click(container.querySelector(".nq-password-toggle") as HTMLElement);
     expect(container.querySelector('input[type="text"]')).toBeInTheDocument();
   });
 
@@ -132,7 +132,7 @@ describe("Input", () => {
   it("file: accepts a dropped file", () => {
     const onChange = vi.fn();
     const { container } = render(<Input type="file" label="Attachment" value={null} onChange={onChange} />);
-    const dropzone = container.querySelector(".dropzone") as HTMLElement;
+    const dropzone = container.querySelector(".nq-dropzone") as HTMLElement;
     const file = new File(["hello"], "hello.txt", { type: "text/plain" });
     fireEvent.drop(dropzone, { dataTransfer: { files: [file] } });
     expect(onChange).toHaveBeenCalledWith(file);
@@ -187,8 +187,8 @@ describe("Input", () => {
   describe("search", () => {
     it("keeps the bare input — no wrapper — when it has no label, helper or error", () => {
       const { container } = render(<Input type="search" value="" onChange={() => {}} />);
-      expect(container.querySelector(".form-field")).toBeNull();
-      expect(container.querySelector("input.search-input")).toBeInTheDocument();
+      expect(container.querySelector(".nq-form-field")).toBeNull();
+      expect(container.querySelector("input.nq-search-input")).toBeInTheDocument();
     });
 
     it("renders its label, tied to the input", async () => {
@@ -216,7 +216,7 @@ describe("Input", () => {
       expect(screen.getByText("Too short")).toBeInTheDocument();
       expect(screen.queryByText("Name or id")).not.toBeInTheDocument();
       expect(screen.getByLabelText("Find")).toHaveAttribute("aria-invalid", "true");
-      expect(screen.getByLabelText("Find")).toHaveClass("search-input-error");
+      expect(screen.getByLabelText("Find")).toHaveClass("nq-search-input-error");
     });
 
     it("honours disabled and maxLength", () => {
@@ -377,8 +377,8 @@ describe("Input search — error border", () => {
   it("is declared after the base rule, so its colour wins at equal specificity", () => {
     // jsdom does not resolve `var(--danger)`, so the cascade is checked on the stylesheet itself.
     const css = readFileSync(resolve(process.cwd(), "src/components/Input/Input.css"), "utf8");
-    const base = css.indexOf(".search-input {");
-    const error = css.indexOf(".search-input-error {");
+    const base = css.indexOf(".nq-search-input {");
+    const error = css.indexOf(".nq-search-input-error {");
     expect(base).toBeGreaterThan(-1);
     expect(error).toBeGreaterThan(base);
   });

@@ -235,7 +235,7 @@ function MonthPicker({
         createPortal(
           <div
             ref={panelRef}
-            className="month-picker-dropdown"
+            className="nq-month-picker-dropdown"
             style={{ position: "fixed", top: position.top, left: position.left }}
             onKeyDown={(e) => {
               if (e.key === KEY.ESCAPE) {
@@ -245,22 +245,22 @@ function MonthPicker({
               }
             }}
           >
-            <div className="month-picker-header">
+            <div className="nq-month-picker-header">
               <button
                 type={BUTTON_TYPE.BUTTON}
-                className="month-picker-nav"
+                className="nq-month-picker-nav"
                 aria-label={t("monthPreviousYear")}
                 disabled={prevYearDisabled}
                 onClick={() => showYear(viewYear - 1)}
               >
                 <ChevronLeft size={16} aria-hidden />
               </button>
-              <span className="month-picker-year" aria-live="polite">
+              <span className="nq-month-picker-year" aria-live="polite">
                 {viewYear}
               </span>
               <button
                 type={BUTTON_TYPE.BUTTON}
-                className="month-picker-nav"
+                className="nq-month-picker-nav"
                 aria-label={t("monthNextYear")}
                 disabled={nextYearDisabled}
                 onClick={() => showYear(viewYear + 1)}
@@ -269,18 +269,18 @@ function MonthPicker({
               </button>
             </div>
 
-            <div id={gridId} role="grid" aria-label={String(viewYear)} className="month-picker-grid">
+            <div id={gridId} role="grid" aria-label={String(viewYear)} className="nq-month-picker-grid">
               {rows.map((row, i) => (
-                <div role="row" className="month-picker-row" key={i}>
+                <div role="row" className="nq-month-picker-row" key={i}>
                   {row.map((ym) => {
                     const isDisabled = isDisabledMonth(ym);
                     const isSelected = selected !== null && sameMonth(ym, selected);
                     const classes = [
-                      "month-picker-month",
-                      isDisabled && "is-disabled",
-                      isSelected && "is-selected",
-                      sameMonth(ym, current) && "is-current",
-                      sameMonth(ym, focused) && "is-focused",
+                      "nq-month-picker-month",
+                      isDisabled && "nq-is-disabled",
+                      isSelected && "nq-is-selected",
+                      sameMonth(ym, current) && "nq-is-current",
+                      sameMonth(ym, focused) && "nq-is-focused",
                     ]
                       .filter(Boolean)
                       .join(" ");

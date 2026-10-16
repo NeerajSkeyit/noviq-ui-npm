@@ -65,7 +65,7 @@ describe("MonthPicker", () => {
       render(<MonthPicker value="2023-07" />);
       expect(screen.queryByRole("grid")).not.toBeInTheDocument();
       await open(user);
-      expect(screen.getByText("2023", { selector: ".month-picker-year" })).toBeInTheDocument();
+      expect(screen.getByText("2023", { selector: ".nq-month-picker-year" })).toBeInTheDocument();
       expect(within(grid()).getAllByRole("gridcell")).toHaveLength(12);
       expect(month("July 2023")).toHaveAttribute("aria-selected", "true");
     });
@@ -74,7 +74,7 @@ describe("MonthPicker", () => {
       const user = setup();
       render(<MonthPicker value="" />);
       await open(user);
-      expect(screen.getByText("2024", { selector: ".month-picker-year" })).toBeInTheDocument();
+      expect(screen.getByText("2024", { selector: ".nq-month-picker-year" })).toBeInTheDocument();
     });
 
     it("emits YYYY-MM and closes", async () => {
@@ -103,7 +103,7 @@ describe("MonthPicker", () => {
       render(<MonthPicker value="2024-03" />);
       await open(user);
       await user.click(screen.getByRole("button", { name: "Previous year" }));
-      expect(screen.getByText("2023", { selector: ".month-picker-year" })).toBeInTheDocument();
+      expect(screen.getByText("2023", { selector: ".nq-month-picker-year" })).toBeInTheDocument();
     });
 
     it("closes on an outside mousedown", async () => {
@@ -155,7 +155,7 @@ describe("MonthPicker", () => {
       const user = setup();
       render(<MonthPicker value="" minMonth="2022-01" maxMonth="2022-12" />);
       await open(user);
-      expect(screen.getByText("2022", { selector: ".month-picker-year" })).toBeInTheDocument();
+      expect(screen.getByText("2022", { selector: ".nq-month-picker-year" })).toBeInTheDocument();
     });
   });
 
@@ -190,7 +190,7 @@ describe("MonthPicker", () => {
       render(<MonthPicker value="2024-12" />);
       trigger().focus();
       await user.keyboard("{ArrowDown}{ArrowRight}");
-      expect(screen.getByText("2025", { selector: ".month-picker-year" })).toBeInTheDocument();
+      expect(screen.getByText("2025", { selector: ".nq-month-picker-year" })).toBeInTheDocument();
       focusedMonth("January 2025");
     });
 

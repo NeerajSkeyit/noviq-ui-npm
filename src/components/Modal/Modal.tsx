@@ -66,9 +66,9 @@ function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="modal-overlay">
+        <div className="nq-modal-overlay">
           <motion.div
-            className="modal-backdrop"
+            className="nq-modal-backdrop"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"
@@ -79,32 +79,32 @@ function Modal({
           />
 
           <motion.div
-            className={`modal-content modal-${size}`}
+            className={`nq-modal-content nq-modal-${size}`}
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
+            <div className="nq-modal-header">
               <div>
-                <h2 className="modal-title">{title}</h2>
-                {subtitle && <p className="modal-subtitle">{subtitle}</p>}
+                <h2 className="nq-modal-title">{title}</h2>
+                {subtitle && <p className="nq-modal-subtitle">{subtitle}</p>}
               </div>
 
               <Button
                 variant={BUTTON_VARIANT.GHOST}
                 size={BUTTON_SIZE.ICON}
-                className="modal-close"
+                className="nq-modal-close"
                 onClick={() => onClose()}
               >
                 <X size={16} />
               </Button>
             </div>
 
-            <div className="modal-body">{children}</div>
+            <div className="nq-modal-body">{children}</div>
 
-            {footer && <div className="modal-footer">{footer}</div>}
+            {footer && <div className="nq-modal-footer">{footer}</div>}
           </motion.div>
         </div>
       )}

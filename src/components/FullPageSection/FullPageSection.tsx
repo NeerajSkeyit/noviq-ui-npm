@@ -48,11 +48,11 @@ function FullPageSection({
   const handleBack = onBack ?? (() => window.history.back());
 
   return (
-    <div className="full-page-section">
-      <div className="full-page-section-main">
-        <div className="full-page-section-content">
-          <div className="full-page-section-card">
-            <div className="full-page-section-header">
+    <div className="nq-full-page-section">
+      <div className="nq-full-page-section-main">
+        <div className="nq-full-page-section-content">
+          <div className="nq-full-page-section-card">
+            <div className="nq-full-page-section-header">
               <Button
                 type={BUTTON_TYPE.BUTTON}
                 variant={BUTTON_VARIANT.GHOST}
@@ -63,8 +63,8 @@ function FullPageSection({
                 <ArrowLeft size={18} aria-hidden />
               </Button>
               <div>
-                <h1 className="full-page-section-title">{title}</h1>
-                {subtitle && <p className="full-page-section-subtitle">{subtitle}</p>}
+                <h1 className="nq-full-page-section-title">{title}</h1>
+                {subtitle && <p className="nq-full-page-section-subtitle">{subtitle}</p>}
               </div>
             </div>
 
@@ -72,7 +72,7 @@ function FullPageSection({
           </div>
         </div>
 
-        <div className="full-page-section-footer">
+        <div className="nq-full-page-section-footer">
           {footer ?? (
             <FormFooter
               onCancel={onCancel ?? handleBack}

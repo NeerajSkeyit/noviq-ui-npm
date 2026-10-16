@@ -1,4 +1,4 @@
-.filter-drawer-badge {
+.nq-filter-drawer-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -12,25 +12,25 @@
   font-weight: 600;
 }
 
-.filter-drawer-sections {
+.nq-filter-drawer-sections {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.filter-drawer-section {
+.nq-filter-drawer-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.filter-drawer-section-label {
+.nq-filter-drawer-section-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--heading);
 }
 
-.filter-drawer-input {
+.nq-filter-drawer-input {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--border-color);
@@ -39,18 +39,18 @@
   color: var(--heading);
 }
 
-.filter-drawer-input:focus {
+.nq-filter-drawer-input:focus {
   outline: none;
   border-color: var(--primary);
 }
 
-.filter-drawer-options {
+.nq-filter-drawer-options {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.filter-drawer-option {
+.nq-filter-drawer-option {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -58,12 +58,12 @@
   color: var(--heading);
 }
 
-.filter-drawer-range {
+.nq-filter-drawer-range {
   display: flex;
   gap: 12px;
 }
 
-.filter-drawer-range-field {
+.nq-filter-drawer-range-field {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -72,7 +72,7 @@
   color: var(--muted);
 }
 
-.filter-drawer-range-field input {
+.nq-filter-drawer-range-field input {
   padding: 8px 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -80,12 +80,12 @@
   color: var(--heading);
 }
 
-.filter-drawer-range-field input:focus {
+.nq-filter-drawer-range-field input:focus {
   outline: none;
   border-color: var(--primary);
 }
 
-.filter-drawer-footer {
+.nq-filter-drawer-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;

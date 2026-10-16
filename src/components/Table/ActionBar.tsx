@@ -64,25 +64,25 @@ function ActionBar({
   );
 
   return (
-    <div className="table-action-bar">
-      <div className="table-action-row">
-        <div className="table-action-left">
+    <div className="nq-table-action-bar">
+      <div className="nq-table-action-row">
+        <div className="nq-table-action-left">
           {!isSearchHidden && (
-            <div className="table-search-wrapper">
-              <Search size={16} className="table-search-icon" />
+            <div className="nq-table-search-wrapper">
+              <Search size={16} className="nq-table-search-icon" />
               <input
                 type="search"
                 ref={inputRef}
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder={searchPlaceholder ?? t("tableSearchPlaceholder")}
-                className="table-search-input"
+                className="nq-table-search-input"
               />
             </div>
           )}
         </div>
 
-        <div className="table-action-right">
+        <div className="nq-table-action-right">
           {actions.map((action) => {
             const Icon = action.icon;
 

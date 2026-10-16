@@ -46,11 +46,11 @@ describe("<FilterChips onChipClick>", () => {
 describe("<FilterDrawer open onOpenChange>", () => {
   const filters: FilterConfig[] = [{ id: "state", label: "State", type: FILTER_TYPE.SELECT, options: [{ value: "a", label: "A" }] }];
   const base = { filters, activeFilters: [], onApplyFilter: () => {}, onClearAll: () => {} };
-  const drawer = () => document.querySelector(".drawer-content") as HTMLElement;
+  const drawer = () => document.querySelector(".nq-drawer-content") as HTMLElement;
 
   it("is open when told to be, without a click on its button", () => {
     render(<FilterDrawer {...base} open onOpenChange={() => {}} />);
-    expect(drawer()).toHaveClass("drawer-open");
+    expect(drawer()).toHaveClass("nq-drawer-open");
   });
 
   it("asks to open when its button is clicked, and does not open by itself while controlled", async () => {
@@ -59,7 +59,7 @@ describe("<FilterDrawer open onOpenChange>", () => {
     render(<FilterDrawer {...base} open={false} onOpenChange={onOpenChange} />);
     await user.click(screen.getByRole("button", { name: /Filters/ }));
     expect(onOpenChange).toHaveBeenCalledWith(true);
-    expect(drawer()).not.toHaveClass("drawer-open"); // the parent owns the state
+    expect(drawer()).not.toHaveClass("nq-drawer-open"); // the parent owns the state
   });
 
   it("asks to close from the close button and after Apply", async () => {
@@ -85,20 +85,20 @@ describe("<FilterDrawer open onOpenChange>", () => {
       );
     }
     render(<Parent />);
-    expect(drawer()).not.toHaveClass("drawer-open");
+    expect(drawer()).not.toHaveClass("nq-drawer-open");
     await user.click(screen.getByRole("button", { name: "external" }));
-    expect(drawer()).toHaveClass("drawer-open");
+    expect(drawer()).toHaveClass("nq-drawer-open");
     await user.click(within(drawer()).getByRole("button", { name: "Close" }));
-    expect(drawer()).not.toHaveClass("drawer-open");
+    expect(drawer()).not.toHaveClass("nq-drawer-open");
   });
 
   it("uncontrolled (no `open`) still opens and closes itself", async () => {
     const user = userEvent.setup();
     render(<FilterDrawer {...base} />);
     await user.click(screen.getByRole("button", { name: /Filters/ }));
-    expect(drawer()).toHaveClass("drawer-open");
+    expect(drawer()).toHaveClass("nq-drawer-open");
     await user.click(within(drawer()).getByRole("button", { name: "Close" }));
-    expect(drawer()).not.toHaveClass("drawer-open");
+    expect(drawer()).not.toHaveClass("nq-drawer-open");
   });
 });
 
@@ -111,7 +111,7 @@ describe("<Table> filter chips", () => {
   const filterConfigs: FilterConfig[] = [
     { id: "state", label: "State", type: FILTER_TYPE.SELECT, options: [{ value: "a", label: "Alpha" }], defaultValue: ["a"] },
   ];
-  const openDrawers = () => document.querySelectorAll(".drawer-content.drawer-open");
+  const openDrawers = () => document.querySelectorAll(".nq-drawer-content.nq-drawer-open");
 
   it("clicking an active-filter chip opens the filters drawer", async () => {
     const user = userEvent.setup();

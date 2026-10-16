@@ -96,22 +96,22 @@ export function formatTableCellValues(
 }
 
 const DEFAULT_STATUS_VARIANTS: Record<string, string> = {
-  active: "status-success",
-  true: "status-success",
-  approved: "status-success",
-  completed: "status-success",
-  resolved: "status-success",
+  active: "nq-status-success",
+  true: "nq-status-success",
+  approved: "nq-status-success",
+  completed: "nq-status-success",
+  resolved: "nq-status-success",
 
-  inactive: "status-danger",
-  false: "status-danger",
-  rejected: "status-danger",
-  cancelled: "status-danger",
-  failed: "status-danger",
+  inactive: "nq-status-danger",
+  false: "nq-status-danger",
+  rejected: "nq-status-danger",
+  cancelled: "nq-status-danger",
+  failed: "nq-status-danger",
 
-  pending: "status-warning",
-  queued: "status-warning",
+  pending: "nq-status-warning",
+  queued: "nq-status-warning",
 
-  "in progress": "status-info",
+  "in progress": "nq-status-info",
 };
 
 export interface TableCellProps {
@@ -137,7 +137,7 @@ function TableCell({ type, options = {}, statusVariantMap }: TableCellProps) {
 
     const key = options.status.trim().toLowerCase();
     const variantClass =
-      statusVariantMap?.[key] ?? DEFAULT_STATUS_VARIANTS[key] ?? "status-default";
+      statusVariantMap?.[key] ?? DEFAULT_STATUS_VARIANTS[key] ?? "nq-status-default";
 
     return (
       <Badge variant={BADGE_VARIANT.OUTLINE} className={variantClass}>

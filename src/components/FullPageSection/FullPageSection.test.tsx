@@ -22,7 +22,7 @@ describe("FullPageSection", () => {
 
   it("omits the subtitle when none is given", () => {
     render(<FullPageSection title="T" />);
-    expect(document.querySelector(".full-page-section-subtitle")).toBeNull();
+    expect(document.querySelector(".nq-full-page-section-subtitle")).toBeNull();
   });
 
   describe("back", () => {

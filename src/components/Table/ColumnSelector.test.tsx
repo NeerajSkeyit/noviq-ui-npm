@@ -65,9 +65,9 @@ describe("ColumnSelector", () => {
     const user = userEvent.setup();
     const props = renderSelector();
     await user.click(screen.getByRole("button", { name: /Columns/ }));
-    const nameRow = screen.getByText("Name", { selector: ".column-selector-label" });
-    const pinButton = nameRow.closest(".column-selector-row")!.querySelector(
-      ".column-selector-sticky-btn"
+    const nameRow = screen.getByText("Name", { selector: ".nq-column-selector-label" });
+    const pinButton = nameRow.closest(".nq-column-selector-row")!.querySelector(
+      ".nq-column-selector-sticky-btn"
     )!;
     await user.click(pinButton);
     expect(props.onStickyChange).toHaveBeenCalledWith("name", "left");

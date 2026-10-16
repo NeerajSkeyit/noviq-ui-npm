@@ -31,19 +31,19 @@ function BulkActionsBar({ selectedCount, actions, selectedIds, onClearSelection 
   if (selectedCount === 0) return null;
 
   return (
-    <div className="bulk-actions-bar">
-      <div className="bulk-actions-left">
-        <span className="bulk-actions-text">
+    <div className="nq-bulk-actions-bar">
+      <div className="nq-bulk-actions-left">
+        <span className="nq-bulk-actions-text">
           {t(selectedCount === 1 ? "bulkSelectedOne" : "bulkSelected", { count: selectedCount })}
         </span>
 
-        <button type={BUTTON_TYPE.BUTTON} onClick={onClearSelection} className="bulk-actions-clear">
+        <button type={BUTTON_TYPE.BUTTON} onClick={onClearSelection} className="nq-bulk-actions-clear">
           <X size={12} />
           {t("bulkClear")}
         </button>
       </div>
 
-      <div className="bulk-actions-right">
+      <div className="nq-bulk-actions-right">
         {actions.map((action) => (
           <Button
             key={action.id}

@@ -15,8 +15,8 @@ function Switch({ checked, onChange, disabled = false }: SwitchProps) {
 
   return (
     <div
-      className={`switch ${checked ? "switch-checked" : ""} ${
-        disabled ? "switch-disabled" : ""
+      className={`nq-switch ${checked ? "nq-switch-checked" : ""} ${
+        disabled ? "nq-switch-disabled" : ""
       }`}
       role="switch"
       aria-checked={checked}
@@ -30,7 +30,7 @@ function Switch({ checked, onChange, disabled = false }: SwitchProps) {
         }
       }}
     >
-      <div className="switch-thumb" />
+      <div className="nq-switch-thumb" />
     </div>
   );
 }

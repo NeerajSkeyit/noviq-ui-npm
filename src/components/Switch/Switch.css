@@ -1,4 +1,4 @@
-.switch {
+.nq-switch {
   position: relative;
   width: 44px;
   height: 24px;
@@ -11,16 +11,16 @@
   padding: 2px;
 }
 
-.switch-checked {
+.nq-switch-checked {
   background-color: var(--primary);
 }
 
-.switch-disabled {
+.nq-switch-disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.switch-thumb {
+.nq-switch-thumb {
   width: 20px;
   height: 20px;
   background-color: var(--light);
@@ -28,6 +28,6 @@
   transition: transform 0.2s ease;
 }
 
-.switch-checked .switch-thumb {
+.nq-switch-checked .nq-switch-thumb {
   transform: translateX(20px);
 }

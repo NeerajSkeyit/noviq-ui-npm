@@ -9,8 +9,8 @@ export interface ScrollAreaProps {
 
 function ScrollArea({ children, className = "", style = {} }: ScrollAreaProps) {
   return (
-    <div className={`scrollAreaRoot ${className}`} style={style}>
-      <div className="scrollAreaViewport">{children}</div>
+    <div className={`nq-scrollAreaRoot ${className}`} style={style}>
+      <div className="nq-scrollAreaViewport">{children}</div>
     </div>
   );
 }

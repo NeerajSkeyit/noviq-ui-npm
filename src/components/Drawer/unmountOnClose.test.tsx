@@ -33,7 +33,7 @@ describe("<Drawer unmountOnClose>", () => {
   it("by default a closed drawer keeps its children mounted, hidden — as before", () => {
     render(<Harness />);
     expect(body()).toBeInTheDocument();
-    expect(document.querySelector(".drawer-content")).toHaveAttribute("aria-hidden", "true");
+    expect(document.querySelector(".nq-drawer-content")).toHaveAttribute("aria-hidden", "true");
   });
 
   it("does not mount its children while it has never been open", () => {
@@ -121,8 +121,8 @@ describe("<Table>'s own drawers", () => {
         isPaginationHidden
       />
     );
-    expect(document.querySelector(".column-selector-list")).toBeNull();
-    expect(document.querySelector(".filter-drawer-sections")).toBeNull();
+    expect(document.querySelector(".nq-column-selector-list")).toBeNull();
+    expect(document.querySelector(".nq-filter-drawer-sections")).toBeNull();
   });
 });
 
@@ -132,7 +132,7 @@ describe("DRAWER_EXIT_MS", () => {
     const { readFileSync } = await import("node:fs");
     const { resolve } = await import("node:path");
     const css = readFileSync(resolve(process.cwd(), "src/components/Drawer/Drawer.css"), "utf8");
-    const seconds = /\.drawer-content\s*\{[^}]*transition:\s*transform\s+([\d.]+)s/.exec(css)?.[1];
+    const seconds = /\.nq-drawer-content\s*\{[^}]*transition:\s*transform\s+([\d.]+)s/.exec(css)?.[1];
     expect(Number(seconds) * 1000).toBe(DRAWER_EXIT_MS);
   });
 });

@@ -254,7 +254,7 @@ function DatePicker({
         createPortal(
           <div
             ref={panelRef}
-            className="date-picker-dropdown"
+            className="nq-date-picker-dropdown"
             style={{ position: "fixed", top: position.top, left: position.left }}
             onKeyDown={(e) => {
               // Focus is on a <select>/<button> inside the panel after a mouse interaction.
@@ -265,10 +265,10 @@ function DatePicker({
               }
             }}
           >
-            <div className="date-picker-header">
+            <div className="nq-date-picker-header">
               <button
                 type={BUTTON_TYPE.BUTTON}
-                className="date-picker-nav"
+                className="nq-date-picker-nav"
                 aria-label={t("datePreviousMonth")}
                 disabled={prevDisabled}
                 onClick={() => {
@@ -280,7 +280,7 @@ function DatePicker({
               </button>
 
               <select
-                className="date-picker-select"
+                className="nq-date-picker-select"
                 aria-label={t("dateMonth")}
                 value={view.month}
                 onChange={(e) => showMonth(view.year, Number(e.target.value))}
@@ -293,7 +293,7 @@ function DatePicker({
               </select>
 
               <select
-                className="date-picker-select"
+                className="nq-date-picker-select"
                 aria-label={t("dateYear")}
                 value={view.year}
                 onChange={(e) => showMonth(Number(e.target.value), view.month)}
@@ -307,7 +307,7 @@ function DatePicker({
 
               <button
                 type={BUTTON_TYPE.BUTTON}
-                className="date-picker-nav"
+                className="nq-date-picker-nav"
                 aria-label={t("dateNextMonth")}
                 disabled={nextDisabled}
                 onClick={() => {
@@ -323,29 +323,29 @@ function DatePicker({
               id={gridId}
               role="grid"
               aria-label={`${names.months[view.month - 1]} ${view.year}`}
-              className="date-picker-grid"
+              className="nq-date-picker-grid"
             >
-              <div role="row" className="date-picker-weekdays">
+              <div role="row" className="nq-date-picker-weekdays">
                 {weekdayHeadings.map((label) => (
-                  <span key={label} role="columnheader" className="date-picker-weekday">
+                  <span key={label} role="columnheader" className="nq-date-picker-weekday">
                     {label}
                   </span>
                 ))}
               </div>
 
               {Array.from({ length: CALENDAR_WEEKS }, (_, week) => (
-                <div role="row" className="date-picker-week" key={week}>
+                <div role="row" className="nq-date-picker-week" key={week}>
                   {grid.slice(week * DAYS_IN_WEEK, (week + 1) * DAYS_IN_WEEK).map((date) => {
                     const isOutside = date.month !== view.month;
                     const isDisabled = isDateDisabled(date, min, max);
                     const isSelected = selected !== null && sameDay(date, selected);
                     const classes = [
-                      "date-picker-day",
-                      isOutside && "is-outside",
-                      isDisabled && "is-disabled",
-                      isSelected && "is-selected",
-                      sameDay(date, today) && "is-today",
-                      sameDay(date, focused) && "is-focused",
+                      "nq-date-picker-day",
+                      isOutside && "nq-is-outside",
+                      isDisabled && "nq-is-disabled",
+                      isSelected && "nq-is-selected",
+                      sameDay(date, today) && "nq-is-today",
+                      sameDay(date, focused) && "nq-is-focused",
                     ]
                       .filter(Boolean)
                       .join(" ");
@@ -368,10 +368,10 @@ function DatePicker({
               ))}
             </div>
 
-            <div className="date-picker-footer">
+            <div className="nq-date-picker-footer">
               <button
                 type={BUTTON_TYPE.BUTTON}
-                className="date-picker-today"
+                className="nq-date-picker-today"
                 disabled={todayDisabled}
                 onClick={() => choose(today)}
               >

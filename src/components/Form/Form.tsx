@@ -44,15 +44,15 @@ export interface FormProps {
 
 function Form({ inputList = [], formik }: FormProps) {
   return (
-    <div className="form-container">
+    <div className="nq-form-container">
       {inputList.map((input, index) => {
         if (input.hidden) return null;
 
         if (input.type === FORM_FIELD_TYPE.INFO) {
           return (
-            <div key={index} className="col-span-1 info-section">
-              <div className="info-section-title">{input.title}</div>
-              <div className="info-section-subtitle">{input.subtitle}</div>
+            <div key={index} className="nq-col-span-1 nq-info-section">
+              <div className="nq-info-section-title">{input.title}</div>
+              <div className="nq-info-section-subtitle">{input.subtitle}</div>
             </div>
           );
         }
@@ -60,7 +60,7 @@ function Form({ inputList = [], formik }: FormProps) {
         const { inputKey, colSpan = COL_SPAN.FULL, disabled, ...rest } = input;
 
         return (
-          <div key={index} className={`col-span-${colSpan}`}>
+          <div key={index} className={`nq-col-span-${colSpan}`}>
             <Input
               onChange={(value) => {
                 if (!disabled) formik.setFieldValue(inputKey, value);

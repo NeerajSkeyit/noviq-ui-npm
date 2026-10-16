@@ -21,8 +21,8 @@ export function DropdownMenuItem({
 }: DropdownMenuItemProps) {
   return (
     <div
-      className={`dropdown-item ${disabled ? "dropdown-item-disabled" : ""} ${
-        destructive ? "dropdown-item-destructive" : ""
+      className={`nq-dropdown-item ${disabled ? "nq-dropdown-item-disabled" : ""} ${
+        destructive ? "nq-dropdown-item-destructive" : ""
       }`}
       onClick={() => {
         if (disabled) return;
@@ -120,7 +120,7 @@ export function DropdownMenu({ trigger, isOpen, setIsOpen, children }: DropdownM
         createPortal(
           <div
             ref={contentRef}
-            className="dropdown-content"
+            className="nq-dropdown-content"
             style={{ position: "fixed", top: position.top, left: position.left, zIndex: 1510 }}
           >
             {React.Children.map(children, (child) =>

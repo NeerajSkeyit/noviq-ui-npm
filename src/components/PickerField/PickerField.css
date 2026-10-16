@@ -1,9 +1,9 @@
-.picker-field {
+.nq-picker-field {
   position: relative;
   width: 100%;
 }
 
-.picker-field-trigger {
+.nq-picker-field-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -25,33 +25,33 @@
   transition: border-color 0.2s;
 }
 
-.picker-field-trigger:focus-visible,
-.picker-field-trigger[aria-expanded="true"] {
+.nq-picker-field-trigger:focus-visible,
+.nq-picker-field-trigger[aria-expanded="true"] {
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(2, 105, 155, 0.2);
 }
 
-.picker-field-trigger:disabled {
+.nq-picker-field-trigger:disabled {
   background-color: var(--secondary-background);
   color: var(--muted);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.picker-field-trigger.picker-field-error {
+.nq-picker-field-trigger.nq-picker-field-error {
   border-color: var(--danger);
 }
 
-.picker-field-value {
+.nq-picker-field-value {
   font-variant-numeric: tabular-nums;
 }
 
-.picker-field-value.is-placeholder {
+.nq-picker-field-value.nq-is-placeholder {
   color: var(--muted);
 }
 
 /* Sits over the trigger's icon once a value is chosen. */
-.picker-field-clear {
+.nq-picker-field-clear {
   position: absolute;
   top: 50%;
   right: 8px;
@@ -69,7 +69,7 @@
   cursor: pointer;
 }
 
-.picker-field-clear:hover {
+.nq-picker-field-clear:hover {
   color: var(--heading);
   background: var(--secondary-background);
 }

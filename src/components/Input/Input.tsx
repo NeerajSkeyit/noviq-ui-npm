@@ -75,16 +75,16 @@ function InputContainer({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="form-field">
+    <div className="nq-form-field">
       {label && (
-        <Label htmlFor={htmlFor} className="form-label">
+        <Label htmlFor={htmlFor} className="nq-form-label">
           {label}
-          {required && <span className="required-mark">*</span>}
+          {required && <span className="nq-required-mark">*</span>}
         </Label>
       )}
       {children}
-      {helper && !error && <p className="helper-text">{helper}</p>}
-      {error && <p className="error-text">{error}</p>}
+      {helper && !error && <p className="nq-helper-text">{helper}</p>}
+      {error && <p className="nq-error-text">{error}</p>}
     </div>
   );
 }
@@ -210,11 +210,11 @@ function Input({
   if (type === INPUT_TYPE.PASSWORD) {
     return (
       <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
-        <div className="password-wrap">
+        <div className="nq-password-wrap">
           <input
             type={isPasswordVisible ? "text" : "password"}
             id={uniqueInputId}
-            className={`input-field ${error ? "input-field-error" : ""}`}
+            className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
             placeholder="••••••••"
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -223,7 +223,7 @@ function Input({
             name={fieldName(label)}
           />
           <span
-            className="password-toggle"
+            className="nq-password-toggle"
             onClick={() => setIsPasswordVisible((prev) => !prev)}
           >
             {isPasswordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -242,7 +242,7 @@ function Input({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || t("inputEmailPlaceholder")}
           disabled={disabled}
-          className={`input-field ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           maxLength={maxLength}
           autoFocus={autoFocus}
         />
@@ -254,7 +254,7 @@ function Input({
         <input
           type="date"
           id={uniqueInputId}
-          className={`input-field ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           min={minDate}
@@ -269,7 +269,7 @@ function Input({
         <input
           type="time"
           id={uniqueInputId}
-          className={`input-field ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
@@ -284,7 +284,7 @@ function Input({
           id={uniqueInputId}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className={`input-field ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           min={minDate}
           max={maxDate}
           disabled={disabled}
@@ -350,7 +350,7 @@ function Input({
           onKeyDown={onKeyDown}
           placeholder={placeholder || t("inputTextPlaceholder")}
           disabled={disabled}
-          className={`input-field ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           maxLength={maxLength}
           autoFocus={autoFocus}
         />
@@ -360,7 +360,7 @@ function Input({
     return (
       <InputContainer htmlFor={uniqueInputId} label={label} required={required} helper={helper} error={error}>
         <textarea
-          className={`input-field textarea ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field nq-textarea ${error ? "nq-input-field-error" : ""}`}
           spellCheck
           rows={3}
           value={value || ""}
@@ -378,7 +378,7 @@ function Input({
         id={uniqueInputId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`search-input ${error ? "search-input-error" : ""}`}
+        className={`nq-search-input ${error ? "nq-search-input-error" : ""}`}
         placeholder={placeholder || t("inputSearchPlaceholder")}
         name={fieldName(label)}
         autoFocus={autoFocus}
@@ -442,32 +442,32 @@ function Input({
     );
   } else if (type === INPUT_TYPE.CHECKBOX) {
     return (
-      <div className="check-field">
+      <div className="nq-check-field">
         <input
           id={uniqueInputId}
           type="checkbox"
           checked={Boolean(value)}
           onChange={(e) => onChange(e.target.checked)}
-          className="checkbox-input"
+          className="nq-checkbox-input"
           name={fieldName(label)}
           autoFocus={autoFocus}
         />
         {label && <label htmlFor={uniqueInputId}>{label}</label>}
-        {error && <div className="error-text">{error}</div>}
+        {error && <div className="nq-error-text">{error}</div>}
       </div>
     );
   } else if (type === INPUT_TYPE.RADIO) {
     return (
-      <div className="check-field">
+      <div className="nq-check-field">
         <input
           id={uniqueInputId}
           type="radio"
           checked={Boolean(value)}
           onChange={(e) => onChange(e.target.checked)}
-          className="radio-input"
+          className="nq-radio-input"
         />
         {label && (
-          <label htmlFor={uniqueInputId} className="radio-input-label">
+          <label htmlFor={uniqueInputId} className="nq-radio-input-label">
             {label}
           </label>
         )}
@@ -490,7 +490,7 @@ function Input({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          className={`input-field ${error ? "input-field-error" : ""}`}
+          className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           maxLength={maxLength}
           autoFocus={autoFocus}
         />
@@ -502,7 +502,7 @@ function Input({
         <input
           type="color"
           id={uniqueInputId}
-          className="color-input"
+          className="nq-color-input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
@@ -525,16 +525,16 @@ function Input({
         : /\.(jpe?g|png|gif|webp|svg)$/i.test(displayName);
 
     return (
-      <div className="upload-section">
+      <div className="nq-upload-section">
         {label && (
-          <label className="upload-label">
+          <label className="nq-upload-label">
             {label}
-            {required && <span className="required-mark">*</span>}
+            {required && <span className="nq-required-mark">*</span>}
           </label>
         )}
 
         <div
-          className={`dropzone ${dragActive ? "dropzone-active" : ""}`}
+          className={`nq-dropzone ${dragActive ? "nq-dropzone-active" : ""}`}
           onClick={() => fileInputRef.current?.click()}
           onDragOver={(e) => {
             e.preventDefault();
@@ -549,27 +549,27 @@ function Input({
         >
           {!value ? (
             <>
-              <div className="upload-icon">
+              <div className="nq-upload-icon">
                 <Upload size={32} />
               </div>
               <p>
-                {richText(t, "inputDropFile", { browse: <b className="browse">{t("inputBrowse")}</b> })}
+                {richText(t, "inputDropFile", { browse: <b className="nq-browse">{t("inputBrowse")}</b> })}
               </p>
               <span>{helper || accept}</span>
             </>
           ) : isImageFile && filePreviewUrl ? (
             <>
-              <img src={filePreviewUrl} alt={displayName} className="file-preview-img" />
-              <p className="file-name" title={rawName}>
+              <img src={filePreviewUrl} alt={displayName} className="nq-file-preview-img" />
+              <p className="nq-file-name" title={rawName}>
                 {displayName}
               </p>
             </>
           ) : (
             <>
-              <div className="upload-icon">
+              <div className="nq-upload-icon">
                 <Upload size={32} />
               </div>
-              <p className="file-name" title={rawName}>
+              <p className="nq-file-name" title={rawName}>
                 {displayName}
               </p>
               <span>{t("inputFileSelected")}</span>
@@ -588,23 +588,23 @@ function Input({
           }}
         />
 
-        {error && <p className="error-text">{error}</p>}
+        {error && <p className="nq-error-text">{error}</p>}
       </div>
     );
   } else if (type === INPUT_TYPE.MULTIPLE_FILE) {
     const files: any[] = Array.isArray(value) ? value : [];
 
     return (
-      <div className="upload-section">
+      <div className="nq-upload-section">
         {label && (
-          <label className="upload-label">
+          <label className="nq-upload-label">
             {label}
-            {required && <span className="required-mark">*</span>}
+            {required && <span className="nq-required-mark">*</span>}
           </label>
         )}
 
         <div
-          className={`dropzone ${dragActive ? "dropzone-active" : ""}`}
+          className={`nq-dropzone ${dragActive ? "nq-dropzone-active" : ""}`}
           onClick={() => fileInputRef.current?.click()}
           onDragOver={(e) => {
             e.preventDefault();
@@ -621,20 +621,20 @@ function Input({
         >
           {files.length === 0 ? (
             <>
-              <div className="upload-icon">
+              <div className="nq-upload-icon">
                 <Upload size={32} />
               </div>
               <p>
-                {richText(t, "inputDropFiles", { browse: <b className="browse">{t("inputBrowse")}</b> })}
+                {richText(t, "inputDropFiles", { browse: <b className="nq-browse">{t("inputBrowse")}</b> })}
               </p>
               <span>{helper || accept}</span>
             </>
           ) : (
             <>
-              <div className="upload-icon">
+              <div className="nq-upload-icon">
                 <Upload size={32} />
               </div>
-              <p className="file-name">
+              <p className="nq-file-name">
                 {t(files.length === 1 ? "inputFilesSelectedOne" : "inputFilesSelected", {
                   count: files.length,
                 })}
@@ -645,22 +645,22 @@ function Input({
         </div>
 
         {files.length > 0 && (
-          <div className="file-list">
+          <div className="nq-file-list">
             {files.map((item, index) => {
               const itemName = item instanceof File ? item.name : item?.name;
               const itemUrl = item instanceof File ? null : item?.url;
               return (
-                <div key={index} className="file-row">
-                  <div className="file-row-icon">
+                <div key={index} className="nq-file-row">
+                  <div className="nq-file-row-icon">
                     <FileText size={16} />
                   </div>
-                  <span className="file-row-name" title={itemName || t("inputAttachment")}>
+                  <span className="nq-file-row-name" title={itemName || t("inputAttachment")}>
                     {itemName || t("inputAttachment")}
                   </span>
                   {(item instanceof File || itemUrl) && (
                     <button
                       type={BUTTON_TYPE.BUTTON}
-                      className="file-row-button"
+                      className="nq-file-row-button"
                       title={t("inputView")}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -674,7 +674,7 @@ function Input({
                   {onRemoveFile && (
                     <button
                       type={BUTTON_TYPE.BUTTON}
-                      className="file-row-button file-row-delete"
+                      className="nq-file-row-button nq-file-row-delete"
                       title={t("inputRemove")}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -702,16 +702,16 @@ function Input({
           }}
         />
 
-        {error && <p className="error-text">{error}</p>}
+        {error && <p className="nq-error-text">{error}</p>}
       </div>
     );
   } else if (type === INPUT_TYPE.EXCEL_UPLOAD) {
     return (
-      <div className="upload-section">
-        {label && <label className="upload-label">{label}</label>}
+      <div className="nq-upload-section">
+        {label && <label className="nq-upload-label">{label}</label>}
 
         <div
-          className={`dropzone ${disabled ? "dropzone-disabled" : ""}`}
+          className={`nq-dropzone ${disabled ? "nq-dropzone-disabled" : ""}`}
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -725,12 +725,12 @@ function Input({
             disabled={disabled}
           />
 
-          <div className="upload-icon">
+          <div className="nq-upload-icon">
             <Upload size={32} />
           </div>
 
           {value ? (
-            <p className="file-name">{value.name}</p>
+            <p className="nq-file-name">{value.name}</p>
           ) : (
             <p>{placeholder || t("inputExcelPlaceholder")}</p>
           )}
@@ -738,7 +738,7 @@ function Input({
           <span>{helper || t("inputExcelHelper")}</span>
         </div>
 
-        {error && <p className="error-text">{error}</p>}
+        {error && <p className="nq-error-text">{error}</p>}
       </div>
     );
   }

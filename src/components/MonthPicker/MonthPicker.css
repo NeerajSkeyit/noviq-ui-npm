@@ -1,4 +1,4 @@
-.month-picker-dropdown {
+.nq-month-picker-dropdown {
   z-index: 1510;
   width: 240px;
   padding: 10px;
@@ -11,14 +11,14 @@
   font-size: 13px;
 }
 
-.month-picker-header {
+.nq-month-picker-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.month-picker-nav {
+.nq-month-picker-nav {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -32,33 +32,33 @@
   cursor: pointer;
 }
 
-.month-picker-nav:hover:not(:disabled) {
+.nq-month-picker-nav:hover:not(:disabled) {
   background: var(--surface-hover);
 }
 
-.month-picker-nav:disabled {
+.nq-month-picker-nav:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.month-picker-year {
+.nq-month-picker-year {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.month-picker-grid {
+.nq-month-picker-grid {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.month-picker-row {
+.nq-month-picker-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
 }
 
-.month-picker-month {
+.nq-month-picker-month {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,24 +68,24 @@
   cursor: pointer;
 }
 
-.month-picker-month:hover:not(.is-disabled) {
+.nq-month-picker-month:hover:not(.nq-is-disabled) {
   background: var(--surface-hover);
 }
 
-.month-picker-month.is-current {
+.nq-month-picker-month.nq-is-current {
   border-color: var(--primary);
 }
 
-.month-picker-month.is-focused {
+.nq-month-picker-month.nq-is-focused {
   box-shadow: 0 0 0 2px rgba(2, 105, 155, 0.35);
 }
 
-.month-picker-month.is-selected {
+.nq-month-picker-month.nq-is-selected {
   background: var(--primary);
   color: var(--light);
 }
 
-.month-picker-month.is-disabled {
+.nq-month-picker-month.nq-is-disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }

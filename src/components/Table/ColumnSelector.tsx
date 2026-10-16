@@ -88,16 +88,16 @@ function ColumnSelector<T = any>({
         closeOnOutside
         unmountOnClose
         footer={
-          <div className="column-selector-legend">
-            <div className="column-selector-legend-item">
+          <div className="nq-column-selector-legend">
+            <div className="nq-column-selector-legend-item">
               <Pin size={12} />
               <span>{t("columnsLegendLeft")}</span>
             </div>
-            <div className="column-selector-legend-item">
+            <div className="nq-column-selector-legend-item">
               <Pin size={12} />
               <span>{t("columnsLegendRight")}</span>
             </div>
-            <div className="column-selector-legend-item">
+            <div className="nq-column-selector-legend-item">
               <PinOff size={12} />
               <span>{t("columnsLegendUnpinned")}</span>
             </div>
@@ -108,7 +108,7 @@ function ColumnSelector<T = any>({
         }
       >
         <ScrollArea>
-          <div className="column-selector-list">
+          <div className="nq-column-selector-list">
             {orderedColumns.map((column) => {
               const stickyState = getStickyState(column.id);
               const isVisible = visibleColumns.includes(column.id);
@@ -120,12 +120,12 @@ function ColumnSelector<T = any>({
                   onDragStart={() => setDraggedId(column.id)}
                   onDragOver={(e) => handleDragOver(e, column.id)}
                   onDragEnd={() => setDraggedId(null)}
-                  className={`column-selector-row ${
-                    draggedId === column.id ? "column-selector-row-active" : ""
+                  className={`nq-column-selector-row ${
+                    draggedId === column.id ? "nq-column-selector-row-active" : ""
                   }`}
                 >
-                  <GripVertical size={16} className="column-selector-grip" />
-                  <span className="column-selector-label">{column.heading}</span>
+                  <GripVertical size={16} className="nq-column-selector-grip" />
+                  <span className="nq-column-selector-label">{column.heading}</span>
 
                   <button
                     type={BUTTON_TYPE.BUTTON}
@@ -133,8 +133,8 @@ function ColumnSelector<T = any>({
                       e.stopPropagation();
                       toggleSticky(column.id);
                     }}
-                    className={`column-selector-sticky-btn ${
-                      stickyState ? "column-selector-sticky-active" : ""
+                    className={`nq-column-selector-sticky-btn ${
+                      stickyState ? "nq-column-selector-sticky-active" : ""
                     }`}
                     title={
                       stickyState === STICKY_POSITION.LEFT
@@ -145,9 +145,9 @@ function ColumnSelector<T = any>({
                     }
                   >
                     {stickyState ? (
-                      <span className="column-selector-sticky-indicator">
+                      <span className="nq-column-selector-sticky-indicator">
                         <Pin size={14} />
-                        <span className="column-selector-sticky-letter">
+                        <span className="nq-column-selector-sticky-letter">
                           {stickyState === STICKY_POSITION.LEFT ? t("columnLetterLeft") : t("columnLetterRight")}
                         </span>
                       </span>
@@ -156,7 +156,7 @@ function ColumnSelector<T = any>({
                     )}
                   </button>
 
-                  <div className="column-selector-visibility">
+                  <div className="nq-column-selector-visibility">
                     {isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
                     <Switch
                       checked={isVisible}

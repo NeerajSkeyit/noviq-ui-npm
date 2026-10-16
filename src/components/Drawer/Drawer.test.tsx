@@ -16,8 +16,8 @@ describe("Drawer", () => {
         Body content
       </Drawer>
     );
-    expect(document.querySelector(".drawer-overlay")).not.toBeInTheDocument();
-    const panel = document.querySelector(".drawer-content");
+    expect(document.querySelector(".nq-drawer-overlay")).not.toBeInTheDocument();
+    const panel = document.querySelector(".nq-drawer-content");
     expect(panel).toHaveAttribute("aria-hidden", "true");
   });
 
@@ -37,7 +37,7 @@ describe("Drawer", () => {
     expect(screen.getByText("Subtitle text")).toBeInTheDocument();
     expect(screen.getByText("Body content")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
-    expect(document.querySelector(".drawer-content")).toHaveAttribute(
+    expect(document.querySelector(".nq-drawer-content")).toHaveAttribute(
       "aria-hidden",
       "false"
     );
@@ -75,7 +75,7 @@ describe("Drawer", () => {
         content
       </Drawer>
     );
-    const overlay = document.querySelector(".drawer-overlay") as HTMLElement;
+    const overlay = document.querySelector(".nq-drawer-overlay") as HTMLElement;
     await user.click(overlay);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -88,7 +88,7 @@ describe("Drawer", () => {
         content
       </Drawer>
     );
-    const closeBtn = document.querySelector(".drawer-close") as HTMLElement;
+    const closeBtn = document.querySelector(".nq-drawer-close") as HTMLElement;
     await user.click(closeBtn);
     expect(onClose).toHaveBeenCalledTimes(1);
   });

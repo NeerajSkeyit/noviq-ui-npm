@@ -1,4 +1,4 @@
-.table-pagination {
+.nq-table-pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -8,17 +8,17 @@
   border-top: 1px solid var(--border-color);
 }
 
-.table-pagination-text {
+.nq-table-pagination-text {
   font-size: 13px;
   color: var(--muted);
 }
 
-.table-pagination-highlight {
+.nq-table-pagination-highlight {
   font-weight: 600;
   color: var(--heading);
 }
 
-.table-pagination-right {
+.nq-table-pagination-right {
   display: flex;
   align-items: center;
   /* "Rows per page" and the page controls are ~390px together, wider than a phone's table. They
@@ -31,28 +31,28 @@
 }
 
 @media (max-width: 640px) {
-  .table-pagination {
+  .nq-table-pagination {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .table-pagination-right {
+  .nq-table-pagination-right {
     width: 100%;
     justify-content: space-between;
   }
 }
 
-.table-pagination-page-size {
+.nq-table-pagination-page-size {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.table-pagination-page-size > div {
+.nq-table-pagination-page-size > div {
   min-width: 72px;
 }
 
-.table-pagination-controls {
+.nq-table-pagination-controls {
   display: flex;
   align-items: center;
   /* The page label plus four icon buttons are ~270px: wrap on the narrowest phones (320px). */
@@ -60,7 +60,7 @@
   gap: 6px;
 }
 
-.table-pagination-page-info {
+.nq-table-pagination-page-info {
   font-size: 13px;
   color: var(--muted);
   margin-right: 6px;
@@ -70,7 +70,7 @@
 /* On the narrowest phones the label and the four buttons can't share a row without orphaning the
    last button, so give the label its own row and keep the buttons together. */
 @media (max-width: 400px) {
-  .table-pagination-page-info {
+  .nq-table-pagination-page-info {
     flex-basis: 100%;
   }
 }

@@ -21,29 +21,29 @@ function FilterChips({ filters, onRemove, onClearAll, onChipClick }: FilterChips
   if (filters.length === 0) return null;
 
   return (
-    <div className="filter-chips">
+    <div className="nq-filter-chips">
       {filters.map((filter) => (
-        <span key={filter.id} className="filter-chip">
+        <span key={filter.id} className="nq-filter-chip">
           {onChipClick ? (
             <button
               type={BUTTON_TYPE.BUTTON}
-              className="filter-chip-body"
+              className="nq-filter-chip-body"
               onClick={() => onChipClick(filter.id)}
             >
-              <span className="filter-chip-label">{filter.label}:</span>
+              <span className="nq-filter-chip-label">{filter.label}:</span>
               {/* A space for the accessible name ("State: Open"); a flex container drops it visually. */}{" "}
-              <span className="filter-chip-value">{filter.displayValue}</span>
+              <span className="nq-filter-chip-value">{filter.displayValue}</span>
             </button>
           ) : (
             <>
-              <span className="filter-chip-label">{filter.label}:</span>
-              <span className="filter-chip-value">{filter.displayValue}</span>
+              <span className="nq-filter-chip-label">{filter.label}:</span>
+              <span className="nq-filter-chip-value">{filter.displayValue}</span>
             </>
           )}
           {!filter.mandatory && (
             <button
               type={BUTTON_TYPE.BUTTON}
-              className="filter-chip-remove"
+              className="nq-filter-chip-remove"
               onClick={() => onRemove(filter.id)}
               aria-label={t("filterRemove", { label: filter.label })}
             >
@@ -54,7 +54,7 @@ function FilterChips({ filters, onRemove, onClearAll, onChipClick }: FilterChips
       ))}
 
       {filters.length > 1 && (
-        <button type={BUTTON_TYPE.BUTTON} className="filter-chips-clear-all" onClick={onClearAll}>
+        <button type={BUTTON_TYPE.BUTTON} className="nq-filter-chips-clear-all" onClick={onClearAll}>
           {t("filtersClearAll")}
         </button>
       )}

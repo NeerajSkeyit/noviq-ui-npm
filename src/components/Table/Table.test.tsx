@@ -151,8 +151,8 @@ describe("Table", () => {
     expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).toContain("Status");
 
     await user.click(screen.getByRole("button", { name: /Columns/ }));
-    const statusRow = screen.getByText("Status", { selector: ".column-selector-label" });
-    const switchInRow = statusRow.closest(".column-selector-row")!.querySelector('[role="switch"]')!;
+    const statusRow = screen.getByText("Status", { selector: ".nq-column-selector-label" });
+    const switchInRow = statusRow.closest(".nq-column-selector-row")!.querySelector('[role="switch"]')!;
     await user.click(switchInRow);
 
     expect(screen.getAllByRole("columnheader").map((h) => h.textContent)).not.toContain("Status");
@@ -165,8 +165,8 @@ describe("Table", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /Columns/ }));
-    const nameRow = screen.getByText("Name", { selector: ".column-selector-label" });
-    const nameSwitch = nameRow.closest(".column-selector-row")!.querySelector('[role="switch"]')!;
+    const nameRow = screen.getByText("Name", { selector: ".nq-column-selector-label" });
+    const nameSwitch = nameRow.closest(".nq-column-selector-row")!.querySelector('[role="switch"]')!;
     await user.click(nameSwitch);
     unmount();
 
@@ -180,8 +180,8 @@ describe("Table", () => {
     const { unmount } = render(<Table columns={columns} preFetchedData={rows} isPaginationHidden />);
 
     await user.click(screen.getByRole("button", { name: /Columns/ }));
-    const nameRow = screen.getByText("Name", { selector: ".column-selector-label" });
-    const nameSwitch = nameRow.closest(".column-selector-row")!.querySelector('[role="switch"]')!;
+    const nameRow = screen.getByText("Name", { selector: ".nq-column-selector-label" });
+    const nameSwitch = nameRow.closest(".nq-column-selector-row")!.querySelector('[role="switch"]')!;
     await user.click(nameSwitch);
     unmount();
 
@@ -350,7 +350,7 @@ describe("Table", () => {
     await user.click(screen.getByRole("button", { name: "Apply" }));
 
     expect(screen.getByText("Department:")).toBeInTheDocument();
-    expect(screen.getByText("Engineering", { selector: ".filter-chip-value" })).toBeInTheDocument();
+    expect(screen.getByText("Engineering", { selector: ".nq-filter-chip-value" })).toBeInTheDocument();
     await waitFor(() =>
       expect(apiFunction).toHaveBeenLastCalledWith(expect.objectContaining({ department: "eng" }))
     );

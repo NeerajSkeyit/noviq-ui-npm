@@ -7,7 +7,7 @@ export interface LabelProps extends React.ComponentPropsWithRef<"label"> {
 
 function Label({ children, disabled = false, className = "", ...props }: LabelProps) {
   return (
-    <label className={`label ${disabled ? "label-disabled" : ""} ${className}`} {...props}>
+    <label className={`nq-label ${disabled ? "nq-label-disabled" : ""} ${className}`} {...props}>
       {children}
     </label>
   );

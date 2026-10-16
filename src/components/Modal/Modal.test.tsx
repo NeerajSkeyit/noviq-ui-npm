@@ -17,7 +17,7 @@ describe("Modal", () => {
       </Modal>
     );
     expect(screen.queryByText("My Modal")).not.toBeInTheDocument();
-    expect(document.querySelector(".modal-overlay")).not.toBeInTheDocument();
+    expect(document.querySelector(".nq-modal-overlay")).not.toBeInTheDocument();
   });
 
   it("renders title, subtitle, children and footer when open", () => {
@@ -58,7 +58,7 @@ describe("Modal", () => {
         content
       </Modal>
     );
-    const backdrop = document.querySelector(".modal-backdrop") as HTMLElement;
+    const backdrop = document.querySelector(".nq-modal-backdrop") as HTMLElement;
     await user.click(backdrop);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -71,7 +71,7 @@ describe("Modal", () => {
         content
       </Modal>
     );
-    const backdrop = document.querySelector(".modal-backdrop") as HTMLElement;
+    const backdrop = document.querySelector(".nq-modal-backdrop") as HTMLElement;
     await user.click(backdrop);
     expect(onClose).not.toHaveBeenCalled();
   });
@@ -84,7 +84,7 @@ describe("Modal", () => {
         content
       </Modal>
     );
-    const closeBtn = document.querySelector(".modal-close") as HTMLElement;
+    const closeBtn = document.querySelector(".nq-modal-close") as HTMLElement;
     await user.click(closeBtn);
     expect(onClose).toHaveBeenCalledTimes(1);
   });

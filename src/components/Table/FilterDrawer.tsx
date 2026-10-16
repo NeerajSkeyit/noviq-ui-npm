@@ -83,11 +83,11 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
   switch (config.type) {
     case FILTER_TYPE.SELECT:
       return (
-        <div className="filter-drawer-options">
+        <div className="nq-filter-drawer-options">
           {(config.options ?? []).map((opt) => {
             const selected = Array.isArray(value) && (value as string[]).includes(opt.value);
             return (
-              <div key={opt.value} className="filter-drawer-option">
+              <div key={opt.value} className="nq-filter-drawer-option">
                 <Checkbox
                   checked={selected}
                   onChange={(checked) => {
@@ -105,8 +105,8 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
     case FILTER_TYPE.DATE_RANGE: {
       const range = (value as DateRangeValue) ?? {};
       return (
-        <div className="filter-drawer-range">
-          <label className="filter-drawer-range-field">
+        <div className="nq-filter-drawer-range">
+          <label className="nq-filter-drawer-range-field">
             <span>{t("filterFrom")}</span>
             <input
               type="date"
@@ -114,7 +114,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
               onChange={(e) => onChange({ ...range, from: e.target.value })}
             />
           </label>
-          <label className="filter-drawer-range-field">
+          <label className="nq-filter-drawer-range-field">
             <span>{t("filterTo")}</span>
             <input
               type="date"
@@ -132,7 +132,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
           type="month"
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
-          className="filter-drawer-input"
+          className="nq-filter-drawer-input"
         />
       );
 
@@ -142,7 +142,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
           type="date"
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
-          className="filter-drawer-input"
+          className="nq-filter-drawer-input"
         />
       );
 
@@ -153,7 +153,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
           type="text"
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
-          className="filter-drawer-input"
+          className="nq-filter-drawer-input"
         />
       );
   }
@@ -215,7 +215,7 @@ function FilterDrawer({
       <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={() => setOpen(true)}>
         <SlidersHorizontal size={16} />
         {t("filtersButton")}
-        {activeFilters.length > 0 && <span className="filter-drawer-badge">{activeFilters.length}</span>}
+        {activeFilters.length > 0 && <span className="nq-filter-drawer-badge">{activeFilters.length}</span>}
       </Button>
 
       <Drawer
@@ -225,7 +225,7 @@ function FilterDrawer({
         closeOnOutside
         unmountOnClose
         footer={
-          <div className="filter-drawer-footer">
+          <div className="nq-filter-drawer-footer">
             <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={handleClearAll}>
               {t("filtersClearAll")}
             </Button>
@@ -236,10 +236,10 @@ function FilterDrawer({
         }
       >
         <ScrollArea>
-          <div className="filter-drawer-sections">
+          <div className="nq-filter-drawer-sections">
             {filters.map((config) => (
-              <div key={config.id} className="filter-drawer-section">
-                <span className="filter-drawer-section-label">{config.label}</span>
+              <div key={config.id} className="nq-filter-drawer-section">
+                <span className="nq-filter-drawer-section-label">{config.label}</span>
                 {renderField(config, draftValues[config.id], (v) => setDraft(config.id, v), t)}
               </div>
             ))}

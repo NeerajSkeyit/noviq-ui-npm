@@ -331,7 +331,7 @@ describe("TimePicker", () => {
     it("flags the trigger as invalid when error is set", () => {
       render(<TimePicker value="" error />);
       expect(trigger()).toHaveAttribute("aria-invalid", "true");
-      expect(trigger()).toHaveClass("time-picker-error");
+      expect(trigger()).toHaveClass("nq-time-picker-error");
     });
   });
 

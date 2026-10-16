@@ -24,9 +24,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={`btn btn-${variant} ${
-          isRowActionBtn ? "btn-row-action" : ""
-        } btn-${size} ${className}`}
+        className={`nq-btn nq-btn-${variant} ${
+          isRowActionBtn ? "nq-btn-row-action" : ""
+        } nq-btn-${size} ${className}`}
         {...props}
       >
         {children}

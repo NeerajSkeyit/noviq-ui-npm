@@ -1,4 +1,4 @@
-.filter-chips {
+.nq-filter-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -7,7 +7,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.filter-chip {
+.nq-filter-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -18,13 +18,13 @@
   color: var(--heading);
 }
 
-.filter-chip-label {
+.nq-filter-chip-label {
   font-weight: 500;
   color: var(--primary);
 }
 
 /* The chip's text as a button (when chips are clickable): looks like the plain chip. */
-.filter-chip-body {
+.nq-filter-chip-body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -36,11 +36,11 @@
   cursor: pointer;
 }
 
-.filter-chip-body:hover .filter-chip-value {
+.nq-filter-chip-body:hover .nq-filter-chip-value {
   text-decoration: underline;
 }
 
-.filter-chip-remove {
+.nq-filter-chip-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -51,11 +51,11 @@
   padding: 0;
 }
 
-.filter-chip-remove:hover {
+.nq-filter-chip-remove:hover {
   color: var(--danger);
 }
 
-.filter-chips-clear-all {
+.nq-filter-chips-clear-all {
   font-size: 12px;
   color: var(--muted);
   background: none;
@@ -64,6 +64,6 @@
   transition: color 0.2s ease;
 }
 
-.filter-chips-clear-all:hover {
+.nq-filter-chips-clear-all:hover {
   color: var(--heading);
 }

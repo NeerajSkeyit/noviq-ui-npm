@@ -1,9 +1,9 @@
-.reject-action-wrapper {
+.nq-reject-action-wrapper {
   position: relative;
   display: inline-block;
 }
 
-.reject-action-popover {
+.nq-reject-action-popover {
   width: 320px;
   background: var(--light);
   border-radius: 14px;
@@ -24,7 +24,7 @@
   }
 }
 
-.reject-action-popover h4 {
+.nq-reject-action-popover h4 {
   margin: 0 0 12px 0;
   font-size: 16px;
   font-weight: 600;
@@ -32,7 +32,7 @@
   color: var(--heading);
 }
 
-.reject-action-popover textarea {
+.nq-reject-action-popover textarea {
   width: 100%;
   min-height: 90px;
   resize: none;
@@ -45,12 +45,12 @@
   box-sizing: border-box;
 }
 
-.reject-action-popover textarea:focus {
+.nq-reject-action-popover textarea:focus {
   outline: none;
   border-color: var(--primary);
 }
 
-.reject-action-error {
+.nq-reject-action-error {
   color: var(--danger);
   font-size: 12px;
   margin: -10px 0 10px 0;

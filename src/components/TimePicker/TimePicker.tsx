@@ -299,8 +299,8 @@ function TimePicker({
   };
 
   const renderColumn = (column: Column) => (
-    <div className="time-picker-column" key={column}>
-      <div className="time-picker-column-label">{columnMeta[column].heading}</div>
+    <div className="nq-time-picker-column" key={column}>
+      <div className="nq-time-picker-column-label">{columnMeta[column].heading}</div>
       <ScrollArea style={{ height: TIME_PICKER_COLUMN_HEIGHT }}>
         <div id={listId[column]} role="listbox" aria-label={columnMeta[column].ariaLabel}>
           {items[column].map((item, i) => {
@@ -313,8 +313,8 @@ function TimePicker({
                 role="option"
                 aria-selected={isSelected}
                 data-focused={isFocused}
-                className={`time-picker-option${isSelected ? " is-selected" : ""}${
-                  isFocused ? " is-focused" : ""
+                className={`nq-time-picker-option${isSelected ? " nq-is-selected" : ""}${
+                  isFocused ? " nq-is-focused" : ""
                 }`}
                 onClick={() => {
                   commit(column, item);
@@ -348,7 +348,7 @@ function TimePicker({
     : placeholder;
 
   return (
-    <div ref={wrapperRef} className={`time-picker ${className}`}>
+    <div ref={wrapperRef} className={`nq-time-picker ${className}`}>
       <button
         ref={triggerRef}
         type={BUTTON_TYPE.BUTTON}
@@ -362,11 +362,11 @@ function TimePicker({
         aria-label={ariaLabel}
         aria-invalid={error || undefined}
         disabled={disabled}
-        className={`time-picker-trigger${error ? " time-picker-error" : ""}`}
+        className={`nq-time-picker-trigger${error ? " nq-time-picker-error" : ""}`}
         onClick={() => (open ? closePicker() : openPicker())}
         onKeyDown={handleKeyDown}
       >
-        <span className={`time-picker-value${hasValue ? "" : " is-placeholder"}`}>
+        <span className={`nq-time-picker-value${hasValue ? "" : " nq-is-placeholder"}`}>
           {displayValue}
         </span>
         {!disabled && <Clock size={14} strokeWidth={2.5} aria-hidden />}
@@ -375,7 +375,7 @@ function TimePicker({
       {clearable && hasValue && !disabled && (
         <button
           type={BUTTON_TYPE.BUTTON}
-          className="time-picker-clear"
+          className="nq-time-picker-clear"
           aria-label={t("timeClear")}
           onClick={() => {
             onChange?.("");
@@ -390,7 +390,7 @@ function TimePicker({
         createPortal(
           <div
             ref={dropdownRef}
-            className="time-picker-dropdown"
+            className="nq-time-picker-dropdown"
             style={{ position: "fixed", top: position.top, left: position.left }}
           >
             {columnOrder.map(renderColumn)}

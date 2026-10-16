@@ -60,7 +60,7 @@ function PickerField({
   children,
 }: PickerFieldProps) {
   return (
-    <div ref={wrapperRef} className={`picker-field ${className}`}>
+    <div ref={wrapperRef} className={`nq-picker-field ${className}`}>
       <button
         ref={triggerRef}
         type={BUTTON_TYPE.BUTTON}
@@ -74,11 +74,11 @@ function PickerField({
         aria-label={ariaLabel}
         aria-invalid={error || undefined}
         disabled={disabled}
-        className={`picker-field-trigger${error ? " picker-field-error" : ""}`}
+        className={`nq-picker-field-trigger${error ? " nq-picker-field-error" : ""}`}
         onClick={onToggle}
         onKeyDown={onKeyDown}
       >
-        <span className={`picker-field-value${hasValue ? "" : " is-placeholder"}`}>
+        <span className={`nq-picker-field-value${hasValue ? "" : " nq-is-placeholder"}`}>
           {hasValue ? displayValue : placeholder}
         </span>
         {!disabled && icon}
@@ -87,7 +87,7 @@ function PickerField({
       {clearable && hasValue && !disabled && (
         <button
           type={BUTTON_TYPE.BUTTON}
-          className="picker-field-clear"
+          className="nq-picker-field-clear"
           aria-label={clearLabel}
           onClick={onClear}
         >

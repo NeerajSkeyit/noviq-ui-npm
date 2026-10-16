@@ -128,7 +128,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
   );
 
   return (
-    <div className="reject-action-wrapper" ref={wrapperRef}>
+    <div className="nq-reject-action-wrapper" ref={wrapperRef}>
       <Button
         ref={buttonRef}
         variant={BUTTON_VARIANT.DESTRUCTIVE}
@@ -143,7 +143,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
         createPortal(
           <div
             ref={popoverRef}
-            className="reject-action-popover"
+            className="nq-reject-action-popover"
             style={{ position: "fixed", top: position.top, left: position.left, zIndex: 10 }}
           >
             <h4>{t("rejectTitle")}</h4>
@@ -159,7 +159,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
               autoFocus
             />
             {rejectReasonError && (
-              <p className="reject-action-error">{rejectReasonError}</p>
+              <p className="nq-reject-action-error">{rejectReasonError}</p>
             )}
 
             <Button variant={BUTTON_VARIANT.DESTRUCTIVE} onClick={handleConfirm} disabled={!reason.trim() || disabled || loading}>

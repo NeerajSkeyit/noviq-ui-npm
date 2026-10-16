@@ -59,7 +59,7 @@ describe("DropdownMenu", () => {
     const onPick = vi.fn();
     render(<Menu onPick={onPick} />);
     await user.click(screen.getByRole("button", { name: "Actions" }));
-    expect(screen.getByText("Delete")).toHaveClass("dropdown-item-destructive");
+    expect(screen.getByText("Delete")).toHaveClass("nq-dropdown-item-destructive");
 
     await user.click(screen.getByText("Archive"));
     expect(onPick).not.toHaveBeenCalled();

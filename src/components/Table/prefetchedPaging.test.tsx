@@ -48,8 +48,8 @@ const names = () =>
     .getAllByRole("row")
     .slice(1)
     .map((row) => within(row).getAllByRole("cell")[0].textContent);
-const pager = () => document.querySelector(".table-pagination")?.textContent ?? "";
-const pagerButtons = () => Array.from(document.querySelectorAll<HTMLButtonElement>(".table-pagination-controls button"));
+const pager = () => document.querySelector(".nq-table-pagination")?.textContent ?? "";
+const pagerButtons = () => Array.from(document.querySelectorAll<HTMLButtonElement>(".nq-table-pagination-controls button"));
 const [FIRST, PREVIOUS, NEXT, LAST] = [0, 1, 2, 3];
 const searchBox = () => screen.getByPlaceholderText("Search...");
 const settled = { timeout: 2500 };

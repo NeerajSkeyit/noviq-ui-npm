@@ -74,7 +74,7 @@ function Drawer({
     <>
       {isOpen && (
         <div
-          className="drawer-overlay"
+          className="nq-drawer-overlay"
           onClick={() => {
             if (closeOnOutside) onClose();
           }}
@@ -82,9 +82,9 @@ function Drawer({
       )}
 
       <div
-        className={`drawer-content drawer-${side} ${
-          side === DRAWER_SIDE.LEFT || side === DRAWER_SIDE.RIGHT ? `drawer-content-${size}` : ""
-        } ${isOpen ? "drawer-open" : ""}`}
+        className={`nq-drawer-content nq-drawer-${side} ${
+          side === DRAWER_SIDE.LEFT || side === DRAWER_SIDE.RIGHT ? `nq-drawer-content-${size}` : ""
+        } ${isOpen ? "nq-drawer-open" : ""}`}
         style={
           side === DRAWER_SIDE.TOP || side === DRAWER_SIDE.BOTTOM
             ? { height: DRAWER_HEIGHT_BY_SIZE[size], maxHeight: "100vh" }
@@ -92,16 +92,16 @@ function Drawer({
         }
         aria-hidden={!isOpen}
       >
-        <div className="drawer-header">
+        <div className="nq-drawer-header">
           <span>
-            <h3 className="drawer-title">{title ?? t("drawerTitle")}</h3>
-            {subtitle && <p className="drawer-subtitle">{subtitle}</p>}
+            <h3 className="nq-drawer-title">{title ?? t("drawerTitle")}</h3>
+            {subtitle && <p className="nq-drawer-subtitle">{subtitle}</p>}
           </span>
 
           <Button
             variant={BUTTON_VARIANT.GHOST}
             size={BUTTON_SIZE.ICON}
-            className="drawer-close"
+            className="nq-drawer-close"
             aria-label={t("drawerClose")}
             onClick={() => onClose()}
           >
@@ -109,9 +109,9 @@ function Drawer({
           </Button>
         </div>
 
-        <ScrollArea className="drawer-body">{showContent ? children : null}</ScrollArea>
+        <ScrollArea className="nq-drawer-body">{showContent ? children : null}</ScrollArea>
 
-        <div className="drawer-footer">{showContent && footer ? footer : null}</div>
+        <div className="nq-drawer-footer">{showContent && footer ? footer : null}</div>
       </div>
     </>,
     document.body

@@ -1,4 +1,4 @@
-.form-container {
+.nq-form-container {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -18,47 +18,47 @@
    wider than its calculated share of the row, forcing the field (and the
    whole row) wider than the drawer/container it's in. `min-width: 0`
    overrides that so the percentage width above always wins. */
-.col-span-1,
-.col-span-2,
-.col-span-3 {
+.nq-col-span-1,
+.nq-col-span-2,
+.nq-col-span-3 {
   min-width: 0;
 }
 
-.col-span-1 {
+.nq-col-span-1 {
   width: 100%;
 }
 
-.col-span-2 {
+.nq-col-span-2 {
   width: calc(50% - 5px);
 }
 
-.col-span-3 {
+.nq-col-span-3 {
   width: calc(33.33% - 10px);
 }
 
-.col-span-2:has(> .upload-section),
-.col-span-3:has(> .upload-section) {
+.nq-col-span-2:has(> .nq-upload-section),
+.nq-col-span-3:has(> .nq-upload-section) {
   width: 100%;
 }
 
-.col-span-2:has(> .upload-section):has(+ .col-span-2 > .upload-section),
-.col-span-2:has(> .upload-section) + .col-span-2:has(> .upload-section) {
+.nq-col-span-2:has(> .nq-upload-section):has(+ .nq-col-span-2 > .nq-upload-section),
+.nq-col-span-2:has(> .nq-upload-section) + .nq-col-span-2:has(> .nq-upload-section) {
   width: calc(50% - 5px);
 }
 
 @media (max-width: 640px) {
-  .col-span-2,
-  .col-span-3 {
+  .nq-col-span-2,
+  .nq-col-span-3 {
     width: 100%;
   }
 }
 
-.info-section {
+.nq-info-section {
   border-bottom: 1px solid var(--border-color);
   margin: 12px 0;
 }
 
-.info-section-title {
+.nq-info-section-title {
   font-size: var(--font-size);
   font-weight: 600;
   text-transform: uppercase;
@@ -66,7 +66,7 @@
   color: var(--heading);
 }
 
-.info-section-subtitle {
+.nq-info-section-subtitle {
   font-size: 12px;
   color: var(--muted);
   margin-bottom: 4px;

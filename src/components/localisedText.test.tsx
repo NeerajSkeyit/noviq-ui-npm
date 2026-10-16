@@ -442,9 +442,9 @@ describe("Form and input copy", () => {
     const { container, rerender } = render(
       withText(<Input type="file" value={null as never} onChange={() => {}} accept=".pdf" />)
     );
-    const prompt = container.querySelector(".dropzone p")!;
+    const prompt = container.querySelector(".nq-dropzone p")!;
     expect(prompt.textContent).toBe(`«Drag and drop a file here, or {browse}»`.replace("{browse}", w("inputBrowse")));
-    expect(prompt.querySelector("b.browse")?.textContent).toBe(w("inputBrowse"));
+    expect(prompt.querySelector("b.nq-browse")?.textContent).toBe(w("inputBrowse"));
 
     rerender(
       withText(
@@ -460,7 +460,7 @@ describe("Form and input copy", () => {
     const { container, rerender } = render(
       withText(<Input type="multipleFile" value={[] as never} onChange={() => {}} />)
     );
-    expect(container.querySelector(".dropzone p")!.textContent).toBe(
+    expect(container.querySelector(".nq-dropzone p")!.textContent).toBe(
       `«Drag and drop files here, or {browse}»`.replace("{browse}", w("inputBrowse"))
     );
 

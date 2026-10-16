@@ -130,7 +130,7 @@ describe("Escape with stacked Drawer / Modal", () => {
       </>
     );
   }
-  const drawerOpen = () => document.querySelector(".drawer-content")?.classList.contains("drawer-open");
+  const drawerOpen = () => document.querySelector(".nq-drawer-content")?.classList.contains("nq-drawer-open");
 
   it("closes the drawer opened from a modal first, then the modal", async () => {
     const user = userEvent.setup();

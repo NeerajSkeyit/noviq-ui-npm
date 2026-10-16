@@ -1,31 +1,31 @@
-.form-field {
+.nq-form-field {
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
 }
 
-.form-label {
+.nq-form-label {
   margin-bottom: 6px;
 }
 
-.required-mark {
+.nq-required-mark {
   color: var(--danger);
   margin-left: 2px;
 }
 
-.helper-text {
+.nq-helper-text {
   font-size: 11px;
   color: var(--muted);
   margin: 4px 0 0;
 }
 
-.error-text {
+.nq-error-text {
   font-size: 11px;
   color: var(--danger);
   margin: 4px 0 0;
 }
 
-.input-field {
+.nq-input-field {
   height: 40px;
   width: 100%;
   border-radius: var(--radius-sm);
@@ -40,29 +40,29 @@
   box-sizing: border-box;
 }
 
-.input-field:focus {
+.nq-input-field:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(2, 105, 155, 0.2);
 }
 
-.input-field:disabled {
+.nq-input-field:disabled {
   background-color: var(--secondary-background);
   color: var(--muted);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.input-field-error {
+.nq-input-field-error {
   border-color: var(--danger) !important;
 }
 
-.textarea {
+.nq-textarea {
   height: unset;
   resize: vertical;
   font-family: inherit;
 }
 
-.search-input {
+.nq-search-input {
   height: 40px;
   width: 100%;
   border-radius: var(--radius-sm);
@@ -74,12 +74,12 @@
   box-sizing: border-box;
 }
 
-/* After `.search-input` — equal specificity, so the later rule's border colour wins. */
-.search-input-error {
+/* After `.nq-search-input` — equal specificity, so the later rule's border colour wins. */
+.nq-search-input-error {
   border-color: var(--danger);
 }
 
-.color-input {
+.nq-color-input {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   height: 40px;
@@ -88,17 +88,17 @@
   outline: none;
 }
 
-.color-input:disabled {
+.nq-color-input:disabled {
   background-color: var(--secondary-background);
   cursor: not-allowed;
 }
 
-.password-wrap {
+.nq-password-wrap {
   position: relative;
   width: 100%;
 }
 
-.password-toggle {
+.nq-password-toggle {
   position: absolute;
   top: 0;
   right: 0;
@@ -111,32 +111,32 @@
   color: var(--muted);
 }
 
-.check-field {
+.nq-check-field {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
 }
 
-.checkbox-input,
-.radio-input {
+.nq-checkbox-input,
+.nq-radio-input {
   width: 16px;
   height: 16px;
   cursor: pointer;
   accent-color: var(--primary);
 }
 
-.radio-input-label {
+.nq-radio-input-label {
   cursor: pointer;
 }
 
 /* Upload (file / multipleFile / excelUpload) */
 
-.upload-section {
+.nq-upload-section {
   margin-top: 18px;
 }
 
-.upload-label {
+.nq-upload-label {
   font-size: var(--font-size);
   font-weight: 500;
   margin-bottom: 6px;
@@ -144,7 +144,7 @@
   color: var(--heading);
 }
 
-.dropzone {
+.nq-dropzone {
   border: 2px dashed var(--border-color);
   border-radius: var(--radius-sm);
   padding: 40px 20px;
@@ -156,43 +156,43 @@
     border-color 0.2s ease;
 }
 
-.dropzone:hover,
-.dropzone-active {
+.nq-dropzone:hover,
+.nq-dropzone-active {
   background: var(--surface-hover);
   border-color: var(--primary);
 }
 
-.dropzone-disabled {
+.nq-dropzone-disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.upload-icon {
+.nq-upload-icon {
   margin-bottom: 10px;
   color: var(--primary);
   display: flex;
   justify-content: center;
 }
 
-.dropzone p {
+.nq-dropzone p {
   margin: 0;
   font-size: var(--font-size);
   color: var(--muted);
 }
 
-.dropzone span {
+.nq-dropzone span {
   display: block;
   margin-top: 6px;
   font-size: 12px;
   color: var(--muted);
 }
 
-.browse {
+.nq-browse {
   color: var(--primary);
 }
 
-.file-name {
+.nq-file-name {
   color: var(--primary);
   font-weight: 600;
   max-width: 100%;
@@ -201,7 +201,7 @@
   white-space: nowrap;
 }
 
-.file-preview-img {
+.nq-file-preview-img {
   max-width: 100%;
   max-height: 100px;
   object-fit: contain;
@@ -209,14 +209,14 @@
   margin-bottom: 8px;
 }
 
-.file-list {
+.nq-file-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 10px;
 }
 
-.file-row {
+.nq-file-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -225,7 +225,7 @@
   border-radius: var(--radius-sm);
 }
 
-.file-row-icon {
+.nq-file-row-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,7 +237,7 @@
   border-radius: var(--radius-sm);
 }
 
-.file-row-name {
+.nq-file-row-name {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -247,7 +247,7 @@
   color: var(--heading);
 }
 
-.file-row-button {
+.nq-file-row-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -261,6 +261,6 @@
   cursor: pointer;
 }
 
-.file-row-delete {
+.nq-file-row-delete {
   color: var(--danger);
 }

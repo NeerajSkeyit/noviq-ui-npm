@@ -525,10 +525,10 @@ function TableInner<T extends Record<string, any> = any>({
     isRowSelectionEnabled && pageRows.length > 0 && pageRows.every((row) => selectedRows.has(getRowId!(row)));
 
   const renderSortIcon = (columnId: string) => {
-    if (sort.column !== columnId) return <ArrowUpDown size={14} className="table-sort-icon" />;
+    if (sort.column !== columnId) return <ArrowUpDown size={14} className="nq-table-sort-icon" />;
     if (sort.direction === SORT_DIRECTION.ASC)
-      return <ArrowUp size={14} className="table-sort-icon table-sort-icon-active" />;
-    return <ArrowDown size={14} className="table-sort-icon table-sort-icon-active" />;
+      return <ArrowUp size={14} className="nq-table-sort-icon nq-table-sort-icon-active" />;
+    return <ArrowDown size={14} className="nq-table-sort-icon nq-table-sort-icon-active" />;
   };
 
   const ariaSortOf = (columnId: string): AriaSort => {
@@ -550,13 +550,13 @@ function TableInner<T extends Record<string, any> = any>({
 
   const stickyClass = (columnId: string): string => {
     if (!stickyOffsets.offsets[columnId]) return "";
-    if (columnId === stickyOffsets.boundary.left) return "table-cell-sticky table-cell-sticky-boundary-left";
-    if (columnId === stickyOffsets.boundary.right) return "table-cell-sticky table-cell-sticky-boundary-right";
-    return "table-cell-sticky";
+    if (columnId === stickyOffsets.boundary.left) return "nq-table-cell-sticky nq-table-cell-sticky-boundary-left";
+    if (columnId === stickyOffsets.boundary.right) return "nq-table-cell-sticky nq-table-cell-sticky-boundary-right";
+    return "nq-table-cell-sticky";
   };
 
   return (
-    <div className="table-wrapper">
+    <div className="nq-table-wrapper">
       <ActionBar
         isSearchHidden={isSearchHidden}
         searchValue={searchValue}
@@ -621,9 +621,9 @@ function TableInner<T extends Record<string, any> = any>({
         />
       )}
 
-      <div className="table-scroll-container">
+      <div className="nq-table-scroll-container">
         {isLoading && <LoadingOverlay />}
-        <table className="table" ref={tableRef}>
+        <table className="nq-table" ref={tableRef}>
           <thead>
             <tr>
               {renderColumns.map((column) => (
@@ -632,8 +632,8 @@ function TableInner<T extends Record<string, any> = any>({
                   ref={(el) => {
                     headerCells.current[column.id] = el;
                   }}
-                  className={`table-th ${column.sortable ? "table-th-sortable" : ""} ${
-                    column.align ? `table-align-${column.align}` : ""
+                  className={`nq-table-th ${column.sortable ? "nq-table-th-sortable" : ""} ${
+                    column.align ? `nq-table-align-${column.align}` : ""
                   } ${stickyClass(column.id)}`}
                   style={{ width: column.width, ...stickyStyle(column.id) }}
                   onClick={() => column.sortable && handleSort(column.id)}
@@ -652,7 +652,7 @@ function TableInner<T extends Record<string, any> = any>({
                   {column.id === TABLE_COLUMN_ID.SELECT ? (
                     <Checkbox checked={!!allSelected} onChange={handleSelectAll} aria-label={t("tableSelectAll")} />
                   ) : (
-                    <span className="table-th-content">
+                    <span className="nq-table-th-content">
                       {column.heading}
                       {column.sortable && renderSortIcon(column.id)}
                     </span>
@@ -669,7 +669,7 @@ function TableInner<T extends Record<string, any> = any>({
                     // Nothing has arrived yet. "No data found" would show through the
                     // translucent spinner overlay and read as a verdict, not a wait, so reserve
                     // the same space and say nothing.
-                    <div className="table-empty-state table-empty-state-pending" aria-hidden="true" />
+                    <div className="nq-table-empty-state nq-table-empty-state-pending" aria-hidden="true" />
                   ) : (
                     <EmptyState message={emptyMessage} />
                   )}
@@ -683,7 +683,7 @@ function TableInner<T extends Record<string, any> = any>({
                 return (
                 <tr
                   key={rowId ?? rowIndex}
-                  className={onRowClick ? "table-row-clickable" : ""}
+                  className={onRowClick ? "nq-table-row-clickable" : ""}
                   onClick={(e) => {
                     if (!onRowClick) return;
                     const target = e.target as HTMLElement;
@@ -729,7 +729,7 @@ function TableInner<T extends Record<string, any> = any>({
                     return (
                       <td
                         key={column.id}
-                        className={`${column.align ? `table-align-${column.align}` : ""} ${stickyClass(
+                        className={`${column.align ? `nq-table-align-${column.align}` : ""} ${stickyClass(
                           column.id
                         )}`}
                         style={stickyStyle(column.id)}

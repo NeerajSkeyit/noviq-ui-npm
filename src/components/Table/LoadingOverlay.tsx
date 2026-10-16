@@ -5,8 +5,8 @@ import "./LoadingOverlay.css";
 function LoadingOverlay() {
   const t = useText();
   return (
-    <div className="table-loading-overlay" role="status" aria-label={t("tableLoading")}>
-      <div className="table-spinner" />
+    <div className="nq-table-loading-overlay" role="status" aria-label={t("tableLoading")}>
+      <div className="nq-table-spinner" />
     </div>
   );
 }

@@ -137,7 +137,7 @@ describe("<Table serverSort>", () => {
     const user = userEvent.setup();
     renderTable({ serverSort: true });
     await loaded();
-    await user.click(document.querySelectorAll(".table-pagination-controls button")[2]);
+    await user.click(document.querySelectorAll(".nq-table-pagination-controls button")[2]);
     await waitFor(() => expect(lastParams()).toMatchObject({ page_no: 2 }));
     await new Promise((resolve) => setTimeout(resolve, 700)); // past the debounce
     expect(lastParams()).toMatchObject({ page_no: 2 });
@@ -147,7 +147,7 @@ describe("<Table serverSort>", () => {
     const user = userEvent.setup();
     renderTable({ serverSort: true });
     await loaded();
-    await user.click(document.querySelectorAll(".table-pagination-controls button")[2]); // next page
+    await user.click(document.querySelectorAll(".nq-table-pagination-controls button")[2]); // next page
     await waitFor(() => expect(lastParams()).toMatchObject({ page_no: 2 }));
 
     await user.click(header("Name"));

@@ -8,7 +8,7 @@ export interface BadgeProps extends React.ComponentPropsWithRef<"div"> {
 
 function Badge({ children, variant = BADGE_VARIANT.DEFAULT, className = "", ...props }: BadgeProps) {
   return (
-    <div className={`badge badge-${variant} ${className}`} {...props}>
+    <div className={`nq-badge nq-badge-${variant} ${className}`} {...props}>
       {children}
     </div>
   );

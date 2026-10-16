@@ -1,4 +1,4 @@
-.table-loading-overlay {
+.nq-table-loading-overlay {
   position: absolute;
   inset: 0;
   display: flex;
@@ -8,7 +8,7 @@
   z-index: 5;
 }
 
-.table-spinner {
+.nq-table-spinner {
   width: 28px;
   height: 28px;
   border: 3px solid var(--border-color);

@@ -1,14 +1,14 @@
-.checkbox-wrapper {
+.nq-checkbox-wrapper {
   display: inline-flex;
   align-items: center;
   cursor: pointer;
 }
 
-.checkbox-input {
+.nq-checkbox-input {
   display: none;
 }
 
-.checkbox-box {
+.nq-checkbox-box {
   width: 16px;
   height: 16px;
   border: 1px solid var(--primary);
@@ -20,16 +20,16 @@
   color: var(--light);
 }
 
-.checkbox-box-checked {
+.nq-checkbox-box-checked {
   background-color: var(--primary);
 }
 
-.checkbox-box-disabled {
+.nq-checkbox-box-disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.checkbox-icon {
+.nq-checkbox-icon {
   font-size: 12px;
   line-height: 1;
 }

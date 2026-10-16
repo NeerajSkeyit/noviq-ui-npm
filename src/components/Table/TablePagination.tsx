@@ -71,7 +71,7 @@ function TablePagination({
   }
 
   // The numbers are highlighted wherever the configured text puts them.
-  const highlight = (n: number) => <span className="table-pagination-highlight">{n}</span>;
+  const highlight = (n: number) => <span className="nq-table-pagination-highlight">{n}</span>;
   const summary = richText(t, "paginationSummary", {
     start: highlight(startItem),
     end: highlight(endItem),
@@ -79,14 +79,14 @@ function TablePagination({
   });
 
   return (
-    <div className="table-pagination">
+    <div className="nq-table-pagination">
       <div className="table-pagination-left">
-        <span className="table-pagination-text">{summary}</span>
+        <span className="nq-table-pagination-text">{summary}</span>
       </div>
 
-      <div className="table-pagination-right">
-        <div className="table-pagination-page-size">
-          <span className="table-pagination-text">{t("paginationRowsPerPage")}</span>
+      <div className="nq-table-pagination-right">
+        <div className="nq-table-pagination-page-size">
+          <span className="nq-table-pagination-text">{t("paginationRowsPerPage")}</span>
           <ReactSelect<PageSizeOption, false>
             {...selectEscapeGuard}
             classNamePrefix="rs"
@@ -105,8 +105,8 @@ function TablePagination({
         </div>
 
         {totalPages > 1 ? (
-          <div className="table-pagination-controls">
-            <span className="table-pagination-page-info">
+          <div className="nq-table-pagination-controls">
+            <span className="nq-table-pagination-page-info">
               {t("paginationPage", { page, pages: totalPages })}
             </span>
 

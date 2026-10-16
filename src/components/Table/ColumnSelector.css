@@ -1,10 +1,10 @@
-.column-selector-list {
+.nq-column-selector-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.column-selector-row {
+.nq-column-selector-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -14,20 +14,20 @@
   transition: background-color 0.2s ease;
 }
 
-.column-selector-row:hover {
+.nq-column-selector-row:hover {
   background-color: var(--surface-hover);
 }
 
-.column-selector-row-active {
+.nq-column-selector-row-active {
   background-color: var(--surface-hover);
 }
 
-.column-selector-grip {
+.nq-column-selector-grip {
   color: var(--muted);
   flex-shrink: 0;
 }
 
-.column-selector-label {
+.nq-column-selector-label {
   flex: 1;
   font-size: var(--font-size);
   color: var(--heading);
@@ -36,7 +36,7 @@
   white-space: nowrap;
 }
 
-.column-selector-sticky-btn {
+.nq-column-selector-sticky-btn {
   padding: 4px;
   border-radius: var(--radius-sm);
   border: none;
@@ -48,35 +48,35 @@
   align-items: center;
 }
 
-.column-selector-sticky-btn:hover {
+.nq-column-selector-sticky-btn:hover {
   color: var(--heading);
 }
 
-.column-selector-sticky-active {
+.nq-column-selector-sticky-active {
   color: var(--primary);
   background-color: rgba(2, 105, 155, 0.1);
 }
 
-.column-selector-sticky-indicator {
+.nq-column-selector-sticky-indicator {
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.column-selector-sticky-letter {
+.nq-column-selector-sticky-letter {
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
 }
 
-.column-selector-visibility {
+.nq-column-selector-visibility {
   display: flex;
   align-items: center;
   gap: 8px;
   color: var(--muted);
 }
 
-.column-selector-legend {
+.nq-column-selector-legend {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -86,13 +86,13 @@
   width: 100%;
 }
 
-.column-selector-legend-item {
+.nq-column-selector-legend-item {
   display: flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
 }
 
-.column-selector-legend button {
+.nq-column-selector-legend button {
   margin-left: auto;
 }

@@ -1,4 +1,4 @@
-.label {
+.nq-label {
   font-size: var(--font-size);
   font-weight: 500;
   line-height: 1;
@@ -6,7 +6,7 @@
   color: var(--heading);
 }
 
-.label-disabled {
+.nq-label-disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }

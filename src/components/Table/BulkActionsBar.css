@@ -1,4 +1,4 @@
-.bulk-actions-bar {
+.nq-bulk-actions-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7,19 +7,19 @@
   border-bottom: 1px solid rgba(2, 105, 155, 0.2);
 }
 
-.bulk-actions-left {
+.nq-bulk-actions-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.bulk-actions-text {
+.nq-bulk-actions-text {
   font-size: var(--font-size);
   font-weight: 500;
   color: var(--primary);
 }
 
-.bulk-actions-clear {
+.nq-bulk-actions-clear {
   font-size: 12px;
   color: var(--muted);
   display: flex;
@@ -31,11 +31,11 @@
   transition: color 0.2s ease;
 }
 
-.bulk-actions-clear:hover {
+.nq-bulk-actions-clear:hover {
   color: var(--heading);
 }
 
-.bulk-actions-right {
+.nq-bulk-actions-right {
   display: flex;
   align-items: center;
   gap: 8px;

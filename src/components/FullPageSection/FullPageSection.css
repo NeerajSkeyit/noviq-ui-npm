@@ -1,10 +1,10 @@
-.full-page-section {
+.nq-full-page-section {
   display: flex;
   min-height: 100vh;
   background-color: var(--secondary-background);
 }
 
-.full-page-section-main {
+.nq-full-page-section-main {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -12,14 +12,14 @@
   min-width: 0;
 }
 
-.full-page-section-content {
+.nq-full-page-section-content {
   flex: 1;
   display: flex;
   justify-content: center;
   padding: 0;
 }
 
-.full-page-section-card {
+.nq-full-page-section-card {
   width: 100%;
   box-sizing: border-box;
   background-color: var(--light);
@@ -30,14 +30,14 @@
     0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.full-page-section-header {
+.nq-full-page-section-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-.full-page-section-title {
+.nq-full-page-section-title {
   margin: 0;
   font-size: 20px;
   line-height: 1.4;
@@ -46,13 +46,13 @@
   text-align: left;
 }
 
-.full-page-section-subtitle {
+.nq-full-page-section-subtitle {
   margin: 4px 0 0;
   font-size: 12px;
   color: var(--muted);
 }
 
-.full-page-section-footer {
+.nq-full-page-section-footer {
   position: sticky;
   bottom: 0;
   display: flex;
@@ -65,7 +65,7 @@
 }
 
 @media (max-width: 640px) {
-  .full-page-section-card {
+  .nq-full-page-section-card {
     padding: 16px;
     border-radius: 0;
   }

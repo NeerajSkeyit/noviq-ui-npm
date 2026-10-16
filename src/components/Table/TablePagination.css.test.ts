@@ -15,21 +15,21 @@ function rule(selector: string, source = css): string {
 
 describe("TablePagination.css", () => {
   it("lets the right-hand controls wrap instead of overflowing the clipped table wrapper", () => {
-    expect(rule(".table-pagination-right")).toMatch(/flex-wrap:\s*wrap/);
-    expect(rule(".table-pagination-right")).toMatch(/min-width:\s*0/);
+    expect(rule(".nq-table-pagination-right")).toMatch(/flex-wrap:\s*wrap/);
+    expect(rule(".nq-table-pagination-right")).toMatch(/min-width:\s*0/);
   });
 
   it("lets the page label + buttons group wrap too (320px phones)", () => {
-    expect(rule(".table-pagination-controls")).toMatch(/flex-wrap:\s*wrap/);
+    expect(rule(".nq-table-pagination-controls")).toMatch(/flex-wrap:\s*wrap/);
   });
 
   it("gives the page label its own row on the narrowest phones so the buttons stay together", () => {
     const narrowest = css.slice(css.indexOf("@media (max-width: 400px)"));
-    expect(narrowest).toMatch(/\.table-pagination-page-info\s*\{[^}]*flex-basis:\s*100%/);
+    expect(narrowest).toMatch(/\.nq-table-pagination-page-info\s*\{[^}]*flex-basis:\s*100%/);
   });
 
   it("keeps the outer bar wrapping too", () => {
-    expect(rule(".table-pagination")).toMatch(/flex-wrap:\s*wrap/);
+    expect(rule(".nq-table-pagination")).toMatch(/flex-wrap:\s*wrap/);
   });
 
   it("stacks the bar on narrow screens", () => {

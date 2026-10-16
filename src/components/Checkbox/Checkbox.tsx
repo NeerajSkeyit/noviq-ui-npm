@@ -13,14 +13,14 @@ export interface CheckboxProps {
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ checked, onChange, disabled = false, "aria-label": ariaLabel, ...props }, ref) => {
     return (
-      <label className="checkbox-wrapper">
+      <label className="nq-checkbox-wrapper">
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
           ref={ref}
-          className="checkbox-input"
+          className="nq-checkbox-input"
           // Hidden by the `hidden` attribute (the browser's own `display: none`) rather than only
           // by our stylesheet, so an app that forgot `style.css` doesn't expose two checkboxes.
           hidden
@@ -50,9 +50,9 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               onChange(!checked);
             }
           }}
-          className={`checkbox-box ${checked ? "checkbox-box-checked" : ""} ${disabled ? "checkbox-box-disabled" : ""}`}
+          className={`nq-checkbox-box ${checked ? "nq-checkbox-box-checked" : ""} ${disabled ? "nq-checkbox-box-disabled" : ""}`}
         >
-          {checked && <span className="checkbox-icon">✓</span>}
+          {checked && <span className="nq-checkbox-icon">✓</span>}
         </div>
       </label>
     );

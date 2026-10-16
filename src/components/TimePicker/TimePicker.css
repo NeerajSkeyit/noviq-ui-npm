@@ -1,9 +1,9 @@
-.time-picker {
+.nq-time-picker {
   position: relative;
   width: 100%;
 }
 
-.time-picker-trigger {
+.nq-time-picker-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -25,33 +25,33 @@
   transition: border-color 0.2s;
 }
 
-.time-picker-trigger:focus-visible,
-.time-picker-trigger[aria-expanded="true"] {
+.nq-time-picker-trigger:focus-visible,
+.nq-time-picker-trigger[aria-expanded="true"] {
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(2, 105, 155, 0.2);
 }
 
-.time-picker-trigger:disabled {
+.nq-time-picker-trigger:disabled {
   background-color: var(--secondary-background);
   color: var(--muted);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.time-picker-trigger.time-picker-error {
+.nq-time-picker-trigger.nq-time-picker-error {
   border-color: var(--danger);
 }
 
-.time-picker-value {
+.nq-time-picker-value {
   font-variant-numeric: tabular-nums;
 }
 
-.time-picker-value.is-placeholder {
+.nq-time-picker-value.nq-is-placeholder {
   color: var(--muted);
 }
 
 /* Sits over the trigger's clock icon once a time is chosen. */
-.time-picker-clear {
+.nq-time-picker-clear {
   position: absolute;
   top: 50%;
   right: 8px;
@@ -69,12 +69,12 @@
   cursor: pointer;
 }
 
-.time-picker-clear:hover {
+.nq-time-picker-clear:hover {
   color: var(--heading);
   background: var(--secondary-background);
 }
 
-.time-picker-dropdown {
+.nq-time-picker-dropdown {
   z-index: 1510;
   display: flex;
   background: var(--light);
@@ -84,16 +84,16 @@
   overflow: hidden;
 }
 
-.time-picker-column {
+.nq-time-picker-column {
   width: 64px;
   border-right: 1px solid var(--border-color);
 }
 
-.time-picker-column:last-child {
+.nq-time-picker-column:last-child {
   border-right: none;
 }
 
-.time-picker-column-label {
+.nq-time-picker-column-label {
   padding: 6px;
   border-bottom: 1px solid var(--border-color);
   font-size: 12px;
@@ -102,7 +102,7 @@
   color: var(--muted);
 }
 
-.time-picker-option {
+.nq-time-picker-option {
   padding: 6px;
   font-size: 13px;
   text-align: center;
@@ -111,16 +111,16 @@
   font-variant-numeric: tabular-nums;
 }
 
-.time-picker-option:hover,
-.time-picker-option.is-focused {
+.nq-time-picker-option:hover,
+.nq-time-picker-option.nq-is-focused {
   background: var(--surface-hover);
 }
 
-.time-picker-option.is-selected {
+.nq-time-picker-option.nq-is-selected {
   background: var(--primary);
   color: var(--light);
 }
 
-.time-picker-option.is-selected.is-focused {
+.nq-time-picker-option.nq-is-selected.nq-is-focused {
   background: var(--primary-hover);
 }
