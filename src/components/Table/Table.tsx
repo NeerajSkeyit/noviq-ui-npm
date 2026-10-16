@@ -18,6 +18,7 @@ import { buildActiveFilter, type FilterConfig, type ActiveFilter } from "./build
 import { useTableColumnSettings } from "./useTableColumnSettings";
 import {
   ACTIONS_COLUMN_WIDTH,
+  ARIA_SORT,
   CELL_TYPE,
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_EXPORT_FILE_BASE,
@@ -25,11 +26,13 @@ import {
   DEFAULT_PAGE_SIZE_OPTIONS,
   DEFAULT_REQUEST_PARAMS,
   DEFAULT_SORT_REQUEST_PARAMS,
+  KEY,
   NO_TEXT_PLACEHOLDER,
   SEARCH_DEBOUNCE_MS,
   SELECT_COLUMN_WIDTH,
   SORT_DIRECTION,
   TABLE_COLUMN_ID,
+  type AriaSort,
   type CellType,
   type ColumnAlign,
   type SortDirection,
@@ -528,6 +531,12 @@ function TableInner<T extends Record<string, any> = any>({
     return <ArrowDown size={14} className="table-sort-icon table-sort-icon-active" />;
   };
 
+  const ariaSortOf = (columnId: string): AriaSort => {
+    if (sort.column !== columnId) return ARIA_SORT.NONE;
+    if (sort.direction === SORT_DIRECTION.ASC) return ARIA_SORT.ASCENDING;
+    return sort.direction === SORT_DIRECTION.DESC ? ARIA_SORT.DESCENDING : ARIA_SORT.NONE;
+  };
+
   const stickyStyle = (columnId: string): React.CSSProperties | undefined => {
     const offset = stickyOffsets.offsets[columnId];
     if (!offset) return undefined;
@@ -628,9 +637,20 @@ function TableInner<T extends Record<string, any> = any>({
                   } ${stickyClass(column.id)}`}
                   style={{ width: column.width, ...stickyStyle(column.id) }}
                   onClick={() => column.sortable && handleSort(column.id)}
+                  aria-sort={column.sortable ? ariaSortOf(column.id) : undefined}
+                  tabIndex={column.sortable ? 0 : undefined}
+                  onKeyDown={
+                    column.sortable
+                      ? (e) => {
+                          if (e.key !== KEY.ENTER && e.key !== KEY.SPACE) return;
+                          e.preventDefault(); // Space would otherwise scroll the page
+                          handleSort(column.id);
+                        }
+                      : undefined
+                  }
                 >
                   {column.id === TABLE_COLUMN_ID.SELECT ? (
-                    <Checkbox checked={!!allSelected} onChange={handleSelectAll} />
+                    <Checkbox checked={!!allSelected} onChange={handleSelectAll} aria-label={t("tableSelectAll")} />
                   ) : (
                     <span className="table-th-content">
                       {column.heading}
@@ -682,6 +702,7 @@ function TableInner<T extends Record<string, any> = any>({
                           <Checkbox
                             checked={isSelected}
                             onChange={(checked) => rowId && handleRowSelect(rowId, checked)}
+                            aria-label={t("tableSelectRow")}
                           />
                         </td>
                       );

@@ -257,6 +257,13 @@ export const SORT_DIRECTION = {
   DESC: "desc",
 } as const;
 export type SortDirection = ValueOf<typeof SORT_DIRECTION>;
+/** @internal `aria-sort` values, by what a column's sort state is. */
+export const ARIA_SORT = {
+  ASCENDING: "ascending",
+  DESCENDING: "descending",
+  NONE: "none",
+} as const;
+export type AriaSort = ValueOf<typeof ARIA_SORT>;
 
 /** Which edge a column is pinned to. */
 export const STICKY_POSITION = {
@@ -447,6 +454,8 @@ export const DEFAULT_TEXT = {
   tableEmpty: "No data found",
   tableLoading: "Loading",
   tableActionsHeading: "Actions",
+  tableSelectAll: "Select all rows",
+  tableSelectRow: "Select row",
   paginationSummary: "Showing {start} to {end} of {total} results",
   paginationRowsPerPage: "Rows per page:",
   paginationPage: "Page {page} of {pages}",

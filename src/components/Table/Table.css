@@ -33,6 +33,12 @@
   cursor: pointer;
 }
 
+/* Sortable headers are keyboard-reachable; show where focus is. */
+.table-th-sortable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
 .table-th-content {
   display: inline-flex;
   align-items: center;

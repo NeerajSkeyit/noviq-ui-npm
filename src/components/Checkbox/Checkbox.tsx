@@ -6,10 +6,12 @@ export interface CheckboxProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  /** Names the checkbox for assistive technology — it has no visible label of its own. */
+  "aria-label"?: string;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ checked, onChange, disabled = false, ...props }, ref) => {
+  ({ checked, onChange, disabled = false, "aria-label": ariaLabel, ...props }, ref) => {
     return (
       <label className="checkbox-wrapper">
         <input
@@ -31,6 +33,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             keyboard support instead. */}
         <div
           role="checkbox"
+          aria-label={ariaLabel}
           aria-checked={checked}
           aria-disabled={disabled}
           tabIndex={disabled ? -1 : 0}
