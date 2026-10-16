@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import ActionBar, { type ActionBarAction } from "./ActionBar";
@@ -203,21 +203,57 @@ function TableInner<T extends Record<string, any> = any>({
     return cols;
   }, [displayColumns, isRowSelectionEnabled, rowActions, t]);
 
+  const isStickyLeft = (col: TableColumn<T>) =>
+    col.id === TABLE_COLUMN_ID.SELECT || columnSettings.stickyColumns.left.includes(col.id);
+  const isStickyRight = (col: TableColumn<T>) =>
+    col.id === TABLE_COLUMN_ID.ACTIONS || columnSettings.stickyColumns.right.includes(col.id);
+  const hasStickyColumns = renderColumns.some((col) => isStickyLeft(col) || isStickyRight(col));
+
+  // A pinned column sits at the summed width of the pinned columns before it, so those widths
+  // have to be right. `width` is only a hint (and 140 is a guess when it is absent), so while
+  // anything is pinned the header cells are measured after layout and whenever the table
+  // resizes. A column that can't be measured (not laid out yet, a hidden container, no
+  // ResizeObserver) falls back to its declared width.
+  const tableRef = useRef<HTMLTableElement>(null);
+  const headerCells = useRef<Record<string, HTMLTableCellElement | null>>({});
+  const [measuredWidths, setMeasuredWidths] = useState<Record<string, number>>({});
+
+  const measureHeaders = useCallback(() => {
+    const next: Record<string, number> = {};
+    for (const [id, cell] of Object.entries(headerCells.current)) {
+      const width = cell ? cell.getBoundingClientRect().width : 0;
+      if (width > 0) next[id] = Math.round(width * 100) / 100;
+    }
+    setMeasuredWidths((prev) => {
+      const ids = Object.keys(next);
+      const unchanged = ids.length === Object.keys(prev).length && ids.every((id) => prev[id] === next[id]);
+      return unchanged ? prev : next; // no new state, no re-render, no loop
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (hasStickyColumns) measureHeaders();
+  }); // after every render: a width can change with the rows, a locale, a font
+
+  useEffect(() => {
+    if (!hasStickyColumns || typeof ResizeObserver === "undefined" || !tableRef.current) return;
+    const observer = new ResizeObserver(measureHeaders);
+    observer.observe(tableRef.current);
+    return () => observer.disconnect();
+  }, [hasStickyColumns, measureHeaders]);
+
   const stickyOffsets = useMemo(() => {
     const offsets: Record<string, { left?: number; right?: number }> = {};
     let lastLeftId: string | null = null;
     let lastRightId: string | null = null;
 
-    const isStickyLeft = (col: TableColumn<T>) =>
-      col.id === TABLE_COLUMN_ID.SELECT || columnSettings.stickyColumns.left.includes(col.id);
-    const isStickyRight = (col: TableColumn<T>) =>
-      col.id === TABLE_COLUMN_ID.ACTIONS || columnSettings.stickyColumns.right.includes(col.id);
+    const widthOf = (col: TableColumn<T>) => measuredWidths[col.id] ?? columnWidthPx(col.width);
 
     let leftAcc = 0;
     for (const col of renderColumns) {
       if (isStickyLeft(col)) {
         offsets[col.id] = { left: leftAcc };
-        leftAcc += columnWidthPx(col.width);
+        leftAcc += widthOf(col);
         lastLeftId = col.id;
       }
     }
@@ -227,13 +263,14 @@ function TableInner<T extends Record<string, any> = any>({
       const col = renderColumns[i];
       if (isStickyRight(col)) {
         offsets[col.id] = { ...offsets[col.id], right: rightAcc };
-        rightAcc += columnWidthPx(col.width);
+        rightAcc += widthOf(col);
         lastRightId = col.id;
       }
     }
 
     return { offsets, boundary: { left: lastLeftId, right: lastRightId } };
-  }, [renderColumns, columnSettings.stickyColumns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderColumns, columnSettings.stickyColumns, measuredWidths]);
 
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
@@ -577,12 +614,15 @@ function TableInner<T extends Record<string, any> = any>({
 
       <div className="table-scroll-container">
         {isLoading && <LoadingOverlay />}
-        <table className="table">
+        <table className="table" ref={tableRef}>
           <thead>
             <tr>
               {renderColumns.map((column) => (
                 <th
                   key={column.id}
+                  ref={(el) => {
+                    headerCells.current[column.id] = el;
+                  }}
                   className={`table-th ${column.sortable ? "table-th-sortable" : ""} ${
                     column.align ? `table-align-${column.align}` : ""
                   } ${stickyClass(column.id)}`}
