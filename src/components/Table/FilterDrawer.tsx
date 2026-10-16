@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "../Icon/Icon";
 import Button from "../Button/Button";
 import Drawer from "../Drawer/Drawer";
 import ScrollArea from "../ScrollArea/ScrollArea";

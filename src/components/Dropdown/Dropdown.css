@@ -1,10 +1,10 @@
 .nq-dropdown-content {
   margin-top: 4px;
   min-width: 160px;
-  background: var(--light);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--nq-light);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius);
+  box-shadow: var(--nq-shadow);
   padding: 4px;
 }
 
@@ -13,19 +13,19 @@
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  font-size: var(--font-size);
-  border-radius: var(--radius-sm);
+  font-size: var(--nq-font-size);
+  border-radius: var(--nq-radius-sm);
   cursor: pointer;
   transition: background-color 0.15s ease;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-dropdown-item:hover {
-  background-color: var(--surface-hover);
+  background-color: var(--nq-surface-hover);
 }
 
 .nq-dropdown-item-destructive {
-  color: var(--danger);
+  color: var(--nq-danger);
 }
 
 .nq-dropdown-item-destructive:hover {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X } from "../Icon/Icon";
 import Button from "../Button/Button";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";

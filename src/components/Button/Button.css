@@ -3,8 +3,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: var(--radius);
-  font-size: var(--font-size);
+  border-radius: var(--nq-radius);
+  font-size: var(--nq-font-size);
   font-weight: 500;
   cursor: pointer;
   transition: 0.2s ease;
@@ -23,55 +23,55 @@
 }
 
 .nq-btn-default {
-  background-color: var(--primary);
-  color: var(--light);
+  background-color: var(--nq-primary);
+  color: var(--nq-light);
 }
 
 .nq-btn-default:hover:not(:disabled) {
-  background-color: var(--primary-hover);
+  background-color: var(--nq-primary-hover);
 }
 
 .nq-btn-destructive {
-  background-color: var(--danger);
-  color: var(--light);
+  background-color: var(--nq-danger);
+  color: var(--nq-light);
 }
 
 .nq-btn-destructive:hover:not(:disabled) {
-  background-color: var(--danger-hover);
+  background-color: var(--nq-danger-hover);
 }
 
 .nq-btn-outline {
   background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--heading);
+  border: 1px solid var(--nq-border-color);
+  color: var(--nq-heading);
 }
 
 .nq-btn-outline:hover:not(:disabled) {
-  background-color: var(--surface-hover);
-  color: var(--primary);
+  background-color: var(--nq-surface-hover);
+  color: var(--nq-primary);
 }
 
 .nq-btn-secondary {
-  background-color: var(--muted);
-  color: var(--light);
+  background-color: var(--nq-muted);
+  color: var(--nq-light);
 }
 
 .nq-btn-secondary:hover:not(:disabled) {
-  background-color: var(--muted-hover);
+  background-color: var(--nq-muted-hover);
 }
 
 .nq-btn-ghost {
   background: transparent;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-btn-ghost:hover:not(:disabled) {
-  background-color: var(--surface-hover);
+  background-color: var(--nq-surface-hover);
 }
 
 .nq-btn-link {
   background: none;
-  color: var(--primary);
+  color: var(--nq-primary);
   text-decoration: underline;
   padding: 0;
   height: auto;

@@ -1,6 +1,6 @@
 import React, { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Clock, X } from "lucide-react";
+import { Clock, X } from "../Icon/Icon";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import { useConfiguredTimePattern } from "../../hooks/useDateTimeFormats";

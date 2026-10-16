@@ -12,12 +12,12 @@
   height: 40px;
   padding: 8px 12px;
   box-sizing: border-box;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background-color: var(--light);
-  color: var(--heading);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius-sm);
+  background-color: var(--nq-light);
+  color: var(--nq-heading);
   font-family: inherit;
-  font-size: var(--font-size);
+  font-size: var(--nq-font-size);
   line-height: 1.25rem;
   text-align: left;
   cursor: pointer;
@@ -27,19 +27,19 @@
 
 .nq-time-picker-trigger:focus-visible,
 .nq-time-picker-trigger[aria-expanded="true"] {
-  border-color: var(--primary);
+  border-color: var(--nq-primary);
   box-shadow: 0 0 0 2px rgba(2, 105, 155, 0.2);
 }
 
 .nq-time-picker-trigger:disabled {
-  background-color: var(--secondary-background);
-  color: var(--muted);
+  background-color: var(--nq-secondary-background);
+  color: var(--nq-muted);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .nq-time-picker-trigger.nq-time-picker-error {
-  border-color: var(--danger);
+  border-color: var(--nq-danger);
 }
 
 .nq-time-picker-value {
@@ -47,7 +47,7 @@
 }
 
 .nq-time-picker-value.nq-is-placeholder {
-  color: var(--muted);
+  color: var(--nq-muted);
 }
 
 /* Sits over the trigger's clock icon once a time is chosen. */
@@ -64,29 +64,29 @@
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: var(--light);
-  color: var(--muted);
+  background: var(--nq-light);
+  color: var(--nq-muted);
   cursor: pointer;
 }
 
 .nq-time-picker-clear:hover {
-  color: var(--heading);
-  background: var(--secondary-background);
+  color: var(--nq-heading);
+  background: var(--nq-secondary-background);
 }
 
 .nq-time-picker-dropdown {
   z-index: 1510;
   display: flex;
-  background: var(--light);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--nq-light);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius);
+  box-shadow: var(--nq-shadow);
   overflow: hidden;
 }
 
 .nq-time-picker-column {
   width: 64px;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--nq-border-color);
 }
 
 .nq-time-picker-column:last-child {
@@ -95,32 +95,32 @@
 
 .nq-time-picker-column-label {
   padding: 6px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--nq-border-color);
   font-size: 12px;
   font-weight: 600;
   text-align: center;
-  color: var(--muted);
+  color: var(--nq-muted);
 }
 
 .nq-time-picker-option {
   padding: 6px;
   font-size: 13px;
   text-align: center;
-  color: var(--heading);
+  color: var(--nq-heading);
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
 
 .nq-time-picker-option:hover,
 .nq-time-picker-option.nq-is-focused {
-  background: var(--surface-hover);
+  background: var(--nq-surface-hover);
 }
 
 .nq-time-picker-option.nq-is-selected {
-  background: var(--primary);
-  color: var(--light);
+  background: var(--nq-primary);
+  color: var(--nq-light);
 }
 
 .nq-time-picker-option.nq-is-selected.nq-is-focused {
-  background: var(--primary-hover);
+  background: var(--nq-primary-hover);
 }

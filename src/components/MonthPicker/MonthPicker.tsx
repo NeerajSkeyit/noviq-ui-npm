@@ -1,6 +1,6 @@
 import React, { useCallback, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "../Icon/Icon";
 import PickerField from "../PickerField/PickerField";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { useText } from "../../hooks/useText";

@@ -11,22 +11,22 @@
 }
 
 .nq-badge-default {
-  background-color: var(--primary);
-  color: var(--light);
+  background-color: var(--nq-primary);
+  color: var(--nq-light);
 }
 
 .nq-badge-secondary {
-  background-color: var(--muted);
-  color: var(--light);
+  background-color: var(--nq-muted);
+  color: var(--nq-light);
 }
 
 .nq-badge-destructive {
-  background-color: var(--danger);
-  color: var(--light);
+  background-color: var(--nq-danger);
+  color: var(--nq-light);
 }
 
 .nq-badge-outline {
   background: transparent;
-  border-color: var(--border-color);
-  color: var(--heading);
+  border-color: var(--nq-border-color);
+  color: var(--nq-heading);
 }

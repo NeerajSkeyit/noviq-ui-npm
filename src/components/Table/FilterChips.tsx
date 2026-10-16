@@ -1,5 +1,5 @@
 import React from "react";
-import { X } from "lucide-react";
+import { X } from "../Icon/Icon";
 import type { ActiveFilter } from "./buildActiveFilter";
 import { BUTTON_TYPE } from "../../constants";
 import { useText } from "../../hooks/useText";

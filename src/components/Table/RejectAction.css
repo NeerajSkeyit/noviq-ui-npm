@@ -5,15 +5,15 @@
 
 .nq-reject-action-popover {
   width: 320px;
-  background: var(--light);
+  background: var(--nq-light);
   border-radius: 14px;
   padding: 18px;
-  box-shadow: var(--shadow);
-  animation: reject-action-fade-up 0.15s ease;
+  box-shadow: var(--nq-shadow);
+  animation: nq-reject-action-fade-up 0.15s ease;
   text-align: right;
 }
 
-@keyframes reject-action-fade-up {
+@keyframes nq-reject-action-fade-up {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -29,7 +29,7 @@
   font-size: 16px;
   font-weight: 600;
   text-align: left;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-reject-action-popover textarea {
@@ -37,9 +37,9 @@
   min-height: 90px;
   resize: none;
   border-radius: 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--nq-border-color);
   padding: 8px 14px;
-  font-size: var(--font-size);
+  font-size: var(--nq-font-size);
   margin-bottom: 14px;
   font-family: inherit;
   box-sizing: border-box;
@@ -47,11 +47,11 @@
 
 .nq-reject-action-popover textarea:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--nq-primary);
 }
 
 .nq-reject-action-error {
-  color: var(--danger);
+  color: var(--nq-danger);
   font-size: 12px;
   margin: -10px 0 10px 0;
   text-align: left;

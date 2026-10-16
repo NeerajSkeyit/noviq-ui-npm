@@ -5,17 +5,17 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 12px 16px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--nq-border-color);
 }
 
 .nq-table-pagination-text {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--nq-muted);
 }
 
 .nq-table-pagination-highlight {
   font-weight: 600;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-table-pagination-right {
@@ -62,7 +62,7 @@
 
 .nq-table-pagination-page-info {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--nq-muted);
   margin-right: 6px;
   white-space: nowrap;
 }

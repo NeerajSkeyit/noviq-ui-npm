@@ -11,17 +11,17 @@
 .nq-checkbox-box {
   width: 16px;
   height: 16px;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--nq-primary);
+  border-radius: var(--nq-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease;
-  color: var(--light);
+  color: var(--nq-light);
 }
 
 .nq-checkbox-box-checked {
-  background-color: var(--primary);
+  background-color: var(--nq-primary);
 }
 
 .nq-checkbox-box-disabled {

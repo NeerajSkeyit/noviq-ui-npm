@@ -1,5 +1,5 @@
 import React from "react";
-import { Inbox } from "lucide-react";
+import { Inbox } from "../Icon/Icon";
 import { useText } from "../../hooks/useText";
 import "./EmptyState.css";
 

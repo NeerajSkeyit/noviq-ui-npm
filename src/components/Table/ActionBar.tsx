@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search } from "../Icon/Icon";
 import Button from "../Button/Button";
 import { DropdownMenu, DropdownMenuItem } from "../Dropdown/Dropdown";
 import { ACTION_ID, BUTTON_SIZE, BUTTON_VARIANT, HOTKEY } from "../../constants";

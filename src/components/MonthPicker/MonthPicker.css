@@ -3,11 +3,11 @@
   width: 240px;
   padding: 10px;
   box-sizing: border-box;
-  background: var(--light);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: var(--heading);
+  background: var(--nq-light);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius);
+  box-shadow: var(--nq-shadow);
+  color: var(--nq-heading);
   font-size: 13px;
 }
 
@@ -25,15 +25,15 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--light);
-  color: var(--heading);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius-sm);
+  background: var(--nq-light);
+  color: var(--nq-heading);
   cursor: pointer;
 }
 
 .nq-month-picker-nav:hover:not(:disabled) {
-  background: var(--surface-hover);
+  background: var(--nq-surface-hover);
 }
 
 .nq-month-picker-nav:disabled {
@@ -64,16 +64,16 @@
   justify-content: center;
   height: 36px;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--nq-radius-sm);
   cursor: pointer;
 }
 
 .nq-month-picker-month:hover:not(.nq-is-disabled) {
-  background: var(--surface-hover);
+  background: var(--nq-surface-hover);
 }
 
 .nq-month-picker-month.nq-is-current {
-  border-color: var(--primary);
+  border-color: var(--nq-primary);
 }
 
 .nq-month-picker-month.nq-is-focused {
@@ -81,8 +81,8 @@
 }
 
 .nq-month-picker-month.nq-is-selected {
-  background: var(--primary);
-  color: var(--light);
+  background: var(--nq-primary);
+  color: var(--nq-light);
 }
 
 .nq-month-picker-month.nq-is-disabled {

@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import ReactSelect, { type StylesConfig } from "react-select";
-import { Eye, EyeOff, FileText, Trash2, Upload, X } from "lucide-react";
+import { Eye, EyeOff, FileText, Trash2, Upload, X } from "../Icon/Icon";
 import Label from "../Label/Label";
 import Switch from "../Switch/Switch";
 import DatePicker from "../DatePicker/DatePicker";
@@ -108,13 +108,13 @@ function customSelectStyles(error?: string): StylesConfig<InputOption, boolean> 
       ...base,
       minHeight: "40px",
       borderRadius: "4px",
-      border: `1px solid ${error ? "var(--danger)" : "var(--border-color)"}`,
+      border: `1px solid ${error ? "var(--nq-danger)" : "var(--nq-border-color)"}`,
       boxShadow: "none",
       padding: "0",
       opacity: state.isDisabled ? 0.5 : 1,
-      backgroundColor: state.isDisabled ? "var(--secondary-background)" : "var(--light)",
+      backgroundColor: state.isDisabled ? "var(--nq-secondary-background)" : "var(--nq-light)",
       "&:hover": {
-        border: `1px solid ${error ? "var(--danger)" : "var(--border-color)"}`,
+        border: `1px solid ${error ? "var(--nq-danger)" : "var(--nq-border-color)"}`,
       },
       ...(state.isFocused && { outline: "none" }),
     }),
@@ -138,7 +138,7 @@ function customSelectStyles(error?: string): StylesConfig<InputOption, boolean> 
       padding: "6px 12px",
       borderRadius: "4px",
       backgroundColor: state.isSelected
-        ? "var(--border-color)"
+        ? "var(--nq-border-color)"
         : state.isFocused
           ? "#f3f4f6"
           : "#fff",
@@ -153,14 +153,14 @@ function customSelectStyles(error?: string): StylesConfig<InputOption, boolean> 
     }),
     multiValueLabel: (base) => ({
       ...base,
-      color: "var(--primary)",
+      color: "var(--nq-primary)",
       padding: "1px 3px",
       fontWeight: 500,
     }),
     multiValueRemove: (base) => ({
       ...base,
-      color: "var(--primary)",
-      ":hover": { backgroundColor: "transparent", color: "var(--danger)" },
+      color: "var(--nq-primary)",
+      ":hover": { backgroundColor: "transparent", color: "var(--nq-danger)" },
     }),
   };
 }

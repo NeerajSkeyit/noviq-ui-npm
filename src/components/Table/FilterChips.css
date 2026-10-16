@@ -4,7 +4,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--nq-border-color);
 }
 
 .nq-filter-chip {
@@ -12,15 +12,15 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  background-color: var(--surface-hover);
+  border-radius: var(--nq-radius-sm);
+  background-color: var(--nq-surface-hover);
   font-size: 12px;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-filter-chip-label {
   font-weight: 500;
-  color: var(--primary);
+  color: var(--nq-primary);
 }
 
 /* The chip's text as a button (when chips are clickable): looks like the plain chip. */
@@ -47,17 +47,17 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--muted);
+  color: var(--nq-muted);
   padding: 0;
 }
 
 .nq-filter-chip-remove:hover {
-  color: var(--danger);
+  color: var(--nq-danger);
 }
 
 .nq-filter-chips-clear-all {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--nq-muted);
   background: none;
   border: none;
   cursor: pointer;
@@ -65,5 +65,5 @@
 }
 
 .nq-filter-chips-clear-all:hover {
-  color: var(--heading);
+  color: var(--nq-heading);
 }

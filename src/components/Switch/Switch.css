@@ -3,7 +3,7 @@
   width: 44px;
   height: 24px;
   border-radius: 999px;
-  background-color: var(--border-color);
+  background-color: var(--nq-border-color);
   cursor: pointer;
   transition: background-color 0.2s ease;
   display: inline-flex;
@@ -12,7 +12,7 @@
 }
 
 .nq-switch-checked {
-  background-color: var(--primary);
+  background-color: var(--nq-primary);
 }
 
 .nq-switch-disabled {
@@ -23,7 +23,7 @@
 .nq-switch-thumb {
   width: 20px;
   height: 20px;
-  background-color: var(--light);
+  background-color: var(--nq-light);
   border-radius: 50%;
   transition: transform 0.2s ease;
 }

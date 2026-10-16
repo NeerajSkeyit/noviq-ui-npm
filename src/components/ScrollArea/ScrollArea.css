@@ -10,7 +10,7 @@
   height: 100%;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  scrollbar-color: var(--nq-border-color) transparent;
 }
 
 .nq-scrollAreaViewport::-webkit-scrollbar {
@@ -23,10 +23,10 @@
 }
 
 .nq-scrollAreaViewport::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--nq-border-color);
   border-radius: 999px;
 }
 
 .nq-scrollAreaViewport::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  background: var(--nq-muted);
 }

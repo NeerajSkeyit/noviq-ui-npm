@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { X } from "lucide-react";
+import { X } from "../Icon/Icon";
 import Button from "../Button/Button";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";

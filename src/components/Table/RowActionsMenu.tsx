@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "../Icon/Icon";
 import Button from "../Button/Button";
 import {
   BUTTON_SIZE,

@@ -54,20 +54,20 @@
 }
 
 .nq-info-section {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--nq-border-color);
   margin: 12px 0;
 }
 
 .nq-info-section-title {
-  font-size: var(--font-size);
+  font-size: var(--nq-font-size);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-info-section-subtitle {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--nq-muted);
   margin-bottom: 4px;
 }

@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background-color: var(--surface-hover);
+  background-color: var(--nq-surface-hover);
   border-bottom: 1px solid rgba(2, 105, 155, 0.2);
 }
 
@@ -14,14 +14,14 @@
 }
 
 .nq-bulk-actions-text {
-  font-size: var(--font-size);
+  font-size: var(--nq-font-size);
   font-weight: 500;
-  color: var(--primary);
+  color: var(--nq-primary);
 }
 
 .nq-bulk-actions-clear {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--nq-muted);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -32,7 +32,7 @@
 }
 
 .nq-bulk-actions-clear:hover {
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-bulk-actions-right {

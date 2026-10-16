@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, Download } from "lucide-react";
+import { ChevronDown, Download } from "../Icon/Icon";
 import Button from "../Button/Button";
 import { DropdownMenu, DropdownMenuItem } from "../Dropdown/Dropdown";
 import { useText } from "../../hooks/useText";

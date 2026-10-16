@@ -6,7 +6,7 @@
 
 .nq-status-danger {
   background-color: rgba(255, 0, 0, 0.08) !important;
-  color: var(--danger) !important;
+  color: var(--nq-danger) !important;
   border-color: rgba(255, 0, 0, 0.2) !important;
 }
 
@@ -23,7 +23,7 @@
 }
 
 .nq-status-default {
-  background-color: var(--secondary-background) !important;
-  color: var(--muted) !important;
-  border-color: var(--border-color) !important;
+  background-color: var(--nq-secondary-background) !important;
+  color: var(--nq-muted) !important;
+  border-color: var(--nq-border-color) !important;
 }

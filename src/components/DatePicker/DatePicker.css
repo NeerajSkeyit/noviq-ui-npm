@@ -3,11 +3,11 @@
   width: 288px;
   padding: 10px;
   box-sizing: border-box;
-  background: var(--light);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: var(--heading);
+  background: var(--nq-light);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius);
+  box-shadow: var(--nq-shadow);
+  color: var(--nq-heading);
   font-size: 13px;
 }
 
@@ -26,15 +26,15 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--light);
-  color: var(--heading);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius-sm);
+  background: var(--nq-light);
+  color: var(--nq-heading);
   cursor: pointer;
 }
 
 .nq-date-picker-nav:hover:not(:disabled) {
-  background: var(--surface-hover);
+  background: var(--nq-surface-hover);
 }
 
 .nq-date-picker-nav:disabled {
@@ -47,10 +47,10 @@
   min-width: 0;
   height: 28px;
   padding: 0 4px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--light);
-  color: var(--heading);
+  border: 1px solid var(--nq-border-color);
+  border-radius: var(--nq-radius-sm);
+  background: var(--nq-light);
+  color: var(--nq-heading);
   font-family: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -74,7 +74,7 @@
   text-align: center;
   font-size: 11px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--nq-muted);
 }
 
 .nq-date-picker-day {
@@ -82,23 +82,23 @@
   align-items: center;
   justify-content: center;
   height: 32px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--nq-radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
 
 .nq-date-picker-day:hover:not(.nq-is-disabled) {
-  background: var(--surface-hover);
+  background: var(--nq-surface-hover);
 }
 
 .nq-date-picker-day.nq-is-outside {
-  color: var(--muted);
+  color: var(--nq-muted);
   opacity: 0.6;
 }
 
 .nq-date-picker-day.nq-is-today {
-  border-color: var(--primary);
+  border-color: var(--nq-primary);
 }
 
 .nq-date-picker-day.nq-is-focused {
@@ -106,8 +106,8 @@
 }
 
 .nq-date-picker-day.nq-is-selected {
-  background: var(--primary);
-  color: var(--light);
+  background: var(--nq-primary);
+  color: var(--nq-light);
   opacity: 1;
 }
 
@@ -122,14 +122,14 @@
   justify-content: center;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--nq-border-color);
 }
 
 .nq-date-picker-today {
   padding: 4px 12px;
   border: none;
   background: none;
-  color: var(--primary);
+  color: var(--nq-primary);
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;

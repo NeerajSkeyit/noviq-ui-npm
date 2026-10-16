@@ -1,6 +1,6 @@
 import React from "react";
 import ReactSelect, { type StylesConfig } from "react-select";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "../Icon/Icon";
 import Button from "../Button/Button";
 import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
 import { useText } from "../../hooks/useText";
@@ -34,15 +34,15 @@ const selectStyles: StylesConfig<PageSizeOption, false> = {
     minHeight: "32px",
     height: "32px",
     boxShadow: "none",
-    border: "1px solid var(--border-color)",
-    "&:hover": { border: "1px solid var(--border-color)" },
+    border: "1px solid var(--nq-border-color)",
+    "&:hover": { border: "1px solid var(--nq-border-color)" },
   }),
   option: (base, state) => ({
     ...base,
     cursor: state.isDisabled ? "not-allowed" : "pointer",
     fontSize: "14px",
-    background: state.isSelected ? "var(--primary)" : state.isFocused ? "#f3f4f6" : "#fff",
-    "&:hover": { background: state.isSelected ? "var(--primary)" : "#f3f4f6" },
+    background: state.isSelected ? "var(--nq-primary)" : state.isFocused ? "#f3f4f6" : "#fff",
+    "&:hover": { background: state.isSelected ? "var(--nq-primary)" : "#f3f4f6" },
   }),
   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
   valueContainer: (base) => ({ ...base, paddingRight: "0px" }),
@@ -80,7 +80,7 @@ function TablePagination({
 
   return (
     <div className="nq-table-pagination">
-      <div className="table-pagination-left">
+      <div className="nq-table-pagination-left">
         <span className="nq-table-pagination-text">{summary}</span>
       </div>
 
@@ -89,7 +89,7 @@ function TablePagination({
           <span className="nq-table-pagination-text">{t("paginationRowsPerPage")}</span>
           <ReactSelect<PageSizeOption, false>
             {...selectEscapeGuard}
-            classNamePrefix="rs"
+            classNamePrefix="nq-rs"
             placeholder={pageSize.toString()}
             options={pageSizeOptions.map((option) => ({ value: option, label: String(option) }))}
             onChange={(option) => {

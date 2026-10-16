@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, GripVertical, Pin, PinOff, Settings2 } from "lucide-react";
+import { Eye, EyeOff, GripVertical, Pin, PinOff, Settings2 } from "../Icon/Icon";
 import Button from "../Button/Button";
 import Drawer from "../Drawer/Drawer";
 import ScrollArea from "../ScrollArea/ScrollArea";

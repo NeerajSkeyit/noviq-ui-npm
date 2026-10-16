@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "../Icon/Icon";
 import Button from "../Button/Button";
 import FormFooter from "../FormFooter/FormFooter";
 import { BUTTON_SIZE, BUTTON_TYPE, BUTTON_VARIANT } from "../../constants";

@@ -375,7 +375,7 @@ describe("Input", () => {
 
 describe("Input search — error border", () => {
   it("is declared after the base rule, so its colour wins at equal specificity", () => {
-    // jsdom does not resolve `var(--danger)`, so the cascade is checked on the stylesheet itself.
+    // jsdom does not resolve `var(--nq-danger)`, so the cascade is checked on the stylesheet itself.
     const css = readFileSync(resolve(process.cwd(), "src/components/Input/Input.css"), "utf8");
     const base = css.indexOf(".nq-search-input {");
     const error = css.indexOf(".nq-search-input-error {");

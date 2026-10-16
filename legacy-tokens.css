@@ -1,0 +1,38 @@
+/*
+ * Opt-in bridge for apps that themed noviq-ui by overriding its OLD custom-property names.
+ *
+ * From 4.7 every noviq-ui name is namespaced — classes `nq-*`, custom properties `--nq-*` — so
+ * nothing it ships can collide with an app's own CSS (an app's own `--primary`, say, used to be
+ * overwritten by, or to overwrite, noviq-ui's). The theming API is now `--nq-primary`,
+ * `--nq-radius`, … and overriding those is all a new app needs.
+ *
+ * An app that already overrides the old unprefixed names can keep working by importing this file
+ * AFTER noviq-ui's stylesheet:
+ *
+ *   import "noviq-ui/style.css";
+ *   import "noviq-ui/legacy-tokens.css";
+ *
+ * Each `--nq-*` token then follows the app's old-named property when the app defines one, and
+ * keeps noviq-ui's default when it does not. Don't import it otherwise: it makes noviq-ui read the
+ * app's `--primary`, `--radius`, `--shadow`… whatever they happen to mean there.
+ */
+:root {
+  --nq-font-size: var(--font-size, 14px);
+  --nq-text-color: var(--text-color, #6b6b6b);
+  --nq-primary: var(--primary, #02699b);
+  --nq-primary-hover: var(--primary-hover, #025a85);
+  --nq-light: var(--light, #ffffff);
+  --nq-danger: var(--danger, #ff0000);
+  --nq-danger-hover: var(--danger-hover, #e60000);
+  --nq-heading: var(--heading, #272727);
+  --nq-secondary-background: var(--secondary-background, #f2f2f2);
+  --nq-muted: var(--muted, #6b7280);
+  --nq-muted-hover: var(--muted-hover, #4b5563);
+  --nq-surface-hover: var(--surface-hover, #e6f1fe);
+  --nq-border-color: var(--border-color, #e0e5eb);
+  --nq-radius: var(--radius, 6px);
+  --nq-radius-sm: var(--radius-sm, 4px);
+  --nq-shadow: var(--shadow, 0 20px 40px rgba(0, 0, 0, 0.15));
+  --nq-overlay-bg: var(--overlay-bg, rgba(0, 0, 0, 0.5));
+  --nq-z-overlay: var(--z-overlay, 1200);
+}

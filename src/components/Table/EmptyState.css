@@ -5,12 +5,12 @@
   justify-content: center;
   gap: 8px;
   padding: 48px 16px;
-  color: var(--muted);
+  color: var(--nq-muted);
 }
 
 .nq-table-empty-state p {
   margin: 0;
-  font-size: var(--font-size);
+  font-size: var(--nq-font-size);
 }
 
 /* Same footprint as the real empty state (icon + one line), without its content. */

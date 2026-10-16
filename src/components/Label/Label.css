@@ -1,9 +1,9 @@
 .nq-label {
-  font-size: var(--font-size);
+  font-size: var(--nq-font-size);
   font-weight: 500;
   line-height: 1;
   display: inline-block;
-  color: var(--heading);
+  color: var(--nq-heading);
 }
 
 .nq-label-disabled {

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "../Icon/Icon";
 import ActionBar, { type ActionBarAction } from "./ActionBar";
 import TablePagination, { type TablePaginationState } from "./TablePagination";
 import TableCell from "./TableCell";

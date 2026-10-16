@@ -55,7 +55,7 @@ function visibleStrings(root: ParentNode = document.body): string[] {
 }
 
 /** The pager's summary line — its numbers sit in highlight spans, so it is not one text node. */
-const summaryText = () => document.querySelector(".table-pagination-left")?.textContent?.trim();
+const summaryText = () => document.querySelector(".nq-table-pagination-left")?.textContent?.trim();
 
 /** No text in the DOM may be exactly one of the library's English defaults. */
 function expectNoUntranslatedCopy(root: ParentNode = document.body) {

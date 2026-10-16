@@ -1,5 +1,5 @@
 import React from "react";
-import { X } from "lucide-react";
+import { X } from "../Icon/Icon";
 import Button from "../Button/Button";
 import { useText } from "../../hooks/useText";
 import {

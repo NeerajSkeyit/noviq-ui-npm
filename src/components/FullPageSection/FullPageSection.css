@@ -1,7 +1,7 @@
 .nq-full-page-section {
   display: flex;
   min-height: 100vh;
-  background-color: var(--secondary-background);
+  background-color: var(--nq-secondary-background);
 }
 
 .nq-full-page-section-main {
@@ -22,7 +22,7 @@
 .nq-full-page-section-card {
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--light);
+  background-color: var(--nq-light);
   border-radius: 12px;
   padding: 20px 32px 32px;
   box-shadow:
@@ -42,14 +42,14 @@
   font-size: 20px;
   line-height: 1.4;
   font-weight: 600;
-  color: var(--heading);
+  color: var(--nq-heading);
   text-align: left;
 }
 
 .nq-full-page-section-subtitle {
   margin: 4px 0 0;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--nq-muted);
 }
 
 .nq-full-page-section-footer {
@@ -60,8 +60,8 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 20px;
-  border-top: 1px solid var(--border-color);
-  background-color: var(--light);
+  border-top: 1px solid var(--nq-border-color);
+  background-color: var(--nq-light);
 }
 
 @media (max-width: 640px) {
