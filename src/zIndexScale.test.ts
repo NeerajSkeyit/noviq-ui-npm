@@ -17,25 +17,51 @@ const cssFiles = (dir = SRC): string[] =>
   });
 const loc = (file: string) => relative(process.cwd(), file);
 const tokens = readFileSync(resolve(SRC, "styles/tokens.css"), "utf8");
-const tokenValue = (name: string) => Number(new RegExp(`${name}:\\s*(\\d+)\\s*;`).exec(tokens)?.[1]);
+/** A token's number, following a `calc(var(--other) + N)` to the token it is built on. */
+const tokenValue = (name: string): number => {
+  const raw = new RegExp(`${name}:\\s*([^;]+);`).exec(tokens)?.[1]?.trim() ?? "";
+  const derived = /^calc\(var\((--nq-z-[\w-]+)\)\s*\+\s*(\d+)\)/.exec(raw);
+  return derived ? tokenValue(derived[1]) + Number(derived[2]) : Number(/^\d+/.exec(raw)?.[0]);
+};
 
 describe("the z-index scale", () => {
   it("defines every layer as a custom property", () => {
-    for (const name of [Z_OVERLAY_VAR, Z_POPOVER_VAR, Z_STICKY_VAR, "--nq-z-loading"]) {
+    for (const name of [Z_OVERLAY_VAR, Z_POPOVER_VAR, Z_STICKY_VAR, "--nq-z-loading", "--nq-z-bar"]) {
       expect(Number.isInteger(tokenValue(name)), name).toBe(true);
     }
   });
 
-  it("orders the layers: pinned columns < loading veil < overlays < popups", () => {
-    const [sticky, loading, overlay, popover] = [Z_STICKY_VAR, "--nq-z-loading", Z_OVERLAY_VAR, Z_POPOVER_VAR].map(tokenValue);
+  it("orders the layers: pinned columns < loading veil < sticky bar < overlays < popups", () => {
+    const [sticky, loading, bar, overlay, popover] = [Z_STICKY_VAR, "--nq-z-loading", "--nq-z-bar", Z_OVERLAY_VAR, Z_POPOVER_VAR].map(tokenValue);
     expect(sticky).toBeLessThan(loading);
-    expect(loading).toBeLessThan(overlay);
+    expect(loading).toBeLessThan(bar);
+    expect(bar).toBeLessThan(overlay);
     expect(overlay).toBeLessThan(popover);
+  });
+
+  it("popups follow the overlay base, so raising --nq-z-overlay alone keeps them above it", () => {
+    expect(/--nq-z-popover:\s*calc\(var\(--nq-z-overlay\)/.test(tokens)).toBe(true);
   });
 
   it("leaves room for a deep stack of overlays below the popups", () => {
     const room = tokenValue(Z_POPOVER_VAR) - tokenValue(Z_OVERLAY_VAR);
     expect(room).toBeGreaterThanOrEqual(OVERLAY_Z_STEP * 20); // twenty overlays open at once
+  });
+
+  it("the places each layer is used", () => {
+    const read = (path: string) => readFileSync(resolve(SRC, path), "utf8");
+    // A FullPageSection's sticky footer must sit over a table's pinned columns scrolling beneath it
+    // (real-browser finding: with `z-index: auto` the pinned cells painted over the footer).
+    expect(read("components/FullPageSection/FullPageSection.css")).toMatch(/\.nq-full-page-section-footer\s*\{[^}]*z-index:\s*var\(--nq-z-bar\)/);
+    expect(read("components/Table/LoadingOverlay.css")).toMatch(/z-index:\s*var\(--nq-z-loading\)/);
+    expect(read("components/Table/Table.tsx")).toContain("zIndex: Z_INDEX.STICKY");
+    // Floating things use the popover layer.
+    for (const file of ["components/DatePicker/DatePicker.css", "components/TimePicker/TimePicker.css", "components/MonthPicker/MonthPicker.css"]) {
+      expect(read(file), file).toMatch(/z-index:\s*var\(--nq-z-popover\)/);
+    }
+    for (const file of ["components/Dropdown/Dropdown.tsx", "components/Table/RejectAction.tsx", "components/Input/Input.tsx", "components/Table/TablePagination.tsx"]) {
+      expect(read(file), file).toContain("Z_INDEX.POPOVER");
+    }
   });
 
   it("no stylesheet writes a z-index number", () => {

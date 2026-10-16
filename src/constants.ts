@@ -346,7 +346,9 @@ export const REJECT_REASON_MIN_LENGTH = 4;
  * can move the whole set to sit above or below its own layers:
  *   --nq-z-overlay  base of modals and drawers (each one opened on top gets OVERLAY_Z_STEP more)
  *   --nq-z-popover  pickers, menus, select lists, the reject popover — always above every overlay
- *   --nq-z-loading  a table's loading veil
+ *                   (derived from --nq-z-overlay, so raising that one moves both)
+ *   --nq-z-bar      a sticky page bar (FullPageSection's footer), over pinned columns and loading
+ *   --nq-z-loading  a table's loading veil, over pinned columns
  *   --nq-z-sticky   a table's pinned columns
  */
 export const Z_OVERLAY_VAR = "--nq-z-overlay";

@@ -55,6 +55,7 @@
 .nq-full-page-section-footer {
   position: sticky;
   bottom: 0;
+  z-index: var(--nq-z-bar);
   display: flex;
   align-items: center;
   justify-content: flex-end;

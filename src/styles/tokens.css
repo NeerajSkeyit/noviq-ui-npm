@@ -20,10 +20,11 @@
   --nq-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   --nq-overlay-bg: rgba(0, 0, 0, 0.5);
 
-  /* Stacking scale — see "Stacking" in the README. Move the set to sit above or below your own
-     layers; keep popover above overlay + 10 per stacked modal/drawer. */
-  --nq-z-sticky: 2;
-  --nq-z-loading: 5;
-  --nq-z-overlay: 1200;
-  --nq-z-popover: 1510;
+  /* Stacking scale — see "Stacking" in the README. Raise --nq-z-overlay to sit above your own
+     layers: popups follow it, because they must stay above every overlay. */
+  --nq-z-sticky: 2; /* a table's pinned columns */
+  --nq-z-loading: 5; /* a table's loading veil: over pinned columns */
+  --nq-z-bar: 6; /* a sticky page bar (FullPageSection's footer): over both */
+  --nq-z-overlay: 1200; /* modals and drawers; each one opened on top adds 10 */
+  --nq-z-popover: calc(var(--nq-z-overlay) + 310); /* pickers, menus, select lists, popovers */
 }
