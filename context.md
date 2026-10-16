@@ -3,7 +3,7 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v4.4.0** on npm, with **`4.5.0` staged** (`1.1.0` shipped
+**v4.5.0** on npm, with **`4.6.0` staged** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
@@ -17,7 +17,9 @@ is on the registry with `npm view` / a bundle hash before assuming); `4.2.0` add
 `4.3.0` adds configurable date/time formats and carries the Escape-layering, phone-pagination and
 dead-field-type fixes — see "Date and time formats" and "Overlays and Escape" below; `4.3.1` was
 published on 2026-10-15 after one failed attempt; `4.4.0` adds regional settings — see "Regional
-settings" below; `4.5.0` adds `config.text` — see "Text and translation"). The `2.5.x`
+settings" below; `4.5.0` adds `config.text` — see "Text and translation"; `4.6.0` is Table ergonomics
+plus opt-ins — see "4.6.0"). **Standing rules:** no major version until the user says so (breaking
+changes only as opt-ins), and noviq-ui is never added to another repo (`noviq-ui-demo` only). The `2.5.x`
 fixes were found via
 `noviq-ui-demo`, a standalone sibling project that installs the real published package against a
 real backend. See `progress.md` for the
@@ -648,6 +650,38 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   `exportSuccess`/`exportFailure`.
 - The reject action's `rejectReasonRequired` is unreachable by clicking (Confirm is disabled while
   the box is empty) but kept: the validation function is the same path as the others.
+
+## 4.6.0 — Table ergonomics and opt-ins
+- **`serverSort`** (`Table.tsx`): `sortParams` (memo) = `{[sortBy]: column.sortKey ?? accessorKey ?? id,
+  [sortDirection]: dir}` when `serverSort && isUsingApiFunction` and a column is sorted, else `{}`; it
+  is in the query key, spread into `apiFunction`'s params and into `useTableExport({ sortParams })`.
+  `handleSort` resets the page to 1; `sortedData` skips the client sort when `serverSort &&
+  !usingPreFetched`. Param names: `DEFAULT_SORT_REQUEST_PARAMS` (separate from
+  `DEFAULT_REQUEST_PARAMS`, whose three names go on every request) overridable through
+  `config.table.requestParams.sortBy/sortDirection`.
+- **Search debounce**: the effect now returns early when `searchValue === debouncedSearch` — it used
+  to reset to page 1 half a second after *mount*.
+- **Chips → drawer**: `FilterChips.onChipClick` renders the chip text as `<button class="filter-chip-body">`
+  (the remove `×` stays a sibling — no button in a button); `FilterDrawer` is controlled when
+  `open` is given (`open = openProp ?? openState`; `onOpenChange` always called). `Table` owns
+  `filterDrawerOpen`.
+- **Measured pins**: `headerCells` refs + `measuredWidths` state; a layout effect (every render, only
+  while something is pinned) calls `measureHeaders`, which `setState`s only if a width changed (no
+  loop); a `ResizeObserver` on the `<table>` re-measures. Widths ≤ 0 (jsdom, hidden) are ignored →
+  `columnWidthPx(declared)`. Tests stub `getBoundingClientRect` and `ResizeObserver`.
+- **`Drawer unmountOnClose`**: `lingering` state + `showContent = !unmountOnClose || isOpen ||
+  lingering`; the effect sets `lingering` true on open and, on close, a `DRAWER_EXIT_MS` timer to
+  false (cleared on reopen/unmount). Title and header stay mounted. `ColumnSelector` and
+  `FilterDrawer` pass it, so a closed Table has no column list / filter form in the DOM.
+- **`inherit`**: `mergeConfigs(parent, child)` in `NoviqUIConfigProvider.tsx` — undefined values are
+  dropped, `formats`/`text`/`table.requestParams` merged key by key, `table.responseFormat`
+  replaced whole, everything else child-over-parent; the merged config is what gets validated.
+  Props are a discriminated union so `inherit` accepts a `table` without `responseFormat`
+  (`NoviqUIInheritedConfig`).
+- **a11y**: sortable `<th>` has `aria-sort` (`ARIA_SORT`), `tabIndex=0`, Enter/Space; `Checkbox`
+  takes `aria-label` (on the visible `role="checkbox"` div, not the hidden native input); Table passes
+  `tableSelectAll` / `tableSelectRow`.
+- **Tooling**: `testTimeout: 20000` in both vitest configs (busy machine; see progress.md).
 
 ## Overlays and Escape
 `Modal` and `Drawer` register on a module-level **layer stack** (`hooks/useEscapeLayer.ts`): one

@@ -75,6 +75,30 @@ depended on `noviq-ui`.
   >
 ```
 
+## What changed in 4.6.0
+
+All additive: nothing that worked changes, and each new behaviour is opt-in or fixes something that
+was plainly wrong.
+
+- **`<Table serverSort>`** — sort on the server. See "Sorting" below.
+- **A filter chip reopens the filters drawer** when clicked. `FilterChips` gets `onChipClick`,
+  `FilterDrawer` gets optional `open` / `onOpenChange`.
+- **Pinned columns are measured.** A pinned column used to be offset by the *declared* `width`
+  (140px when unset) of the pinned columns before it, so any column that rendered at another width
+  left a gap or an overlap. The header cells are now measured after layout and on resize; a column
+  that can't be measured falls back to its declared width.
+- **`<Drawer unmountOnClose>`** — a closed drawer no longer has to keep a live form behind it.
+  Default unchanged. The Table's own two drawers use it.
+- **`<NoviqUIConfigProvider inherit>`** — a nested provider laid over its parent's config instead of
+  replacing it. Default unchanged.
+- **Accessibility:** a sortable header has `aria-sort`, is a tab stop and sorts on Enter / Space;
+  the select-all and row checkboxes have names ("Select all rows", "Select row" — text keys
+  `tableSelectAll`, `tableSelectRow`); `Checkbox` accepts `aria-label`.
+- **Fixed:** the search box's debounce reset a table to page 1 half a second after it mounted,
+  even though the search hadn't changed.
+- **New text keys** (`tableSelectAll`, `tableSelectRow`): a dictionary typed
+  `Record<TextKey, TextValue>` will ask for them, as intended.
+
 ## What changed in 4.5.0
 
 - **`config.text`: every label, placeholder and message the library shows can be replaced** — one
@@ -212,6 +236,11 @@ function Example() {
   );
 }
 ```
+
+**Closed drawers.** By default a closed `Drawer` keeps its children mounted, just hidden — handy
+for state that should survive, but a form inside stays live (effects, autofocus) and two drawers can
+render the same `id`. `<Drawer unmountOnClose>` mounts them when it opens and removes them once it
+has slid away, so each open starts fresh.
 
 **Escape closes only the topmost layer.** With a date/time/month picker, a select's menu or a
 `DropdownMenu` open inside a `Modal` or `Drawer`, the first Escape closes that picker or menu and the second closes
@@ -457,6 +486,32 @@ A custom `cell` render function is `cell(row, cellValue, rawRow, rawValue)`: `ce
 accessor's value as trimmed text (`"-"` when empty), `rawValue` the same value untouched — a number,
 boolean, `null` or array. It is `undefined` for a column with no `accessorKey`.
 
+#### Sorting
+
+By default a click on a `sortable` header reorders the rows the table already has — for an
+`apiFunction` table that is only the current page. Add **`serverSort`** and the server does it:
+
+```javascript
+<Table
+  columns={[
+    { id: "name", heading: "Name", accessorKey: "name", sortable: true },
+    { id: "owner", heading: "Owner", accessorKey: "owner", sortable: true, sortKey: "owner_name" },
+  ]}
+  apiFunction={fetchEmployees}
+  serverSort
+/>
+```
+
+- A click sends `sort_by` and `sort_order` (`"asc"` / `"desc"`) with the request — `sort_by` is the
+  column's `sortKey`, else its `accessorKey`, else its `id` — and shows the rows exactly as they
+  come back. A third click clears it; no sort params are sent until a column is sorted.
+- The page goes back to 1 when the sort changes, and an export is requested in the same order as
+  the screen.
+- Rename the params with `config.table.requestParams.sortBy` / `.sortDirection`, like the others.
+- With `preFetchedData` the prop is ignored: those rows are always sorted in the table.
+- Sortable headers are keyboard-operable either way (Tab to one, Enter or Space) and report
+  `aria-sort`.
+
 #### Column management
 
 Pass a stable `id` to enable the "Columns" chooser (hide/show, drag-to-reorder, pin left/right)
@@ -472,6 +527,10 @@ multi-user app that wants isolated settings per tenant/user should build that in
 e.g. `id={`employees-${tenantId}`}`. Set `isColumnSettingHidden` to hide the chooser entirely.
 Column-level `visible`/`sticky` in a column definition set the *default* before any user
 customization (or persisted settings) apply.
+
+A pinned column is placed after the **measured** width of the pinned columns before it, so you don't
+need to give pinned columns a `width` for them to line up (the table measures again when it
+resizes). A `width` is only the fallback for a column that can't be measured yet.
 
 #### Row selection, row actions, bulk actions
 
@@ -551,6 +610,9 @@ import { FILTER_TYPE } from "noviq-ui";
   field changes.
 - `mandatory: true` on a filter config makes it non-removable (no "X" on its chip, survives
   "Clear all").
+- Clicking a chip's text reopens the drawer. Standalone, `FilterChips` takes `onChipClick`
+  (without it the chips are plain text) and `FilterDrawer` takes `open` / `onOpenChange` to be
+  controlled from outside; left out, it opens and closes itself as before.
 - Filters are **session-only** — they reset on remount/reload, unlike column settings which persist
   via the opt-in `id` prop. This is deliberate: filters carry more "why is this still filtered?"
   surprise-risk than column layout preferences.
@@ -690,10 +752,22 @@ isn't a whole number 0–6 throws a clear error from the provider; a bad currenc
 data shows the code before the number instead of breaking the table. `useDateTimeFormatters()`
 returns the resolved values as `formats.locale`, `formats.currency` and `formats.weekStart`.
 
-### Nested providers replace, they don't merge
+### Nested providers replace, unless you say `inherit`
 A `NoviqUIConfigProvider` inside another one *replaces* the outer config for its subtree. To change
-only the formats for one screen, repeat `table` (and `notify`) if anything beneath it needs them —
-a `<Table apiFunction>` there without a `responseFormat` would throw.
+only the formats for one screen, add `inherit` and it is laid over the parent's config instead:
+
+```javascript
+<NoviqUIConfigProvider inherit config={{ formats: { date: "DD MMM YYYY" } }}>
+  {/* the app's table responseFormat, notify and text all still apply here */}
+</NoviqUIConfigProvider>
+```
+
+`formats`, `text` and the table's `requestParams` merge key by key (the child's keys win); `notify`
+and anything else the child sets replaces the parent's; what the child leaves out is inherited,
+including `table.responseFormat` (a child `responseFormat` replaces it as a whole — the two shapes
+are never mixed). A key set to `undefined` in the child does not wipe the inherited value. Without
+`inherit`, repeat what is needed: a `<Table apiFunction>` under a replacing provider with no
+`responseFormat` would throw.
 
 ### Not covered
 The browser's own `<input type="date|time|month">` (`Input type="date"`, the date fields inside the
@@ -748,7 +822,7 @@ dictionary, and `config.text` replaces any of it:
   labels — which you already write in your own language; developer-facing errors and warnings
   (they stay English); the AM/PM markers; and the "Unsupported input type" fallback.
 - **Nested providers replace**, as with `formats`: a `NoviqUIConfigProvider` inside another one
-  does not inherit its `text`. Repeat it, or spread the parent's config.
+  does not inherit its `text` — unless it has `inherit`, which merges the two key by key.
 
 To find strings you haven't translated, render with every default wrapped and look for any that
 come out bare:

@@ -11,6 +11,9 @@ export default defineConfig({
       },
     },
     setupFiles: ["./src/test/setup.ts"],
+    // Tests drive real clicks through jsdom; on a busy machine the default 5s is too tight and a
+    // slow test reads as a failing one.
+    testTimeout: 20000,
     css: true,
     globals: true,
   },

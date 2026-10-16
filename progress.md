@@ -687,6 +687,45 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Found while auditing: the auto-injected **"Actions" column heading** was hard-coded (now
         `tableActionsHeading`), and `Input`'s file inputs had two more strings and a plural.
 
+- [x] **`4.6.0` — Table ergonomics and opt-ins** (staged, see "Ready to publish"; additive — and
+      by the user's standing rule no breaking change: every behavioural option is opt-in).
+  - [x] **`<Table serverSort>`**: header click sends `sort_by` / `sort_order` (renamable in
+        `config.table.requestParams.sortBy` / `.sortDirection`; `TableColumn.sortKey`, else
+        `accessorKey`, else `id`), shows the rows as served, resets to page 1, and the export asks
+        for the same order. No sort params until a column is sorted. Ignored with `preFetchedData`.
+        `DEFAULT_SORT_REQUEST_PARAMS` is a separate constant so `DEFAULT_REQUEST_PARAMS` still has
+        exactly the three names sent on every request. `UseTableExportArgs.requestParams` stayed
+        the old three-key type so `useTableExport` callers don't break.
+  - [x] **Filter chips reopen the drawer**: `FilterChips.onChipClick` (chip text becomes a
+        button; remove stays separate), `FilterDrawer.open` / `onOpenChange` (controlled when
+        given), wired in `Table`.
+  - [x] **Measured sticky offsets**: header cells measured in a layout effect while anything is
+        pinned + a `ResizeObserver` on the table; unmeasurable columns fall back to `width` / 140,
+        so layouts that were right stay right. Verified in a real browser: a pinned "ID" column
+        measured 46.28px and the next pin sat at exactly 46.28px (the old rule put it at 140px).
+        jsdom can't lay out, so the unit tests stub `getBoundingClientRect` + `ResizeObserver`.
+  - [x] **`<Drawer unmountOnClose>`** (opt-in): children/footer mount on open, unmount after
+        `DRAWER_EXIT_MS` (=250, a test keeps it equal to `Drawer.css`'s transition). The Table's
+        columns and filters drawers use it. Default unchanged.
+  - [x] **`<NoviqUIConfigProvider inherit>`** (opt-in; the "nested provider merge" decision, taken
+        as an opt-in because breaking the replace default is barred): `formats` / `text` /
+        `requestParams` merge key by key, a child `responseFormat` replaces whole, `undefined`
+        never wipes, merged config validated. Type `NoviqUIInheritedConfig`.
+  - [x] **Accessibility**: `aria-sort`, keyboard (Enter/Space, tab stop, focus ring) on sortable
+        headers; `Checkbox` `aria-label`; "Select all rows" / "Select row" (text keys). Closes the
+        "unnamed table checkboxes" gap.
+  - [x] **Fixed** (found by a surviving mutant): the search debounce reset to page 1 ~500ms after
+        mount even with no search change.
+  - [x] Tests: library 887 (up from 823), every change mutation-checked (survivors → new tests; the
+        two left are equivalent mutants). Demo: server `/api/employees` sorts, the Employees table
+        uses `serverSort`, a new showcase section + the text section on `inherit`; 83 consumer
+        tests (up from 74) against the tarball — the 9 new ones fail on published 4.5.0. Real
+        browser: real-backend sort across all 40 rows (top salary first, not just the loaded page),
+        chip → drawer, closed Table drawers have no mounted contents, unmounting drawer
+        fresh on reopen, no console output.
+  - [x] Both vitest configs got `testTimeout: 20000`: with the machine busy (load average ~10)
+        tests that pass in 3s failed the default 5s; no test logic changed.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -749,13 +788,14 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   `158b43fc…` identical to the staged one, 58 files). Regional settings (`formats.locale` /
   `currency` / `weekStart`), `TimePicker`'s default clock now 12-hour, `preFetchedData` client-side
   search and paging, `column.cell`'s `rawValue`, labelled `Input type="search"`.
+- `4.5.0` — live on npm (published 2026-10-16 06:31:07Z; verified: tarball sha1 `126d1961…` identical to
+  the staged one, 61 files). `config.text` (96 keys), two new accessible names.
 
 ## Ready to publish
-- `4.5.0` — **minor, additive** (`config.text`; no default changed). Gate: `tsc` clean, 823/823 library
-  tests, build, `npm pack` (61 files, `noviq-ui-4.5.0.tgz`), demo typecheck + build + 74 consumer
-  tests against the tarball (the 11 new ones fail on 4.3.1), real-browser checks. Awaiting
-  `npm publish` by the user (OTP).
-- Nothing else is waiting: `4.3.1` and `4.4.0` are live (see "Published").
+- `4.6.0` — **minor, additive**. Gate: `tsc` clean, 887/887 library tests, build, `npm pack`
+  (`noviq-ui-4.6.0.tgz`), demo typecheck + build + 83 consumer tests against the tarball (the 9 new
+  ones fail on 4.5.0), real-browser checks. Awaiting `npm publish` by the user (OTP).
+- Nothing else is waiting: `4.3.1`, `4.4.0` and `4.5.0` are live (see "Published").
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
@@ -866,19 +906,30 @@ type="search"` label/error/helper.~~ ~~Time default unified: 12-hour `hh:mm A` e
 AM/PM markers (the `A` token and the picker's AM/PM column) are still fixed English; digits stay
 Latin; genitive month forms; the select-all / per-row checkboxes have no accessible name; RTL.
 
-### `4.6.0` — Table ergonomics
-Server-side sort option (today sort only reorders the loaded page); chip click reopens the filter
-drawer; measured (not declared-width) sticky offsets; closed `Drawer` children unmounted (option
-first); *decision needed:* should a nested `NoviqUIConfigProvider` merge with its parent?
+### `4.6.0` — Table ergonomics — done, staged
+~~Server-side sort~~ (`serverSort`) ~~· chip click reopens the filter drawer · measured sticky
+offsets · closed `Drawer` children unmounted (opt-in)~~ ~~· nested-provider merge (opt-in `inherit`)~~
+~~· accessible sort headers and checkboxes~~.
 
-### `5.0.0` — only if a real adopter forces it
-Rename `Form`'s `formik` prop (keep an alias), merge nested providers, unmount closed drawers by
-default. Batch all behavioural breaks here, not one at a time.
+### Parked for a major (do NOT build until the user says to move to version 5)
+By the user's standing rule (2026-10-16) there is no `5.0.0` and nothing breaking ships in 4.x —
+see `memory/feedback-noviq-ui-no-major-versions`. What would need a major: renaming `Form`'s
+`formik` prop, making `inherit` (or unmounting closed drawers) the default, changing any other
+default. Each already has an opt-in in 4.x; leave the default alone.
+
+### Next minors — candidates (none started)
+- **Quality gates:** `eslint.config.js` (lint is broken), CI, a typecheck gate for the library's own
+  tests, `noviq-ui-demo` under git.
+- **Verification gaps:** open a real `.xlsx` from the export; Firefox/Safari; a screen-reader pass;
+  RTL.
+- **More text:** the AM/PM markers (picker column and the `A` token) as `text` keys; `Form` field
+  labels already come from the app.
+- `preFetchedData` + `filterConfigs` has no client-side filtering (filters only build API payloads).
 
 ### Alongside (no release of their own)
 - **Quality gates:** `eslint.config.js` (lint is broken), CI running tsc + tests + build + the
   constants guard + the demo's consumer suite against the packed tarball, a typecheck gate for the
   library's own tests, `noviq-ui-demo` under git.
 - **Verification gaps:** Firefox/Safari, a screen-reader pass, RTL, and opening a real `.xlsx`.
-- **Adoption (needs your go-ahead):** pilot in one Vite app — `noviq-lms-admin-ui` (React 18) —
-  because real use should reorder everything above.
+- **Adoption: NOT happening.** The user said (2026-10-16) never to add this package to any other repo;
+  `noviq-ui-demo` is the only consumer. (`memory/feedback-noviq-ui-not-in-other-repos`.)
