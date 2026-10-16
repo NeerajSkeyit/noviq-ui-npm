@@ -726,6 +726,55 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Both vitest configs got `testTimeout: 20000`: with the machine busy (load average ~10)
         tests that pass in 3s failed the default 5s; no test logic changed.
 
+- [x] **`4.7.0` — namespacing audit and stacking fixes** (staged, see "Ready to publish"). Prompted
+      by the user: "reverify z-index for each case by testing it in browser" and "this package's css
+      names must not ever conflict with any other css of user's css".
+  - [x] **CSS namespacing, completed.** The user's own commit `aaeeb9e` ("Accessibility improved")
+        had already prefixed every class `nq-`. The audit (postcss over `dist/noviq-ui.css`, then a
+        rendered sweep) found the rest: 18 custom properties on `:root` unprefixed (`--primary`,
+        `--radius`, `--shadow`… — the real collision risk, an app's own tokens overwrite or are
+        overwritten), 2 `@keyframes` (`table-spin`, `reject-action-fade-up`), react-select's
+        `classNamePrefix="rs"` (`rs__control`…), one class of mine (`table-pagination-left`), and
+        `lucide-react` stamping `lucide` / `lucide-<name>` on every icon. All fixed:
+        tokens → `--nq-*` (318 uses), keyframes/prefix → `nq-`, and an in-house `Icon` built from the
+        same lucide path data (ISC licence kept in `icons.ts`; `lucide-react` removed). Opt-in
+        `legacy-tokens.css` (exported as `noviq-ui/legacy-tokens.css`) maps old → new for apps that
+        themed through the old names; a test keeps it in step with `tokens.css`.
+  - [x] **Guard**: `src/cssNamespace.test.tsx` — every class / custom property / keyframes /
+        animation in the stylesheets is `nq-`/`--nq-`; every selector names an `nq-` class (no bare
+        element, `:root` only for `--nq-` tokens, no ids); every `className` literal (a small
+        scanner that follows ternaries inside template literals) is `nq-`; a rendered sweep of every
+        component with menus/drawers/pickers/react-select open finds no class that isn't `nq-` (or
+        emotion's `css-<hash>`). Mutation-checked, including a ternary-hidden class.
+  - [x] **z-index, re-verified in a real browser by hit-testing** (`elementFromPoint` at the centre
+        of each popup, a harness stored in the demo's new Stacking section). Found and fixed:
+        (1) the reject popover (`z-index: 10`) hidden behind any Modal/Drawer; (2) a Modal opened
+        from a Drawer rendered *behind* it — equal `z-index` 1200 and the Modal, rendered in place,
+        earlier in the DOM; (3) `Modal` was never portaled although the README said so: a host
+        wrapper with `transform` offset it from the viewport (overlay rect `[24,330,976×920]` in a
+        1024×768 window), and one with `position: relative; z-index: 1` let the host's own z 1030
+        nav paint over its backdrop; (4) a `FullPageSection` sticky footer (`z-index: auto`) was
+        painted under a table's pinned cells (z 2). Fixes: Modal portals to `<body>`;
+        `useOverlayZIndex` gives each modal/drawer the next depth (step 10, panel +1) when it opens
+        — keeps it while open, releases on close, keeps its last value while animating out; every
+        popup uses `--nq-z-popover`; new `--nq-z-bar` (6) for the footer. No z-index number is left
+        in a stylesheet or component (test). `--nq-z-popover` = `--nq-z-overlay` + 310, so one knob
+        (`--nq-z-overlay: 3000`) moves modals and popups together — verified against a 2500 host nav.
+  - [x] Verified OK in a real browser, inside both Modal and Drawer: Date/Time/Month pickers,
+        react-select menu, DropdownMenu, Export menu, page-size menu, reject popover, Columns and
+        Filters drawers opened from a Table inside the overlay (each with its own backdrop covering
+        the parent); drawer from modal, modal from drawer, modal → drawer → modal three deep;
+        Escape closes only the top layer; hostile wrappers (`position:relative; z-index:1`,
+        `transform`, `filter`, `will-change`, `contain: paint`, `isolation`, `overflow:hidden`)
+        leave modal and drawer full-viewport and above a host nav; the loading veil covers pinned
+        cells; the sticky footer covers pinned cells.
+  - [x] Tests: library 958 (up from 887); demo 90 (up from 83) — the 7 new stacking consumer tests
+        fail on the published 4.6.0. Lesson kept: the Vite dev server keeps a pre-bundled copy of the
+        old library — after installing a new tarball, delete `node_modules/.vite` AND restart the
+        server, or the browser tests the previous build (it showed old `--primary` tokens).
+  - [x] Heads-up for the changelog: the **published `4.6.0` already contains the user's `nq-` class
+        rename** (see "Published"), i.e. a class-name change shipped in a minor.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -790,12 +839,19 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   search and paging, `column.cell`'s `rawValue`, labelled `Input type="search"`.
 - `4.5.0` — live on npm (published 2026-10-16 06:31:07Z; verified: tarball sha1 `126d1961…` identical to
   the staged one, 61 files). `config.text` (96 keys), two new accessible names.
+- `4.6.0` — live on npm (published 2026-10-16 07:17Z). **Not the tarball I staged**: registry sha1
+  `61ba8642…` (61 files) vs my staged `3481a811…`. It was packed from the working tree after the
+  user's commit `aaeeb9e`, so it has the **`nq-` class prefix** (223 classes) on top of the 4.6.0
+  work, but still unprefixed custom properties (`:root{--font-size…}`), `lucide` classes and an
+  unportaled Modal — all fixed in 4.7.0.
 
 ## Ready to publish
-- `4.6.0` — **minor, additive**. Gate: `tsc` clean, 887/887 library tests, build, `npm pack`
-  (`noviq-ui-4.6.0.tgz`), demo typecheck + build + 83 consumer tests against the tarball (the 9 new
-  ones fail on 4.5.0), real-browser checks. Awaiting `npm publish` by the user (OTP).
-- Nothing else is waiting: `4.3.1`, `4.4.0` and `4.5.0` are live (see "Published").
+- `4.7.0` — **minor**. Custom properties are renamed (`--primary` → `--nq-primary`…; opt-in
+  `legacy-tokens.css` bridges the old names), `lucide-react` is gone, `Modal` is portaled, overlays
+  stack by open order, and four stacking bugs are fixed (see "Done"). Gate: `tsc` clean, 958/958
+  library tests, build, `npm pack` (`noviq-ui-4.7.0.tgz`, 65 files), demo typecheck + build + 90
+  consumer tests against the tarball, real-browser checks. Awaiting `npm publish` by the user (OTP).
+- Nothing else is waiting: `4.3.1` … `4.6.0` are live (see "Published").
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred

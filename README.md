@@ -75,6 +75,27 @@ depended on `noviq-ui`.
   >
 ```
 
+## What changed in 4.7.0
+
+A real-browser pass over every popup inside every overlay, plus an audit of everything noviq-ui
+puts in the page's CSS namespace. Two things you might notice:
+
+- **Custom properties are renamed: `--primary` → `--nq-primary`, `--radius` → `--nq-radius`, …**
+  (18 tokens). Classes were already `nq-*` (4.6.0). Before, noviq-ui defined `--primary`,
+  `--radius`, `--shadow`… on `:root` — names an app's own CSS commonly uses, so one overwrote the
+  other. Now nothing noviq-ui ships can collide with your CSS. **If you themed by overriding the
+  old names**, either rename your overrides (table in "Theming") or, to change nothing else, add
+  `import "noviq-ui/legacy-tokens.css"` after `noviq-ui/style.css`.
+- **`lucide-react` is no longer a dependency.** It stamped the global classes `lucide` and
+  `lucide-<name>` on every icon, which your CSS (or your own use of lucide) could match. The icons
+  are the same shapes, drawn by noviq-ui without any class.
+- **`Modal` is portaled to `<body>`** (the docs always said it was; it rendered in place). Under a
+  host wrapper with `transform`, `filter` or `z-index` it could be offset from the viewport or sit
+  under your own header.
+- **Stacking fixes** (see "Stacking and z-index"): a Modal opened from a Drawer used to render
+  *behind* it; the reject popover was hidden behind any Modal or Drawer; a `FullPageSection`'s
+  sticky footer was painted under a table's pinned columns.
+
 ## What changed in 4.6.0
 
 All additive: nothing that worked changes, and each new behaviour is opt-in or fixes something that
@@ -892,6 +913,74 @@ More components will be added in future releases.
 
 ## Theming
 
-Components are styled with plain CSS driven by `:root` custom properties (see
-`src/styles/tokens.css`), not a CSS framework. Override any of `--primary`, `--danger`,
-`--heading`, `--border-color`, `--radius`, etc. in your own app's CSS to re-theme.
+Components are styled with plain CSS driven by `:root` custom properties (`src/styles/tokens.css`),
+not a CSS framework. **Everything noviq-ui puts in the page's CSS namespace is prefixed**, so it can
+never collide with your own stylesheet: classes are `nq-…`, custom properties `--nq-…`, keyframes
+`nq-…`. (A test fails the build if one isn't.) Override a token in your own CSS to re-theme:
+
+```css
+:root {
+  --nq-primary: #7c3aed;
+  --nq-radius: 10px;
+}
+```
+
+| Token | Default | Is |
+| --- | --- | --- |
+| `--nq-primary` / `--nq-primary-hover` | `#02699b` / `#025a85` | brand colour, primary buttons, focus, selection |
+| `--nq-danger` / `--nq-danger-hover` | `#ff0000` / `#e60000` | destructive actions, errors |
+| `--nq-heading` / `--nq-text-color` | `#272727` / `#6b6b6b` | headings and labels / body text |
+| `--nq-muted` / `--nq-muted-hover` | `#6b7280` / `#4b5563` | secondary text and icons |
+| `--nq-light` | `#ffffff` | surfaces (cards, inputs, popups) |
+| `--nq-secondary-background` | `#f2f2f2` | disabled fields, soft fills |
+| `--nq-surface-hover` | `#e6f1fe` | hovered rows, menu items |
+| `--nq-border-color` | `#e0e5eb` | borders and dividers |
+| `--nq-radius` / `--nq-radius-sm` | `6px` / `4px` | corner radii |
+| `--nq-shadow` | `0 20px 40px rgba(0,0,0,.15)` | modals, drawers, popups |
+| `--nq-overlay-bg` | `rgba(0,0,0,.5)` | the backdrop behind a modal or drawer |
+| `--nq-font-size` | `14px` | base font size |
+| `--nq-z-sticky`, `-loading`, `-bar`, `-overlay`, `-popover` | see below | the z-index scale |
+
+**Coming from 4.6 or earlier, where the tokens had no prefix** (`--primary`, `--radius`,
+`--border-color`, `--shadow`, `--z-overlay`…): rename your overrides — the new name is the old one
+with `nq-` after the dashes — or import the bridge, which makes each `--nq-*` token follow your
+old-named property when you define one:
+
+```javascript
+import "noviq-ui/style.css";
+import "noviq-ui/legacy-tokens.css"; // optional: only if you themed through the old names
+```
+
+Don't import the bridge otherwise: it makes noviq-ui read your app's own `--primary`, `--radius`,
+`--shadow`… whatever they mean there — the very coupling the prefix removes.
+
+### Stacking and z-index
+
+Every layer comes from one scale in `tokens.css`; no component has its own number.
+
+| Layer | Token | Default |
+| --- | --- | --- |
+| a table's pinned columns | `--nq-z-sticky` | `2` |
+| a table's loading veil | `--nq-z-loading` | `5` |
+| a sticky page bar (`FullPageSection`'s footer) | `--nq-z-bar` | `6` |
+| modals and drawers | `--nq-z-overlay` | `1200` |
+| pickers, menus, select lists, the reject popover | `--nq-z-popover` | `--nq-z-overlay` + 310 (`1510`) |
+
+- **Overlays stack in the order they open**, not the order they were mounted: each modal or drawer
+  takes the next step of 10 above the highest one open (a drawer's panel is one above its backdrop).
+  So a Drawer opened from a Modal, a Modal opened from that Drawer, and a Drawer opened by a Table
+  inside either all end up on top of the one that opened them — and stay put when a lower one closes.
+- **Popups are above every overlay**, however deep: pickers, `DropdownMenu`, the select lists, the
+  Export menu, the page-size menu and the reject popover all use `--nq-z-popover`.
+- **`Modal`, `Drawer` and every popup are portaled to `<body>`**, so a wrapper in your layout with a
+  `transform`, `filter`, `contain` or its own `z-index` can't trap them or shift them off the
+  viewport.
+- **Your own layers above 1200** (a header at `z-index: 2500`, say) would paint over a modal. Raise
+  one token — the popups follow it:
+
+```css
+:root { --nq-z-overlay: 3000; }
+```
+
+Keep your toast/notification layer above `--nq-z-popover` if you want it over modals.
+

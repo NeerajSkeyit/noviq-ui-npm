@@ -3,7 +3,7 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v4.5.0** on npm, with **`4.6.0` staged** (`1.1.0` shipped
+**v4.6.0** on npm, with **`4.7.0` staged** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
@@ -62,8 +62,8 @@ swapping a consumer frontend over to it is explicitly deferred to a later phase.
 - No CSS-in-JS / Tailwind — plain CSS files per component, themed via CSS custom properties
   centralized in `src/styles/tokens.css` (imported once from `src/index.ts`) — `--primary`,
   `--danger`, `--heading`, `--border-color`, `--radius`, `--shadow`, `--overlay-bg`, `--muted`,
-  `--surface-hover`, etc.
-- Regular (non-peer) `dependencies`: `lucide-react` (icons), `framer-motion` (Modal's enter/exit
+  `--surface-hover`, etc. (all renamed `--nq-*` in 4.7)
+- Regular (non-peer) `dependencies` (`lucide-react` was dropped in 4.7: icons are in-house, see "CSS names and stacking"): `framer-motion` (Modal's enter/exit
   animation), `react-select` (Input's select/multiSelect, Table's page-size dropdown),
   `react-hotkeys-hook` (ActionBar's `/`-to-focus-search shortcut, also
   reused by `RejectAction`'s Escape-to-close — needs `{ enableOnFormTags: true }` since its reason
@@ -149,7 +149,7 @@ noviq-ui/
 ├── vite.config.ts                   # library build config + dev server port (5176)
 ├── vitest.config.ts                 # test runner config
 ├── tsconfig.json / tsconfig.node.json
-└── package.json                     # deps: lucide-react, framer-motion, react-select,
+└── package.json                     # deps: framer-motion, react-select,
                                       #   react-hotkeys-hook, @tanstack/react-query, xlsx-js-style
 ```
 
@@ -168,8 +168,8 @@ stayed as noviq-ui's existing native `<input>` implementations rather than HRMS'
 (`onChange(value: any) => void`), matching all 92 HRMS call sites so future page-level porting is
 closer to copy-paste. New `required`/`helper` props and an internal `InputContainer` layout
 (label + required-asterisk + helper/error text) that HRMS's original had but noviq-ui's scaffold
-didn't. Icons consolidated onto `lucide-react` only (source mixed in `react-icons/fa` for 3
-icons — dropped). No i18n dependency (`react-i18next` dropped; 2 strings hardcoded, matching the
+didn't. Icons were consolidated onto `lucide-react` only (source mixed in `react-icons/fa` for 3
+icons — dropped); since 4.7 they are drawn by `components/Icon` from the same path data. No i18n dependency (`react-i18next` dropped; 2 strings hardcoded, matching the
 rest of the component's existing convention). `excelUpload` re-themed onto the same dropzone
 visual language as `file`/`multipleFile` instead of porting raw Bootstrap utility classes.
 Fallback: an unrecognized `type` renders `Unsupported input type: <type>` (it used to be the
@@ -650,6 +650,30 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   `exportSuccess`/`exportFailure`.
 - The reject action's `rejectReasonRequired` is unreachable by clicking (Confirm is disabled while
   the box is empty) but kept: the validation function is the same path as the others.
+
+## CSS names and stacking (`4.7.0`)
+- **Namespacing rule** (user, 2026-10-16: "css names must not ever conflict with any other css of
+  user's css"): every class `nq-`, every custom property `--nq-`, every keyframes `nq-`, no bare
+  element / id / `:root` selector except the `--nq-` token block, react-select `classNamePrefix`
+  `nq-rs`, no third-party class names in the DOM. `cssNamespace.test.tsx` enforces it on the source,
+  and sweeps the rendered DOM; emotion's hashed `css-…` (react-select) is the only other class.
+  Icons are `components/Icon` (path data from lucide, ISC notice in `icons.ts`); to add one, copy its
+  `__iconNode` from lucide-react into `ICON_NODES` (nothing else needs to change).
+- **Tokens**: `styles/tokens.css`; `legacy-tokens.css` at the package root (not under `src/`, so the
+  guard doesn't scan it) is the opt-in bridge — each `--nq-X: var(--X, <default>)`; a test keeps the
+  defaults identical.
+- **Stacking**: `--nq-z-sticky 2 < --nq-z-loading 5 < --nq-z-bar 6 < --nq-z-overlay 1200 <
+  --nq-z-popover (overlay + 310)`; `zIndexScale.test.ts` bans numeric z-indexes and asserts the order
+  and room (≥ 20 overlays). `hooks/useOverlayZIndex.ts`: module-level `Map<symbol, depth>`; a modal
+  or drawer takes `highest + 1` in a layout effect when it opens (`calc(var(--nq-z-overlay) + 10*d)`,
+  drawer panel `+1`), keeps it while open, deletes it on close/unmount, and keeps its last string while
+  closing so it doesn't dip behind a lower layer mid-animation. `Modal` portals to `document.body`
+  (null without a `document`). Popups use `Z_INDEX.POPOVER` inline or the token in CSS.
+- **Verifying stacking needs a real browser**: jsdom has no layout. The demo's *Stacking* section
+  (`stack-open-modal`, `stack-open-drawer`, host-nav toggle, loading toggle, `fps-box`) exists so the
+  hit-testing harness (centre of each popup → `elementFromPoint` → is it inside the popup?) can be
+  re-run. Wait for a drawer's slide-in to finish (computed transform = identity) before measuring,
+  and pick the top-most open drawer by z-index, not DOM order.
 
 ## 4.6.0 — Table ergonomics and opt-ins
 - **`serverSort`** (`Table.tsx`): `sortParams` (memo) = `{[sortBy]: column.sortKey ?? accessorKey ?? id,
