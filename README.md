@@ -5,7 +5,8 @@ It provides reusable UI components that can be shared across multiple projects.
 
 **Keywords:** react components, ui library, component library, design system, typescript,
 form components, data table, react table, drawer, modal, dropdown, admin dashboard, date picker,
-time picker, month picker, i18n, locale, currency formatting, client-side search.
+time picker, month picker, i18n, locale, translation, localization, currency formatting,
+client-side search.
 
 ## Installation
 
@@ -73,6 +74,17 @@ depended on `noviq-ui`.
     }}
   >
 ```
+
+## What changed in 4.5.0
+
+- **`config.text`: every label, placeholder and message the library shows can be replaced** — one
+  key at a time, in `NoviqUIConfigProvider`. 96 keys, all defaulting to the English you see today,
+  so nothing changes until an app sets one. See "Text and translation" below.
+- **Two accessible names that were missing** (they read as unnamed buttons to a screen reader):
+  the pager's four arrows ("First page" … "Last page") and the `Drawer`'s close button ("Close").
+  Both are text keys.
+- No default changed in this release. An unconfigured app renders exactly what 4.4.0 did, apart
+  from the two new `aria-label`s.
 
 ## What changed in 4.4.0
 
@@ -687,6 +699,68 @@ a `<Table apiFunction>` there without a `responseFormat` would throw.
 The browser's own `<input type="date|time|month">` (`Input type="date"`, the date fields inside the
 filter drawer) is rendered by the browser in the user's locale and can't be reformatted. Use
 `datePicker` / `timePicker` / `monthPicker` where the format has to match.
+
+## Text and translation
+
+Everything the components say in English — the search placeholder, "No data found", the pager,
+"3 rows selected", the picker buttons, validation messages, export results — comes from one
+dictionary, and `config.text` replaces any of it:
+
+```javascript
+<NoviqUIConfigProvider
+  config={{
+    text: {
+      tableSearchPlaceholder: "Buscar...",
+      tableEmpty: "No se encontraron datos",
+      paginationSummary: "Mostrando {start} a {end} de {total} resultados",
+      paginationPage: "Página {page} de {pages}",
+      bulkSelectedOne: "{count} fila seleccionada",
+      bulkSelected: "{count} filas seleccionadas",
+      dateToday: "Hoy",
+    },
+  }}
+>
+```
+
+- **Any subset.** A key you leave out keeps its English default, so you can translate screen by
+  screen, or only reword one message. `import { DEFAULT_TEXT } from "noviq-ui"` is the full list of
+  keys with their defaults; `TextKey` is its key type, and typing your dictionary as
+  `Record<TextKey, TextValue>` makes the compiler tell you when a release adds a key.
+- **`{placeholders}`** mark where the component puts a value (`{count}`, `{start}`, `{page}`,
+  `{label}`, `{date}`, `{min}`, `{browse}`…). Move them wherever your language needs them. A
+  placeholder you misspell is left as written, so it shows on screen instead of vanishing.
+- **A function instead of a string** gets those values and returns the text — for plurals a
+  template can't express:
+  `bulkSelected: ({ count }) => new Intl.PluralRules("ru").select(Number(count)) === "few" ? … : …`.
+  A function that throws or returns a non-string is reported (in development) and the English
+  default is used, so a bad translation can't stop a component from rendering.
+- **`bulkSelectedOne` / `bulkSelected`** (and `inputFilesSelectedOne` / `inputFilesSelected`) are a
+  singular/plural pair; the library picks one by count.
+- **Props still win.** `placeholder`, `searchPlaceholder`, `emptyMessage`, `title`, `submitLabel`,
+  `cancelLabel`, `loadingLabel`, `rejectText` and `noOptionsMessage` override the text for that one
+  component, exactly as before.
+- **Where the keys live**, by prefix: `table…`/`pagination…`/`bulk…`/`columns…`/`column…`/
+  `filter…`/`export…`/`status…` (Table and its parts), `reject…` (the reject-with-reason popover and
+  its validation), `time…`/`date…`/`month…` (the pickers), `form…`/`drawer…` (FormFooter,
+  FullPageSection, Drawer), `input…` (placeholders, select, file and Excel upload).
+- **Not in the dictionary:** copy that is *your data* — column headings, filter labels, row-action
+  labels, status values (other than `true`/`false`, shown as Active/Inactive), the `Form`'s field
+  labels — which you already write in your own language; developer-facing errors and warnings
+  (they stay English); the AM/PM markers; and the "Unsupported input type" fallback.
+- **Nested providers replace**, as with `formats`: a `NoviqUIConfigProvider` inside another one
+  does not inherit its `text`. Repeat it, or spread the parent's config.
+
+To find strings you haven't translated, render with every default wrapped and look for any that
+come out bare:
+
+```javascript
+import { DEFAULT_TEXT } from "noviq-ui";
+const pseudo = Object.fromEntries(Object.entries(DEFAULT_TEXT).map(([k, v]) => [k, `«${v}»`]));
+// <NoviqUIConfigProvider config={{ text: pseudo }}> … anything shown without « » is still hard-coded
+```
+
+Month and weekday names, number and currency formats follow `formats.locale` (see "Regional
+settings"); `text` is for the words around them.
 
 ## Currently available components
 

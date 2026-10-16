@@ -654,6 +654,39 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         existing exact-match assertions on `resolveFormats()` / `useDateTimeFormats()` were
         updated for the three new fields on purpose.
 
+- [x] **`4.5.0` — copy and translation** (staged, see "Ready to publish"; additive, no default changed).
+  - [x] **`NoviqUIConfig.text`**: a per-key replacement of every label, placeholder and message the
+        components show. `DEFAULT_TEXT` in `constants.ts` is the one list of English (96 keys;
+        public, with `TextKey`, `NoviqUIText`, `TextValue`, `TextParams`). A value is a string with
+        `{placeholders}` or a function of the placeholders (plurals); an unset key keeps its
+        default; component props (`placeholder`, `emptyMessage`, `searchPlaceholder`, `title`,
+        `submitLabel`, `cancelLabel`, `loadingLabel`, `rejectText`, `noOptionsMessage`) still win.
+        `useText()` (internal) resolves it; `richText()` keeps a styled word/number inside a
+        translated sentence (the pager's highlighted numbers, the bold "browse") by asking for the
+        text with markers and splitting on them — works for templates and functions alike, so a
+        translation can reorder placeholders. A throwing / non-string function falls back to the
+        default (dev warning) so a bad translation can't break a render.
+  - [x] **Routed through it**: Table (search placeholder, empty, loading, actions heading, pager, bulk
+        bar, columns chooser, filters + chips + the From/Until chip text, export menu and its
+        `notify` messages, status labels, reject action + validation), TimePicker, DatePicker,
+        MonthPicker, FullPageSection, FormFooter, Drawer, Input (placeholders, select empty
+        message, file / multiple-file / Excel upload text). `EXPORT_MESSAGE` was folded into
+        `DEFAULT_TEXT`; `buildActiveFilter` and `formatStatusLabel` take an optional `text`.
+  - [x] Two accessible names that did not exist: the pager's four arrow buttons and the Drawer's
+        close button.
+  - [x] Provider validation: non-object `text` / non-string-or-function value throws; an unknown
+        key only warns in development (a key removed later must not crash an app that still sets it).
+  - [x] Tests: library 823 (up from 753). **Pseudo-localisation**: every default wrapped in «», each
+        component rendered, and the DOM text/aria/title/placeholder checked for any bare default;
+        12 string-literal regressions mutation-checked (all killed). A new guard in
+        `constants.test.ts` fails if any `DEFAULT_TEXT` value (≥4 chars) is written as a literal
+        outside `constants.ts`. Demo: a complete Spanish dictionary typed `Record<TextKey,…>` (so a
+        new library key breaks the demo build until translated) and 11 consumer tests; 74 total
+        against the tarball. Real browser: Spanish table/pager/bulk bar/filters/pickers/footer/
+        Excel input, and a real CSV export reporting "Exportación completada".
+  - [x] Found while auditing: the auto-injected **"Actions" column heading** was hard-coded (now
+        `tableActionsHeading`), and `Input`'s file inputs had two more strings and a plural.
+
 ## Published
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
@@ -709,22 +742,20 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   removed) and the zero-based 12-hour / every-minute TimePicker. `noviq-ui-demo/web` is on
   `^4.3.0` from the registry (typecheck, build and 52 consumer tests green).
 
-- `4.3.1` — **NOT published** (checked against the registry on 2026-10-15: `latest` is `4.3.0`,
-  `npm view noviq-ui@4.3.1` is a 404). The publish most likely failed on the OTP / web-auth 403.
-  Its fixes ship in `4.4.0`, as `4.2.1`'s did in `4.3.0`.
+- `4.3.1` — live on npm (published 2026-10-15 09:53Z by `neerajyadavskit`, after an earlier
+  attempt failed on the OTP / web-auth 403; for a while the registry showed `latest` = `4.3.0`).
+  57 files; `dist/` byte-identical to the staged tarball, only `README.md` differed.
+- `4.4.0` — live on npm (published 2026-10-15 14:42:56Z; verified against the registry: tarball sha1
+  `158b43fc…` identical to the staged one, 58 files). Regional settings (`formats.locale` /
+  `currency` / `weekStart`), `TimePicker`'s default clock now 12-hour, `preFetchedData` client-side
+  search and paging, `column.cell`'s `rawValue`, labelled `Input type="search"`.
 
 ## Ready to publish
-- `4.4.0` — **minor** (regional settings, prefetched search/paging, `cell` raw value, search
-  `Input`; one default change — see "Done"). Gate: `tsc` clean, 753/753 library tests, build,
-  `npm pack` (58 files, `noviq-ui-4.4.0.tgz`), demo typecheck + build + 63 consumer tests against
-  the tarball, real-browser checks. Awaiting `npm publish` by the user (OTP).
-- `4.3.1` — **superseded by `4.4.0`; never published.** Patch. Nested overlays keep the page scroll-locked until the last one closes;
-  `Table` shows its loading state (and no "No data found" underneath it) while prefetched rows are
-  still arriving and on the first `apiFunction` load; `Checkbox` is accessible without
-  `style.css`; `DropdownMenu` closes on Escape; `FilterDrawer`'s `onRemoveFilter` is optional.
-  Gate: `tsc` clean, 646/646 library tests, build, `npm pack` (57 files), demo typecheck + build +
-  57 consumer tests against the packed tarball (5 fail on 4.3.0), real-browser checks.
-  Awaiting explicit go-ahead to `npm publish`.
+- `4.5.0` — **minor, additive** (`config.text`; no default changed). Gate: `tsc` clean, 823/823 library
+  tests, build, `npm pack` (61 files, `noviq-ui-4.5.0.tgz`), demo typecheck + build + 74 consumer
+  tests against the tarball (the 11 new ones fail on 4.3.1), real-browser checks. Awaiting
+  `npm publish` by the user (OTP).
+- Nothing else is waiting: `4.3.1` and `4.4.0` are live (see "Published").
 
 ## Not started
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
@@ -808,28 +839,32 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   argument is the raw value, which is `null`/`undefined` when empty.
 - `Table` `preFetchedData` + `filterConfigs`: the filter drawer builds API payloads only, so with
   handed-over rows filters have nothing to act on (no client-side filtering, no change callback).
+- **Unnamed table checkboxes.** The header select-all box and each row's box are `role="checkbox"`
+  with no accessible name (`Checkbox` has no `aria-label` prop). Add a prop and two text keys.
+- **Fixed English that is deliberately not in `config.text`:** developer errors/warnings, the
+  "Unsupported input type" fallback and "Invalid cell type" message, the AM/PM markers.
 - Only Chromium was exercised: no Firefox/Safari run, no screen-reader pass, no RTL.
 - The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
   the browser); only the CSV bytes are asserted.
 
-## Roadmap (as of `4.4.0`)
+## Roadmap (as of `4.5.0`)
 Each release is one theme, small enough to verify in the demo before publishing. Order is by
 user-visible damage first, then by how much later work depends on it.
 
-### `4.3.1` — correctness patch (no API change) — done, staged
+### `4.3.1` — correctness patch (no API change) — done, published
 ~~1. Reference-counted body scroll lock.~~ ~~2. `isPrefetchedDataLoading` while empty (+ no "No
 data found" under the spinner).~~ ~~3. `Checkbox` accessible without `style.css`.~~ ~~4.
 `DropdownMenu` closes on Escape.~~ ~~5. `FilterDrawer.onRemoveFilter` optional.~~
 
-### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`) — done, staged
+### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`) — done, published
 ~~1. `formats.locale` / `formats.currency`.~~ ~~2. `weekStart`, locale month/weekday names.~~ ~~3.
 Table client-side search (and paging) for `preFetchedData`; `cell()` raw value.~~ ~~4. `Input
 type="search"` label/error/helper.~~ ~~Time default unified: 12-hour `hh:mm A` everywhere.~~
 
-### `4.5.0` — copy and localisation
-User-facing strings ("Cancel", "Showing x to y of z results", aria labels…) become constants and
-are overridable through `config.text` (the `config.i18n` item from the original spec). Unblocks
-any non-English app. Largest remaining sweep in the library.
+### `4.5.0` — copy and localisation — done, staged
+~~User-facing strings become constants and are overridable through `config.text`.~~ Left over:
+AM/PM markers (the `A` token and the picker's AM/PM column) are still fixed English; digits stay
+Latin; genitive month forms; the select-all / per-row checkboxes have no accessible name; RTL.
 
 ### `4.6.0` — Table ergonomics
 Server-side sort option (today sort only reorders the loaded page); chip click reopens the filter

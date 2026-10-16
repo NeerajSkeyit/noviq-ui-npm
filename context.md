@@ -3,7 +3,7 @@
 ## What it is
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
-**v4.3.0** on npm, with **`4.4.0` staged** (`1.1.0` shipped
+**v4.4.0** on npm, with **`4.5.0` staged** (`1.1.0` shipped
 Button/ScrollArea/Drawer/Modal; `2.0.0` shipped an Input rewrite plus Label/Switch/FormFooter/Form;
 `2.1.0`–`2.5.0` shipped `Table` in sub-phases 3a–3d — core, column management, row/bulk actions,
 filters, Excel/CSV export; `2.5.1` fixed `Drawer`'s missing responsive breakpoint; `2.5.2` fixed a
@@ -16,8 +16,8 @@ the `datePicker`/`timePicker`/`monthPicker` `Input` types, and the `src/constant
 is on the registry with `npm view` / a bundle hash before assuming); `4.2.0` adds `FullPageSection`;
 `4.3.0` adds configurable date/time formats and carries the Escape-layering, phone-pagination and
 dead-field-type fixes — see "Date and time formats" and "Overlays and Escape" below; `4.3.1` was
-prepared but never reached the registry, so `4.4.0` carries its fixes and adds regional settings —
-see "Regional settings" below). The `2.5.x`
+published on 2026-10-15 after one failed attempt; `4.4.0` adds regional settings — see "Regional
+settings" below; `4.5.0` adds `config.text` — see "Text and translation"). The `2.5.x`
 fixes were found via
 `noviq-ui-demo`, a standalone sibling project that installs the real published package against a
 real backend. See `progress.md` for the
@@ -612,6 +612,42 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   accept, so callers that built `{ date, time, dateTime }` by hand keep compiling.
 - **Not translated**: digits (always Latin), the AM/PM marker, UI copy (4.5.0), genitive month
   forms. The provider validates the three settings and throws on mount.
+
+## Text and translation (`config.text`, `4.5.0`)
+`NoviqUIConfig.text` = a per-key replacement of the library's English copy. **`DEFAULT_TEXT` in
+`constants.ts` is the single list** (96 keys, grouped by component prefix; public, with `TextKey`,
+`NoviqUIText`, `TextValue`, `TextParams`). A value is a string with `{placeholders}` or a function
+`(params) => string`.
+- **Resolution**: `utils/text.ts` — `formatText` (fills `{name}`; a missing param is left as written;
+  the replacer is a function so `$&` in a param is inert) and `resolveText(defaults, overrides, key,
+  params)` (string override → function override, which falls back to the default if it throws or
+  returns a non-string, with a dev warning). `hooks/useText.ts` returns `t(key, params)`, memoised on
+  `config.text` identity. Components never read `config.text` directly except where a plain function
+  needs it (`buildActiveFilter(…, text)`, `formatStatusLabel(status, text)`, `getExportCellValue`),
+  which take an optional `NoviqUIText`.
+- **Styled words inside a sentence** (the pager's highlighted numbers, the bold "browse"):
+  `utils/richText.tsx` asks `t` for the text with a marker (`\u0001name\u0001`) in each placeholder's
+  place and splits on the markers, so it works for templates and for functions and lets a translation
+  reorder placeholders.
+- **Precedence**: a component prop (`placeholder`, `emptyMessage`, `searchPlaceholder`, `title`,
+  `submitLabel`/`cancelLabel`/`loadingLabel`, `rejectText`, `noOptionsMessage`) > `config.text` >
+  default. Those props used to carry the English default in the destructuring (`title = "Drawer"`);
+  now they are `undefined` by default and the fallback is `?? t(...)`.
+- **Singular/plural** pairs are separate keys (`bulkSelectedOne`/`bulkSelected`,
+  `inputFilesSelectedOne`/`inputFilesSelected`) chosen by count; anything subtler is a function.
+- **Provider validation**: `text` must be an object; each value a string or function (else throws);
+  an unknown key only `devWarn`s — a key removed in a later release must not crash an app.
+- **Guards**: `constants.test.ts` fails if any `DEFAULT_TEXT` value of ≥4 chars appears as a quoted
+  literal or JSX text outside `constants.ts` (a `className="browse"` is exempt). `components/
+  localisedText.test.tsx` is the pseudo-localisation test — every default wrapped in `«»`, each
+  component rendered, and any bare default left in the DOM text/aria-label/title/placeholder fails it.
+- **Not in the dictionary** (deliberately): app data (headings, filter/row-action labels, status
+  values other than `true`/`false`), developer errors and warnings, the "Unsupported input type"
+  and "Invalid cell type" fallbacks, AM/PM markers. New accessible names this release: the pager's
+  four arrows and the Drawer's close button. `EXPORT_MESSAGE` no longer exists; the export strings are
+  `exportSuccess`/`exportFailure`.
+- The reject action's `rejectReasonRequired` is unreachable by clicking (Confirm is disabled while
+  the box is empty) but kept: the validation function is the same path as the others.
 
 ## Overlays and Escape
 `Modal` and `Drawer` register on a module-level **layer stack** (`hooks/useEscapeLayer.ts`): one
