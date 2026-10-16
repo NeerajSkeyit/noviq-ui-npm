@@ -10,7 +10,7 @@ import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
 import { useText } from "../../hooks/useText";
 import { richText } from "../../utils/richText";
 import { devError } from "../../utils/devWarn";
-import { BUTTON_TYPE, INPUT_TYPE, type HourCycle } from "../../constants";
+import { BUTTON_TYPE, INPUT_TYPE, Z_INDEX, type HourCycle } from "../../constants";
 import "./Input.css";
 
 export interface InputOption {
@@ -131,7 +131,7 @@ function customSelectStyles(error?: string): StylesConfig<InputOption, boolean> 
     }),
     menu: (base) => ({ ...base, borderRadius: "4px", overflow: "hidden" }),
     menuList: (base) => ({ ...base, padding: "6px" }),
-    menuPortal: (base) => ({ ...base, zIndex: 1300 }),
+    menuPortal: (base) => ({ ...base, zIndex: Z_INDEX.POPOVER }),
     option: (base, state) => ({
       ...base,
       fontSize: "14px",

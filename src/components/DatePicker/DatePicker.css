@@ -1,5 +1,5 @@
 .nq-date-picker-dropdown {
-  z-index: 1510;
+  z-index: var(--nq-z-popover);
   width: 288px;
   padding: 10px;
   box-sizing: border-box;

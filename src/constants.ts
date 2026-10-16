@@ -339,6 +339,32 @@ export const DEFAULT_COLUMN_WIDTH = 140;
 export const SEARCH_DEBOUNCE_MS = 500;
 /** @internal Shortest reason a reject action accepts. */
 export const REJECT_REASON_MIN_LENGTH = 4;
+// ─── Stacking ──────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @internal The z-index scale is custom properties on `:root` (`styles/tokens.css`), so an app
+ * can move the whole set to sit above or below its own layers:
+ *   --nq-z-overlay  base of modals and drawers (each one opened on top gets OVERLAY_Z_STEP more)
+ *   --nq-z-popover  pickers, menus, select lists, the reject popover — always above every overlay
+ *   --nq-z-loading  a table's loading veil
+ *   --nq-z-sticky   a table's pinned columns
+ */
+export const Z_OVERLAY_VAR = "--nq-z-overlay";
+/** @internal */
+export const Z_POPOVER_VAR = "--nq-z-popover";
+/** @internal */
+export const Z_STICKY_VAR = "--nq-z-sticky";
+/** @internal Values for an inline `zIndex` (the stylesheets use the variables directly). */
+export const Z_INDEX = {
+  POPOVER: `var(${Z_POPOVER_VAR})`,
+  STICKY: `var(${Z_STICKY_VAR})`,
+} as const;
+/**
+ * @internal z-index between one open overlay and the next one opened on top of it. A drawer's
+ * panel takes one more than its own backdrop, so the step must leave room for that.
+ */
+export const OVERLAY_Z_STEP = 10;
+
 /** @internal Currency a `currency` cell falls back to when neither the column nor `formats.currency` sets one. */
 export const DEFAULT_CURRENCY = "INR";
 /** @internal Locale numbers are grouped by when `formats.locale` is not set (lakh/crore grouping). */

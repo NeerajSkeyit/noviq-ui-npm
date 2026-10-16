@@ -37,6 +37,7 @@ import {
   type ColumnAlign,
   type SortDirection,
   type StickyPosition,
+  Z_INDEX,
 } from "../../constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
@@ -544,7 +545,7 @@ function TableInner<T extends Record<string, any> = any>({
       position: "sticky",
       left: offset.left,
       right: offset.right,
-      zIndex: 2,
+      zIndex: Z_INDEX.STICKY,
     };
   };
 

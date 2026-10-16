@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
+import { Z_INDEX } from "../../constants";
 import "./Dropdown.css";
 
 export interface DropdownMenuItemProps {
@@ -121,7 +122,7 @@ export function DropdownMenu({ trigger, isOpen, setIsOpen, children }: DropdownM
           <div
             ref={contentRef}
             className="nq-dropdown-content"
-            style={{ position: "fixed", top: position.top, left: position.left, zIndex: 1510 }}
+            style={{ position: "fixed", top: position.top, left: position.left, zIndex: Z_INDEX.POPOVER }}
           >
             {React.Children.map(children, (child) =>
               React.isValidElement(child)

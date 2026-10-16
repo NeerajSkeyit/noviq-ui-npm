@@ -1,9 +1,11 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { X } from "../Icon/Icon";
 import Button from "../Button/Button";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import { useOverlayZIndex } from "../../hooks/useOverlayZIndex";
 import { BUTTON_SIZE, BUTTON_VARIANT, MODAL_SIZE, type ModalSize } from "../../constants";
 import "./Modal.css";
 
@@ -62,11 +64,16 @@ function Modal({
   useBodyScrollLock(isOpen);
 
   useEscapeLayer(isOpen, onClose);
+  const zIndex = useOverlayZIndex(isOpen);
 
-  return (
+  // Portaled to <body>, like Drawer: rendered where it is declared, a host ancestor with a
+  // `transform`, `filter` or `z-index` would trap it (misplaced, or under the app's own header).
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="nq-modal-overlay">
+        <div className="nq-modal-overlay" style={{ zIndex }}>
           <motion.div
             className="nq-modal-backdrop"
             variants={backdropVariants}
@@ -108,7 +115,8 @@ function Modal({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

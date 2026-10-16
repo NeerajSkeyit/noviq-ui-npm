@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import Button from "../Button/Button";
-import { BUTTON_VARIANT, HOTKEY, REJECT_REASON_MIN_LENGTH } from "../../constants";
+import { BUTTON_VARIANT, HOTKEY, REJECT_REASON_MIN_LENGTH, Z_INDEX } from "../../constants";
 import { useText, type TextFn } from "../../hooks/useText";
 import "./RejectAction.css";
 
@@ -144,7 +144,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
           <div
             ref={popoverRef}
             className="nq-reject-action-popover"
-            style={{ position: "fixed", top: position.top, left: position.left, zIndex: 10 }}
+            style={{ position: "fixed", top: position.top, left: position.left, zIndex: Z_INDEX.POPOVER }}
           >
             <h4>{t("rejectTitle")}</h4>
 

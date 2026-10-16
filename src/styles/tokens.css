@@ -20,5 +20,10 @@
   --nq-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   --nq-overlay-bg: rgba(0, 0, 0, 0.5);
 
+  /* Stacking scale — see "Stacking" in the README. Move the set to sit above or below your own
+     layers; keep popover above overlay + 10 per stacked modal/drawer. */
+  --nq-z-sticky: 2;
+  --nq-z-loading: 5;
   --nq-z-overlay: 1200;
+  --nq-z-popover: 1510;
 }

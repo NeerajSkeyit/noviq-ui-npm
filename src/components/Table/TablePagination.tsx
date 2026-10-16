@@ -5,7 +5,7 @@ import Button from "../Button/Button";
 import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
 import { useText } from "../../hooks/useText";
 import { richText } from "../../utils/richText";
-import { BUTTON_SIZE, BUTTON_VARIANT, DEFAULT_PAGE_SIZE_OPTIONS } from "../../constants";
+import { BUTTON_SIZE, BUTTON_VARIANT, DEFAULT_PAGE_SIZE_OPTIONS, Z_INDEX } from "../../constants";
 import "./TablePagination.css";
 
 export interface TablePaginationState {
@@ -44,7 +44,7 @@ const selectStyles: StylesConfig<PageSizeOption, false> = {
     background: state.isSelected ? "var(--nq-primary)" : state.isFocused ? "#f3f4f6" : "#fff",
     "&:hover": { background: state.isSelected ? "var(--nq-primary)" : "#f3f4f6" },
   }),
-  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  menuPortal: (base) => ({ ...base, zIndex: Z_INDEX.POPOVER }),
   valueContainer: (base) => ({ ...base, paddingRight: "0px" }),
   indicatorsContainer: (base) => ({ ...base, height: "32px" }),
 };

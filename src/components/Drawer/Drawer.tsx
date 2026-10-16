@@ -5,6 +5,7 @@ import Button from "../Button/Button";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import { useOverlayZIndex } from "../../hooks/useOverlayZIndex";
 import { useText } from "../../hooks/useText";
 import {
   BUTTON_SIZE,
@@ -55,6 +56,7 @@ function Drawer({
 
   useBodyScrollLock(isOpen);
   const t = useText();
+  const zIndex = useOverlayZIndex(isOpen);
 
   // Stay mounted through the slide-out, then let go. While open it is always mounted, in the same
   // render the drawer opens — no wait for an effect.
@@ -75,6 +77,7 @@ function Drawer({
       {isOpen && (
         <div
           className="nq-drawer-overlay"
+          style={{ zIndex }}
           onClick={() => {
             if (closeOnOutside) onClose();
           }}
@@ -85,11 +88,13 @@ function Drawer({
         className={`nq-drawer-content nq-drawer-${side} ${
           side === DRAWER_SIDE.LEFT || side === DRAWER_SIDE.RIGHT ? `nq-drawer-content-${size}` : ""
         } ${isOpen ? "nq-drawer-open" : ""}`}
-        style={
-          side === DRAWER_SIDE.TOP || side === DRAWER_SIDE.BOTTOM
+        style={{
+          ...(side === DRAWER_SIDE.TOP || side === DRAWER_SIDE.BOTTOM
             ? { height: DRAWER_HEIGHT_BY_SIZE[size], maxHeight: "100vh" }
-            : undefined
-        }
+            : undefined),
+          // One above its own backdrop, which is one step below the next overlay up.
+          zIndex: zIndex ? `calc(${zIndex} + 1)` : undefined,
+        }}
         aria-hidden={!isOpen}
       >
         <div className="nq-drawer-header">
