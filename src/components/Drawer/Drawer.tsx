@@ -5,6 +5,7 @@ import Button from "../Button/Button";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useEscapeLayer } from "../../hooks/useEscapeLayer";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import { useText } from "../../hooks/useText";
 import {
   BUTTON_SIZE,
   BUTTON_VARIANT,
@@ -31,7 +32,7 @@ export interface DrawerProps {
 function Drawer({
   isOpen,
   onClose,
-  title = "Drawer",
+  title,
   subtitle,
   children,
   footer,
@@ -44,6 +45,7 @@ function Drawer({
   useEscapeLayer(isOpen, closeOnOutside ? onClose : undefined);
 
   useBodyScrollLock(isOpen);
+  const t = useText();
 
   return createPortal(
     <>
@@ -69,7 +71,7 @@ function Drawer({
       >
         <div className="drawer-header">
           <span>
-            <h3 className="drawer-title">{title}</h3>
+            <h3 className="drawer-title">{title ?? t("drawerTitle")}</h3>
             {subtitle && <p className="drawer-subtitle">{subtitle}</p>}
           </span>
 
@@ -77,6 +79,7 @@ function Drawer({
             variant={BUTTON_VARIANT.GHOST}
             size={BUTTON_SIZE.ICON}
             className="drawer-close"
+            aria-label={t("drawerClose")}
             onClick={() => onClose()}
           >
             <X size={16} />

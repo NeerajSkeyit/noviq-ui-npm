@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import Button from "../Button/Button";
 import FormFooter from "../FormFooter/FormFooter";
 import { BUTTON_SIZE, BUTTON_TYPE, BUTTON_VARIANT } from "../../constants";
+import { useText } from "../../hooks/useText";
 import "./FullPageSection.css";
 
 export interface FullPageSectionProps {
@@ -37,12 +38,13 @@ function FullPageSection({
   onBack,
   onCancel,
   onSubmit,
-  submitLabel = "Submit",
-  cancelLabel = "Cancel",
+  submitLabel,
+  cancelLabel,
   loading = false,
-  loadingLabel = "Saving...",
+  loadingLabel,
   footer,
 }: FullPageSectionProps) {
+  const t = useText();
   const handleBack = onBack ?? (() => window.history.back());
 
   return (
@@ -56,7 +58,7 @@ function FullPageSection({
                 variant={BUTTON_VARIANT.GHOST}
                 size={BUTTON_SIZE.ICON}
                 onClick={handleBack}
-                aria-label="Back"
+                aria-label={t("formBack")}
               >
                 <ArrowLeft size={18} aria-hidden />
               </Button>
@@ -75,8 +77,8 @@ function FullPageSection({
             <FormFooter
               onCancel={onCancel ?? handleBack}
               onSubmit={onSubmit}
-              cancelLabel={cancelLabel}
-              submitLabel={loading ? loadingLabel : submitLabel}
+              cancelLabel={cancelLabel ?? t("formCancel")}
+              submitLabel={loading ? (loadingLabel ?? t("formSaving")) : (submitLabel ?? t("formSubmit"))}
               isSubmitting={loading}
             />
           )}

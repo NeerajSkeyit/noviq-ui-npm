@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { NoviqUIConfigProvider, useNoviqUIConfig } from "./NoviqUIConfigProvider";
 
@@ -82,6 +82,44 @@ describe("NoviqUIConfigProvider", () => {
         </NoviqUIConfigProvider>
       )
     ).toThrow(/exactly one of/);
+  });
+
+  describe("text", () => {
+    const mount = (config: any) =>
+      render(
+        <NoviqUIConfigProvider config={config}>
+          <Consumer />
+        </NoviqUIConfigProvider>
+      );
+
+    it("accepts a config that sets only text", () => {
+      mount({ text: { tableEmpty: "Sin datos" } });
+      expect(screen.getByText("has-config")).toBeInTheDocument();
+    });
+
+    it("accepts strings, empty strings and functions", () => {
+      mount({ text: { tableEmpty: "", bulkSelected: () => "n filas", bulkClear: "Borrar" } });
+      expect(screen.getByText("has-config")).toBeInTheDocument();
+    });
+
+    it.each([null, [], "text", 42])("throws when text is %j, not an object", (text) => {
+      expect(() => mount({ text })).toThrow(/config\.text must be an object/);
+    });
+
+    it.each([42, null, {}, true])("throws when a value is %j, not a string or function", (value) => {
+      expect(() => mount({ text: { tableEmpty: value } })).toThrow(/config\.text\.tableEmpty/);
+    });
+
+    it("warns, without throwing, about a key the library does not know", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      mount({ text: { tabelEmpty: "typo" } });
+      expect(screen.getByText("has-config")).toBeInTheDocument();
+      expect(warn).toHaveBeenCalledWith(
+        "[noviq-ui]",
+        expect.stringContaining("tabelEmpty")
+      );
+      warn.mockRestore();
+    });
   });
 
   describe("formats", () => {

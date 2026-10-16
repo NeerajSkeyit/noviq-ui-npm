@@ -147,11 +147,35 @@ describe("no bare literals for values that have a constant", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("UI copy is never a bare literal: every DEFAULT_TEXT value lives only in constants", () => {
+    // Values short enough to be ordinary words in code ("L", "R", "HH", "MM", "From", "To") are
+    // checked by the pseudo-localisation test instead, which sees what actually renders.
+    const copy = [...new Set(Object.values(C.DEFAULT_TEXT))].filter((text) => text.length >= 4);
+    const offenders: string[] = [];
+    for (const file of files) {
+      const text = stripComments(readFileSync(file, "utf8"));
+      for (const value of copy) {
+        for (const q of ['"', "'", "`"]) {
+          // A CSS class that happens to be a word of the copy (`className="browse"`) is not copy.
+          const at = text.split(`${q}${value}${q}`);
+          const copyUses = at.slice(0, -1).filter((before) => !/className=\{?$/.test(before));
+          if (copyUses.length > 0) offenders.push(`${relative(process.cwd(), file)}  ${q}${value}${q}`);
+        }
+        // Copy written between JSX tags: `>Reject<` or on a line of its own.
+        const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        if (new RegExp(`>\\s*${escaped}\\s*<`).test(text) || new RegExp(`^\\s*${escaped}\\s*$`, "m").test(text)) {
+          offenders.push(`${relative(process.cwd(), file)}  <>${value}</>`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("distinctive values (storage key, export strings, default query params, date formats) live only in constants", () => {
     const distinctive = [
       C.COLUMN_SETTINGS_STORAGE_PREFIX,
-      C.EXPORT_MESSAGE.SUCCESS,
-      C.EXPORT_MESSAGE.FAILURE,
+      C.DEFAULT_TEXT.exportSuccess,
+      C.DEFAULT_TEXT.exportFailure,
       C.CSV_MIME_TYPE,
       C.EXPORT_HEADER_FILL,
       C.EXPORT_SHEET_NAME,

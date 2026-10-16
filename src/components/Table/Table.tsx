@@ -37,6 +37,7 @@ import {
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import { useText } from "../../hooks/useText";
 import { extractRows, extractTotal } from "../../config/responseFormat";
 import type { TableResponseFormat } from "../../config/types";
 import "./Table.css";
@@ -177,13 +178,16 @@ function TableInner<T extends Record<string, any> = any>({
   // "select" and "actions" are auto-injected, always sticky, and not part of
   // the consumer's `columns` config or the column-management pipeline above —
   // matching the source's behavior of always pinning them to the outer edges.
+  const t = useText();
   const renderColumns = useMemo(() => {
     const cols: TableColumn<T>[] = [];
     if (isRowSelectionEnabled) cols.push({ id: TABLE_COLUMN_ID.SELECT, heading: "", width: SELECT_COLUMN_WIDTH } as TableColumn<T>);
     cols.push(...displayColumns);
-    if (rowActions) cols.push({ id: TABLE_COLUMN_ID.ACTIONS, heading: "Actions", width: ACTIONS_COLUMN_WIDTH } as TableColumn<T>);
+    if (rowActions) {
+      cols.push({ id: TABLE_COLUMN_ID.ACTIONS, heading: t("tableActionsHeading"), width: ACTIONS_COLUMN_WIDTH } as TableColumn<T>);
+    }
     return cols;
-  }, [displayColumns, isRowSelectionEnabled, rowActions]);
+  }, [displayColumns, isRowSelectionEnabled, rowActions, t]);
 
   const stickyOffsets = useMemo(() => {
     const offsets: Record<string, { left?: number; right?: number }> = {};
@@ -350,11 +354,11 @@ function TableInner<T extends Record<string, any> = any>({
     const term = debouncedSearch.trim().toLowerCase();
     if (!usingPreFetched || term === "") return data;
     const textOf = (row: T, column: TableColumn<T>) => {
-      const text = String(getExportCellValue(row, column, dateTimeFormats));
+      const text = String(getExportCellValue(row, column, dateTimeFormats, noviqConfig?.text));
       return text === NO_TEXT_PLACEHOLDER ? "" : text.toLowerCase();
     };
     return data.filter((row) => displayColumns.some((column) => textOf(row, column).includes(term)));
-  }, [data, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats]);
+  }, [data, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats, noviqConfig?.text]);
 
   const totalItems = usingPreFetched ? searchedData.length : extracted.total;
 

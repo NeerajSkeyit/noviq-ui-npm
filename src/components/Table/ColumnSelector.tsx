@@ -12,6 +12,7 @@ import {
   STICKY_POSITION,
   type StickyPosition,
 } from "../../constants";
+import { useText } from "../../hooks/useText";
 import type { TableColumn } from "./Table";
 import type { StickyColumnsState } from "./useTableColumnSettings";
 import "./ColumnSelector.css";
@@ -39,6 +40,7 @@ function ColumnSelector<T = any>({
 }: ColumnSelectorProps<T>) {
   const [open, setOpen] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const t = useText();
 
   const configurableColumns = columns.filter((c) => !NON_CONFIGURABLE_COLUMN_IDS.includes(c.id));
 
@@ -75,31 +77,31 @@ function ColumnSelector<T = any>({
     <>
       <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={() => setOpen(true)}>
         <Settings2 size={16} />
-        Columns
+        {t("columnsButton")}
       </Button>
 
       <Drawer
         isOpen={open}
         onClose={() => setOpen(false)}
-        title="Manage columns"
-        subtitle="Drag to reorder • Toggle visibility • Pin columns"
+        title={t("columnsTitle")}
+        subtitle={t("columnsSubtitle")}
         closeOnOutside
         footer={
           <div className="column-selector-legend">
             <div className="column-selector-legend-item">
               <Pin size={12} />
-              <span>L = Left</span>
+              <span>{t("columnsLegendLeft")}</span>
             </div>
             <div className="column-selector-legend-item">
               <Pin size={12} />
-              <span>R = Right</span>
+              <span>{t("columnsLegendRight")}</span>
             </div>
             <div className="column-selector-legend-item">
               <PinOff size={12} />
-              <span>Unpinned</span>
+              <span>{t("columnsLegendUnpinned")}</span>
             </div>
             <Button variant={BUTTON_VARIANT.DEFAULT} size={BUTTON_SIZE.SM} onClick={onReset}>
-              Reset Columns
+              {t("columnsReset")}
             </Button>
           </div>
         }
@@ -135,17 +137,17 @@ function ColumnSelector<T = any>({
                     }`}
                     title={
                       stickyState === STICKY_POSITION.LEFT
-                        ? "Pinned left (click for right)"
+                        ? t("columnPinnedLeft")
                         : stickyState === STICKY_POSITION.RIGHT
-                          ? "Pinned right (click to unpin)"
-                          : "Pin column"
+                          ? t("columnPinnedRight")
+                          : t("columnPin")
                     }
                   >
                     {stickyState ? (
                       <span className="column-selector-sticky-indicator">
                         <Pin size={14} />
                         <span className="column-selector-sticky-letter">
-                          {stickyState === STICKY_POSITION.LEFT ? "L" : "R"}
+                          {stickyState === STICKY_POSITION.LEFT ? t("columnLetterLeft") : t("columnLetterRight")}
                         </span>
                       </span>
                     ) : (

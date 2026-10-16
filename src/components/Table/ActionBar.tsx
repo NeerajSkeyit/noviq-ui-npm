@@ -4,6 +4,7 @@ import { ChevronDown, Search } from "lucide-react";
 import Button from "../Button/Button";
 import { DropdownMenu, DropdownMenuItem } from "../Dropdown/Dropdown";
 import { ACTION_ID, BUTTON_SIZE, BUTTON_VARIANT, HOTKEY } from "../../constants";
+import { useText } from "../../hooks/useText";
 import "./ActionBar.css";
 
 export interface ActionBarOption {
@@ -43,7 +44,7 @@ function ActionBar({
   isSearchHidden = false,
   searchValue = "",
   onSearchChange = () => {},
-  searchPlaceholder = "Search...",
+  searchPlaceholder,
   actions = [],
   filters,
   exportControl,
@@ -51,6 +52,7 @@ function ActionBar({
 }: ActionBarProps) {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useText();
 
   useHotkeys(
     HOTKEY.FOCUS_SEARCH,
@@ -73,7 +75,7 @@ function ActionBar({
                 ref={inputRef}
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={searchPlaceholder ?? t("tableSearchPlaceholder")}
                 className="table-search-input"
               />
             </div>

@@ -4,6 +4,7 @@ import {
   BADGE_VARIANT,
   CELL_TYPE,
   DEFAULT_CURRENCY,
+  DEFAULT_TEXT,
   NO_TEXT_PLACEHOLDER,
   type CellType,
 } from "../../constants";
@@ -11,6 +12,9 @@ import { formatDuration } from "./dateFormat";
 import { formatValue, resolveFormats, type FormatsInput } from "../../utils/dateTimeFormat";
 import { formatCurrency } from "../../utils/numberFormat";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
+import { resolveText } from "../../utils/text";
+import type { NoviqUIText } from "../../config/types";
 import "./TableCell.css";
 
 export interface CellFormatOptions {
@@ -117,14 +121,17 @@ export interface TableCellProps {
   statusVariantMap?: Record<string, string>;
 }
 
-export function formatStatusLabel(status: string): string {
-  if (status === "true") return "Active";
-  if (status === "false") return "Inactive";
+/** A status as it is shown: `"true"`/`"false"` read as Active/Inactive (in the configured `text`),
+ * anything else has its underscores turned to spaces. */
+export function formatStatusLabel(status: string, text?: NoviqUIText): string {
+  if (status === "true") return resolveText(DEFAULT_TEXT, text, "statusActive");
+  if (status === "false") return resolveText(DEFAULT_TEXT, text, "statusInactive");
   return status.replace(/_/g, " ");
 }
 
 function TableCell({ type, options = {}, statusVariantMap }: TableCellProps) {
   const formats = useDateTimeFormats();
+  const text = useNoviqUIConfig()?.text;
   if (type === CELL_TYPE.STATUS) {
     if (!options.status) return <>{NO_TEXT_PLACEHOLDER}</>;
 
@@ -134,7 +141,7 @@ function TableCell({ type, options = {}, statusVariantMap }: TableCellProps) {
 
     return (
       <Badge variant={BADGE_VARIANT.OUTLINE} className={variantClass}>
-        {formatStatusLabel(options.status)}
+        {formatStatusLabel(options.status, text)}
       </Badge>
     );
   }

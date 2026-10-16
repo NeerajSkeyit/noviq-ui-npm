@@ -2,6 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import type { ActiveFilter } from "./buildActiveFilter";
 import { BUTTON_TYPE } from "../../constants";
+import { useText } from "../../hooks/useText";
 import "./FilterChips.css";
 
 export interface FilterChipsProps {
@@ -11,6 +12,7 @@ export interface FilterChipsProps {
 }
 
 function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps) {
+  const t = useText();
   if (filters.length === 0) return null;
 
   return (
@@ -24,7 +26,7 @@ function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps) {
               type={BUTTON_TYPE.BUTTON}
               className="filter-chip-remove"
               onClick={() => onRemove(filter.id)}
-              aria-label={`Remove ${filter.label} filter`}
+              aria-label={t("filterRemove", { label: filter.label })}
             >
               <X size={12} />
             </button>
@@ -34,7 +36,7 @@ function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps) {
 
       {filters.length > 1 && (
         <button type={BUTTON_TYPE.BUTTON} className="filter-chips-clear-all" onClick={onClearAll}>
-          Clear all
+          {t("filtersClearAll")}
         </button>
       )}
     </div>

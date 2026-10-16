@@ -1,4 +1,4 @@
-import { DEFAULT_REQUEST_PARAMS, type NotifyKind } from "../constants";
+import { DEFAULT_REQUEST_PARAMS, type NotifyKind, type TextKey } from "../constants";
 
 export { DEFAULT_REQUEST_PARAMS };
 export type { NotifyKind };
@@ -66,6 +66,21 @@ export interface NoviqUIFormats {
   weekStart?: number;
 }
 
+/** Values a component passes in to a text: `{ count: 3 }` for `"{count} rows selected"`. */
+export type TextParams = Record<string, string | number>;
+
+/**
+ * One piece of copy: a string, with `{name}` marking where the component's value goes, or a
+ * function from those values to the string — the way to write a plural a template can't express.
+ */
+export type TextValue = string | ((params: TextParams) => string);
+
+/**
+ * Replacements for the library's built-in English copy, by key. Any subset; a key you leave out
+ * keeps its English default. The keys and defaults are `DEFAULT_TEXT` in `noviq-ui`.
+ */
+export type NoviqUIText = Partial<Record<TextKey, TextValue>>;
+
 export interface NoviqUIConfig {
   /** Required only if the app renders a `<Table apiFunction>` without a per-instance `responseFormat`. */
   table?: NoviqUITableConfig;
@@ -74,4 +89,6 @@ export interface NoviqUIConfig {
   notify?: NotifyFn;
   /** Optional. How dates, times and date-times are displayed across the UI. */
   formats?: NoviqUIFormats;
+  /** Optional. Replacements for the built-in English copy — labels, placeholders, messages. */
+  text?: NoviqUIText;
 }

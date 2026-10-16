@@ -28,6 +28,7 @@ export {
   BULK_ACTION_VARIANT,
   NOTIFY_KIND,
   NO_TEXT_PLACEHOLDER,
+  DEFAULT_TEXT,
 } from "./constants";
 export type {
   InputType,
@@ -49,6 +50,7 @@ export type {
   RowActionType,
   RowActionVariant,
   BulkActionVariant,
+  TextKey,
 } from "./constants";
 
 export { default as Input } from "./components/Input/Input";
@@ -114,6 +116,9 @@ export type {
   NotifyFn,
   NotifyKind,
   NoviqUIFormats,
+  NoviqUIText,
+  TextValue,
+  TextParams,
   TableResponseFormat,
   ResponseFormatPaths,
   ResponseFormatFns,

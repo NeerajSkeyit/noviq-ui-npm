@@ -4,7 +4,9 @@ import {
   resolveFormats,
   type FormatsInput,
 } from "../../utils/dateTimeFormat";
-import { FILTER_PAYLOAD_KEY, FILTER_TYPE, type FilterType } from "../../constants";
+import { DEFAULT_TEXT, FILTER_PAYLOAD_KEY, FILTER_TYPE, type FilterType } from "../../constants";
+import { resolveText } from "../../utils/text";
+import type { NoviqUIText } from "../../config/types";
 
 export interface FilterOption {
   value: string;
@@ -47,12 +49,14 @@ function isBlank(value: unknown): boolean {
 
 /**
  * Turns a filter's raw value into an active filter: a chip label plus the payload for the backend.
- * `formats` decide how dates read in the chip; the payload keeps the raw `"YYYY-MM-DD"` values.
+ * `formats` decide how dates read in the chip and `text` the words around them ("From …",
+ * "Until …"); the payload keeps the raw `"YYYY-MM-DD"` values.
  */
 export function buildActiveFilter(
   config: FilterConfig,
   rawValue: unknown,
-  formats: FormatsInput = resolveFormats()
+  formats: FormatsInput = resolveFormats(),
+  text?: NoviqUIText
 ): ActiveFilter | null {
   const formatDate = (value: string) => formatValue(value, formats.date, false, formats.locale);
   const base = { id: config.id, label: config.label, mandatory: config.mandatory };
@@ -82,9 +86,9 @@ export function buildActiveFilter(
       if (!isBlank(from) && !isBlank(to)) {
         displayValue = `${formatDate(from!)} → ${formatDate(to!)}`;
       } else if (!isBlank(from)) {
-        displayValue = `From ${formatDate(from!)}`;
+        displayValue = resolveText(DEFAULT_TEXT, text, "filterChipFrom", { date: formatDate(from!) });
       } else {
-        displayValue = `Until ${formatDate(to!)}`;
+        displayValue = resolveText(DEFAULT_TEXT, text, "filterChipUntil", { date: formatDate(to!) });
       }
 
       return { ...base, displayValue, apiPayload };

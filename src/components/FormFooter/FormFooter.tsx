@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "../Button/Button";
 import { BUTTON_TYPE, BUTTON_VARIANT, type ButtonVariant } from "../../constants";
+import { useText } from "../../hooks/useText";
 
 export interface FormFooterButton {
   label: string;
@@ -25,10 +26,11 @@ function FormFooter({
   buttons = [],
   isSubmitting = false,
 }: FormFooterProps) {
+  const t = useText();
   return (
     <>
       <Button variant={BUTTON_VARIANT.OUTLINE} type={BUTTON_TYPE.BUTTON} onClick={onCancel} disabled={isSubmitting}>
-        {cancelLabel || "Cancel"}
+        {cancelLabel || t("formCancel")}
       </Button>
 
       {buttons.map((btn) => (
@@ -44,7 +46,7 @@ function FormFooter({
       ))}
 
       <Button variant={BUTTON_VARIANT.DEFAULT} type={BUTTON_TYPE.BUTTON} onClick={onSubmit} disabled={isSubmitting}>
-        {submitLabel || "Save"}
+        {submitLabel || t("formSave")}
       </Button>
     </>
   );

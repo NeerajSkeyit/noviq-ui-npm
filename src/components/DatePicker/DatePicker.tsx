@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import PickerField from "../PickerField/PickerField";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import { useText } from "../../hooks/useText";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import {
   BUTTON_TYPE,
@@ -66,7 +67,7 @@ function DatePicker({
   minDate,
   maxDate,
   displayFormat,
-  placeholder = "Select date",
+  placeholder: placeholderProp,
   disabled = false,
   error = false,
   clearable = true,
@@ -75,6 +76,8 @@ function DatePicker({
   className = "",
   "aria-label": ariaLabel,
 }: DatePickerProps) {
+  const t = useText();
+  const placeholder = placeholderProp ?? t("datePlaceholder");
   const baseId = useId();
   const configuredFormats = useDateTimeFormats(); // unconditional: hooks can't be short-circuited
   const pattern = displayFormat ?? configuredFormats.date;
@@ -236,7 +239,7 @@ function DatePicker({
       disabled={disabled}
       error={error}
       clearable={clearable}
-      clearLabel="Clear date"
+      clearLabel={t("dateClear")}
       popupRole="grid"
       controlsId={gridId}
       activeDescendant={open ? cellId(focused) : undefined}
@@ -266,7 +269,7 @@ function DatePicker({
               <button
                 type={BUTTON_TYPE.BUTTON}
                 className="date-picker-nav"
-                aria-label="Previous month"
+                aria-label={t("datePreviousMonth")}
                 disabled={prevDisabled}
                 onClick={() => {
                   const prev = addMonthsYM(viewYM, -1);
@@ -278,7 +281,7 @@ function DatePicker({
 
               <select
                 className="date-picker-select"
-                aria-label="Month"
+                aria-label={t("dateMonth")}
                 value={view.month}
                 onChange={(e) => showMonth(view.year, Number(e.target.value))}
               >
@@ -291,7 +294,7 @@ function DatePicker({
 
               <select
                 className="date-picker-select"
-                aria-label="Year"
+                aria-label={t("dateYear")}
                 value={view.year}
                 onChange={(e) => showMonth(Number(e.target.value), view.month)}
               >
@@ -305,7 +308,7 @@ function DatePicker({
               <button
                 type={BUTTON_TYPE.BUTTON}
                 className="date-picker-nav"
-                aria-label="Next month"
+                aria-label={t("dateNextMonth")}
                 disabled={nextDisabled}
                 onClick={() => {
                   const next = addMonthsYM(viewYM, 1);
@@ -372,7 +375,7 @@ function DatePicker({
                 disabled={todayDisabled}
                 onClick={() => choose(today)}
               >
-                Today
+                {t("dateToday")}
               </button>
             </div>
           </div>,

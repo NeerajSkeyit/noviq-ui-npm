@@ -4,6 +4,7 @@ import { Clock, X } from "lucide-react";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import { useConfiguredTimePattern } from "../../hooks/useDateTimeFormats";
+import { useText } from "../../hooks/useText";
 import { formatParts, hourStyleOf } from "../../utils/dateTimeFormat";
 import {
   BUTTON_TYPE,
@@ -92,7 +93,7 @@ function TimePicker({
   hourCycle: hourCycleProp,
   displayFormat,
   minuteStep = DEFAULT_MINUTE_STEP,
-  placeholder = "Select time",
+  placeholder: placeholderProp,
   disabled = false,
   error = false,
   clearable = true,
@@ -101,6 +102,8 @@ function TimePicker({
   className = "",
   "aria-label": ariaLabel,
 }: TimePickerProps) {
+  const t = useText();
+  const placeholder = placeholderProp ?? t("timePlaceholder");
   const baseId = useId();
   const listId: Record<Column, string> = {
     [TIME_COLUMN.HOUR]: `${baseId}-hours`,
@@ -290,9 +293,9 @@ function TimePicker({
     [TIME_COLUMN.PERIOD]: period,
   };
   const columnMeta: Record<Column, { heading: string; ariaLabel: string }> = {
-    [TIME_COLUMN.HOUR]: { heading: "HH", ariaLabel: "Hours" },
-    [TIME_COLUMN.MINUTE]: { heading: "MM", ariaLabel: "Minutes" },
-    [TIME_COLUMN.PERIOD]: { heading: "AM/PM", ariaLabel: "AM/PM" },
+    [TIME_COLUMN.HOUR]: { heading: t("timeHourHeading"), ariaLabel: t("timeHours") },
+    [TIME_COLUMN.MINUTE]: { heading: t("timeMinuteHeading"), ariaLabel: t("timeMinutes") },
+    [TIME_COLUMN.PERIOD]: { heading: t("timePeriod"), ariaLabel: t("timePeriod") },
   };
 
   const renderColumn = (column: Column) => (
@@ -373,7 +376,7 @@ function TimePicker({
         <button
           type={BUTTON_TYPE.BUTTON}
           className="time-picker-clear"
-          aria-label="Clear time"
+          aria-label={t("timeClear")}
           onClick={() => {
             onChange?.("");
             closePicker();

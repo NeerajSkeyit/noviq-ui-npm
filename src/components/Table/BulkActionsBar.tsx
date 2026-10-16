@@ -1,6 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import Button from "../Button/Button";
+import { useText } from "../../hooks/useText";
 import {
   BULK_ACTION_VARIANT,
   BUTTON_SIZE,
@@ -26,18 +27,19 @@ export interface BulkActionsBarProps {
 }
 
 function BulkActionsBar({ selectedCount, actions, selectedIds, onClearSelection }: BulkActionsBarProps) {
+  const t = useText();
   if (selectedCount === 0) return null;
 
   return (
     <div className="bulk-actions-bar">
       <div className="bulk-actions-left">
         <span className="bulk-actions-text">
-          {selectedCount} {selectedCount === 1 ? "row" : "rows"} selected
+          {t(selectedCount === 1 ? "bulkSelectedOne" : "bulkSelected", { count: selectedCount })}
         </span>
 
         <button type={BUTTON_TYPE.BUTTON} onClick={onClearSelection} className="bulk-actions-clear">
           <X size={12} />
-          Clear
+          {t("bulkClear")}
         </button>
       </div>
 

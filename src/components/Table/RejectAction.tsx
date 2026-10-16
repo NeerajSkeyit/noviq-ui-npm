@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import Button from "../Button/Button";
-import { BUTTON_VARIANT, HOTKEY } from "../../constants";
+import { BUTTON_VARIANT, HOTKEY, REJECT_REASON_MIN_LENGTH } from "../../constants";
+import { useText, type TextFn } from "../../hooks/useText";
 import "./RejectAction.css";
 
 const LEADING_SPACE_REGEX = /^\s/;
@@ -10,13 +11,15 @@ const REPEATING_CHAR_REGEX = /(.)\1{3,}/;
 const ALPHANUMERIC_CHECK_REGEX = /^(?=.*[A-Za-z0-9]).+$/;
 const ONLY_NUMBERS_REGEX = /^\d+$/;
 
-function validateReason(value: string): string {
-  if (!value) return "Reject reason is required";
-  if (value.length < 4) return "Minimum 4 characters required";
-  if (LEADING_SPACE_REGEX.test(value)) return "Reason cannot start with a space";
-  if (REPEATING_CHAR_REGEX.test(value)) return "Reason cannot contain repeating characters";
-  if (!ALPHANUMERIC_CHECK_REGEX.test(value)) return "Reason cannot contain only symbols";
-  if (ONLY_NUMBERS_REGEX.test(value)) return "Cannot contain only numbers";
+function validateReason(value: string, t: TextFn): string {
+  if (!value) return t("rejectReasonRequired");
+  if (value.length < REJECT_REASON_MIN_LENGTH) {
+    return t("rejectReasonMinLength", { min: REJECT_REASON_MIN_LENGTH });
+  }
+  if (LEADING_SPACE_REGEX.test(value)) return t("rejectReasonLeadingSpace");
+  if (REPEATING_CHAR_REGEX.test(value)) return t("rejectReasonRepeating");
+  if (!ALPHANUMERIC_CHECK_REGEX.test(value)) return t("rejectReasonSymbolsOnly");
+  if (ONLY_NUMBERS_REGEX.test(value)) return t("rejectReasonOnlyNumbers");
   return "";
 }
 
@@ -27,6 +30,7 @@ export interface RejectActionProps {
 }
 
 function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
+  const t = useText();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [rejectReasonError, setRejectReasonError] = useState("");
@@ -83,7 +87,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
   const togglePopover = () => setOpen((prev) => !prev);
 
   const handleConfirm = async () => {
-    const validationError = validateReason(reason);
+    const validationError = validateReason(reason, t);
     if (validationError) {
       setRejectReasonError(validationError);
       return;
@@ -132,7 +136,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
         disabled={disabled || loading}
         isRowActionBtn
       >
-        {loading ? "Please wait..." : rejectText || "Reject"}
+        {loading ? t("rejectWaiting") : rejectText || t("rejectLabel")}
       </Button>
 
       {open &&
@@ -142,10 +146,10 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
             className="reject-action-popover"
             style={{ position: "fixed", top: position.top, left: position.left, zIndex: 10 }}
           >
-            <h4>Add Reason</h4>
+            <h4>{t("rejectTitle")}</h4>
 
             <textarea
-              placeholder="Reason..."
+              placeholder={t("rejectPlaceholder")}
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
@@ -159,7 +163,7 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
             )}
 
             <Button variant={BUTTON_VARIANT.DESTRUCTIVE} onClick={handleConfirm} disabled={!reason.trim() || disabled || loading}>
-              Confirm
+              {t("rejectConfirm")}
             </Button>
           </div>,
           document.body

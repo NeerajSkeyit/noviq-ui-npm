@@ -1,11 +1,13 @@
 import React, { createContext, useContext } from "react";
-import type { NoviqUIConfig, NoviqUIFormats, NoviqUITableConfig } from "./types";
+import type { NoviqUIConfig, NoviqUIFormats, NoviqUITableConfig, NoviqUIText } from "./types";
+import { devWarn } from "../utils/devWarn";
 import {
   CURRENCY_CODE_PATTERN,
   DATE_FORMAT,
   DAYS_IN_WEEK,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
+  DEFAULT_TEXT,
 } from "../constants";
 import { isFnsFormat, isPathsFormat } from "./responseFormat";
 
@@ -76,6 +78,31 @@ function validateFormats(formats: NoviqUIFormats): void {
   }
 }
 
+function validateText(text: NoviqUIText): void {
+  if (text === null || typeof text !== "object" || Array.isArray(text)) {
+    throw new Error(
+      `noviq-ui: config.text must be an object of { key: string | function } — got ${
+        Array.isArray(text) ? "an array" : JSON.stringify(text)
+      }.`
+    );
+  }
+  for (const [key, value] of Object.entries(text)) {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_TEXT, key)) {
+      // A typo'd key would otherwise do nothing, silently. Not an error: a key removed in a later
+      // release must not crash an app that still sets it.
+      devWarn(`config.text.${key} is not a text key noviq-ui reads; it is ignored. See DEFAULT_TEXT.`);
+      continue;
+    }
+    if (value !== undefined && typeof value !== "string" && typeof value !== "function") {
+      throw new Error(
+        `noviq-ui: config.text.${key} must be a string or a function returning one — got ${JSON.stringify(
+          value
+        )}.`
+      );
+    }
+  }
+}
+
 export function NoviqUIConfigProvider({
   config,
   children,
@@ -86,6 +113,7 @@ export function NoviqUIConfigProvider({
   // `table` is optional (an app may configure only `notify`), but if present it must be valid.
   if (config.table !== undefined) validateTableConfig(config.table);
   if (config.formats !== undefined) validateFormats(config.formats);
+  if (config.text !== undefined) validateText(config.text);
   return <NoviqUIConfigContext.Provider value={config}>{children}</NoviqUIConfigContext.Provider>;
 }
 

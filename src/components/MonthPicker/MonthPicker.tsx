@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import PickerField from "../PickerField/PickerField";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import { useText } from "../../hooks/useText";
 import { deriveMonthPattern, getDateNames } from "../../utils/dateTimeFormat";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
 import {
@@ -58,7 +59,7 @@ function MonthPicker({
   minMonth,
   maxMonth,
   displayFormat,
-  placeholder = "Select month",
+  placeholder: placeholderProp,
   disabled = false,
   error = false,
   clearable = true,
@@ -67,6 +68,8 @@ function MonthPicker({
   className = "",
   "aria-label": ariaLabel,
 }: MonthPickerProps) {
+  const t = useText();
+  const placeholder = placeholderProp ?? t("monthPlaceholder");
   const baseId = useId();
   const configuredFormats = useDateTimeFormats(); // unconditional: hooks can't be short-circuited
   const pattern = displayFormat ?? deriveMonthPattern(configuredFormats.date);
@@ -217,7 +220,7 @@ function MonthPicker({
       disabled={disabled}
       error={error}
       clearable={clearable}
-      clearLabel="Clear month"
+      clearLabel={t("monthClear")}
       popupRole="grid"
       controlsId={gridId}
       activeDescendant={open ? cellId(focused) : undefined}
@@ -246,7 +249,7 @@ function MonthPicker({
               <button
                 type={BUTTON_TYPE.BUTTON}
                 className="month-picker-nav"
-                aria-label="Previous year"
+                aria-label={t("monthPreviousYear")}
                 disabled={prevYearDisabled}
                 onClick={() => showYear(viewYear - 1)}
               >
@@ -258,7 +261,7 @@ function MonthPicker({
               <button
                 type={BUTTON_TYPE.BUTTON}
                 className="month-picker-nav"
-                aria-label="Next year"
+                aria-label={t("monthNextYear")}
                 disabled={nextYearDisabled}
                 onClick={() => showYear(viewYear + 1)}
               >

@@ -3,6 +3,8 @@ import ReactSelect, { type StylesConfig } from "react-select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import Button from "../Button/Button";
 import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
+import { useText } from "../../hooks/useText";
+import { richText } from "../../utils/richText";
 import { BUTTON_SIZE, BUTTON_VARIANT, DEFAULT_PAGE_SIZE_OPTIONS } from "../../constants";
 import "./TablePagination.css";
 
@@ -55,6 +57,7 @@ function TablePagination({
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: TablePaginationProps) {
   const selectEscapeGuard = useSelectEscapeGuard(); // before the early return below: hooks run unconditionally
+  const t = useText();
   const { page, pageSize } = pagination;
   const totalPages = Math.ceil(totalItems / pageSize);
   const startItem = (page - 1) * pageSize + 1;
@@ -67,19 +70,23 @@ function TablePagination({
     return null;
   }
 
+  // The numbers are highlighted wherever the configured text puts them.
+  const highlight = (n: number) => <span className="table-pagination-highlight">{n}</span>;
+  const summary = richText(t, "paginationSummary", {
+    start: highlight(startItem),
+    end: highlight(endItem),
+    total: highlight(totalItems),
+  });
+
   return (
     <div className="table-pagination">
       <div className="table-pagination-left">
-        <span className="table-pagination-text">
-          Showing <span className="table-pagination-highlight">{startItem}</span> to{" "}
-          <span className="table-pagination-highlight">{endItem}</span> of{" "}
-          <span className="table-pagination-highlight">{totalItems}</span> results
-        </span>
+        <span className="table-pagination-text">{summary}</span>
       </div>
 
       <div className="table-pagination-right">
         <div className="table-pagination-page-size">
-          <span className="table-pagination-text">Rows per page:</span>
+          <span className="table-pagination-text">{t("paginationRowsPerPage")}</span>
           <ReactSelect<PageSizeOption, false>
             {...selectEscapeGuard}
             classNamePrefix="rs"
@@ -100,13 +107,14 @@ function TablePagination({
         {totalPages > 1 ? (
           <div className="table-pagination-controls">
             <span className="table-pagination-page-info">
-              Page {page} of {totalPages}
+              {t("paginationPage", { page, pages: totalPages })}
             </span>
 
             <Button
               variant={BUTTON_VARIANT.OUTLINE}
               size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(1)}
+              aria-label={t("paginationFirst")}
               disabled={!canGoPrevious}
             >
               <ChevronsLeft size={16} />
@@ -115,6 +123,7 @@ function TablePagination({
               variant={BUTTON_VARIANT.OUTLINE}
               size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(page - 1)}
+              aria-label={t("paginationPrevious")}
               disabled={!canGoPrevious}
             >
               <ChevronLeft size={16} />
@@ -123,6 +132,7 @@ function TablePagination({
               variant={BUTTON_VARIANT.OUTLINE}
               size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(page + 1)}
+              aria-label={t("paginationNext")}
               disabled={!canGoNext}
             >
               <ChevronRight size={16} />
@@ -131,6 +141,7 @@ function TablePagination({
               variant={BUTTON_VARIANT.OUTLINE}
               size={BUTTON_SIZE.ICON}
               onClick={() => onPageChange(totalPages)}
+              aria-label={t("paginationLast")}
               disabled={!canGoNext}
             >
               <ChevronsRight size={16} />

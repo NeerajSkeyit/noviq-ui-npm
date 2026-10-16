@@ -323,6 +323,8 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const DEFAULT_COLUMN_WIDTH = 140;
 /** @internal */
 export const SEARCH_DEBOUNCE_MS = 500;
+/** @internal Shortest reason a reject action accepts. */
+export const REJECT_REASON_MIN_LENGTH = 4;
 /** @internal Currency a `currency` cell falls back to when neither the column nor `formats.currency` sets one. */
 export const DEFAULT_CURRENCY = "INR";
 /** @internal Locale numbers are grouped by when `formats.locale` is not set (lakh/crore grouping). */
@@ -385,11 +387,6 @@ export const NOTIFY_KIND = {
 } as const;
 export type NotifyKind = ValueOf<typeof NOTIFY_KIND>;
 
-/** @internal What the export flow reports through `config.notify`. */
-export const EXPORT_MESSAGE = {
-  SUCCESS: "Export complete",
-  FAILURE: "Export failed",
-} as const;
 
 // ─── Keyboard ──────────────────────────────────────────────────────────────────────────────────
 
@@ -414,3 +411,118 @@ export const HOTKEY = {
   FOCUS_SEARCH: "slash",
   CLOSE: "esc",
 } as const;
+
+// ─── User-facing copy ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Every piece of text the components show, in English. `NoviqUIConfigProvider`'s `config.text`
+ * replaces any of them, one key at a time — see the README's "Text and translation".
+ *
+ * `{name}` marks a value the component fills in (`{count}`, `{start}`…). A key an app does not
+ * set keeps the default here. Keys are grouped by the component that reads them; the plural pairs
+ * (`bulkSelectedOne` / `bulkSelected`) are chosen by count. Copy that is data rather than
+ * vocabulary — a column heading, a filter label, a `rejectText` prop — comes from the app and is
+ * not in this list.
+ */
+export const DEFAULT_TEXT = {
+  // Table
+  tableSearchPlaceholder: "Search...",
+  tableEmpty: "No data found",
+  tableLoading: "Loading",
+  tableActionsHeading: "Actions",
+  paginationSummary: "Showing {start} to {end} of {total} results",
+  paginationRowsPerPage: "Rows per page:",
+  paginationPage: "Page {page} of {pages}",
+  paginationFirst: "First page",
+  paginationPrevious: "Previous page",
+  paginationNext: "Next page",
+  paginationLast: "Last page",
+  bulkSelectedOne: "{count} row selected",
+  bulkSelected: "{count} rows selected",
+  bulkClear: "Clear",
+  columnsButton: "Columns",
+  columnsTitle: "Manage columns",
+  columnsSubtitle: "Drag to reorder • Toggle visibility • Pin columns",
+  columnsLegendLeft: "L = Left",
+  columnsLegendRight: "R = Right",
+  columnsLegendUnpinned: "Unpinned",
+  columnsReset: "Reset Columns",
+  columnPinnedLeft: "Pinned left (click for right)",
+  columnPinnedRight: "Pinned right (click to unpin)",
+  columnPin: "Pin column",
+  columnLetterLeft: "L",
+  columnLetterRight: "R",
+  filtersButton: "Filters",
+  filtersTitle: "Filters",
+  filtersClearAll: "Clear all",
+  filtersApply: "Apply",
+  filterFrom: "From",
+  filterTo: "To",
+  filterRemove: "Remove {label} filter",
+  filterChipFrom: "From {date}",
+  filterChipUntil: "Until {date}",
+  exportButton: "Export",
+  exporting: "Exporting...",
+  exportExcel: "Export as Excel",
+  exportCsv: "Export as CSV",
+  exportSuccess: "Export complete",
+  exportFailure: "Export failed",
+  rejectLabel: "Reject",
+  rejectWaiting: "Please wait...",
+  rejectTitle: "Add Reason",
+  rejectPlaceholder: "Reason...",
+  rejectConfirm: "Confirm",
+  rejectReasonRequired: "Reject reason is required",
+  rejectReasonMinLength: "Minimum {min} characters required",
+  rejectReasonLeadingSpace: "Reason cannot start with a space",
+  rejectReasonRepeating: "Reason cannot contain repeating characters",
+  rejectReasonSymbolsOnly: "Reason cannot contain only symbols",
+  rejectReasonOnlyNumbers: "Cannot contain only numbers",
+  statusActive: "Active",
+  statusInactive: "Inactive",
+  // Pickers
+  timePlaceholder: "Select time",
+  timeClear: "Clear time",
+  timeHours: "Hours",
+  timeMinutes: "Minutes",
+  timePeriod: "AM/PM",
+  timeHourHeading: "HH",
+  timeMinuteHeading: "MM",
+  datePlaceholder: "Select date",
+  dateClear: "Clear date",
+  datePreviousMonth: "Previous month",
+  dateNextMonth: "Next month",
+  dateMonth: "Month",
+  dateYear: "Year",
+  dateToday: "Today",
+  monthPlaceholder: "Select month",
+  monthClear: "Clear month",
+  monthPreviousYear: "Previous year",
+  monthNextYear: "Next year",
+  // Forms, inputs and overlays
+  formSave: "Save",
+  formSubmit: "Submit",
+  formCancel: "Cancel",
+  formSaving: "Saving...",
+  formBack: "Back",
+  drawerTitle: "Drawer",
+  drawerClose: "Close",
+  inputTextPlaceholder: "Enter Text",
+  inputTextAreaPlaceholder: "Text Area",
+  inputEmailPlaceholder: "abc@email.com",
+  inputSearchPlaceholder: "Search",
+  inputSelectPlaceholder: "Select",
+  inputNoOptions: "No Options",
+  inputBrowse: "browse",
+  inputDropFile: "Drag and drop a file here, or {browse}",
+  inputDropFiles: "Drag and drop files here, or {browse}",
+  inputFilesSelectedOne: "{count} file selected",
+  inputFilesSelected: "{count} files selected",
+  inputFileSelected: "File selected",
+  inputAttachment: "Attachment",
+  inputView: "View",
+  inputRemove: "Remove",
+  inputExcelPlaceholder: "Click to upload excel file",
+  inputExcelHelper: "CSV, XLSX, XLS",
+} as const;
+export type TextKey = keyof typeof DEFAULT_TEXT;

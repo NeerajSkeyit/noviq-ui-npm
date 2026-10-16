@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronDown, Download } from "lucide-react";
 import Button from "../Button/Button";
 import { DropdownMenu, DropdownMenuItem } from "../Dropdown/Dropdown";
+import { useText } from "../../hooks/useText";
 import {
   BUTTON_SIZE,
   BUTTON_VARIANT,
@@ -22,6 +23,7 @@ export interface ExportProps {
 
 function Export({ exportToExcel, exportToCSV, exporting, responseSheetUrl, fileNameBase = DEFAULT_EXPORT_FILE_BASE }: ExportProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useText();
 
   if (responseSheetUrl) {
     return (
@@ -31,7 +33,7 @@ function Export({ exportToExcel, exportToCSV, exporting, responseSheetUrl, fileN
         onClick={() => window.open(responseSheetUrl, "_blank")}
       >
         <Download size={16} />
-        Export
+        {t("exportButton")}
       </Button>
     );
   }
@@ -48,16 +50,16 @@ function Export({ exportToExcel, exportToCSV, exporting, responseSheetUrl, fileN
           disabled={exporting}
         >
           <Download size={16} />
-          {exporting ? "Exporting..." : "Export"}
+          {exporting ? t("exporting") : t("exportButton")}
           <ChevronDown size={16} />
         </Button>
       }
     >
       <DropdownMenuItem onClick={() => exportToExcel(`${fileNameBase}.${EXPORT_FILE_EXTENSION.EXCEL}`)} disabled={exporting}>
-        Export as Excel
+        {t("exportExcel")}
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => exportToCSV(`${fileNameBase}.${EXPORT_FILE_EXTENSION.CSV}`)} disabled={exporting}>
-        Export as CSV
+        {t("exportCsv")}
       </DropdownMenuItem>
     </DropdownMenu>
   );

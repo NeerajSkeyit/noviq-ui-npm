@@ -18,6 +18,8 @@ import {
   type FilterType,
 } from "../../constants";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
+import { useText, type TextFn } from "../../hooks/useText";
+import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import "./FilterDrawer.css";
 
 export type { FilterConfig, FilterOption, ActiveFilter, DateRangeValue } from "./buildActiveFilter";
@@ -69,7 +71,7 @@ function deriveDraftValue(config: FilterConfig, active?: ActiveFilter): unknown 
   }
 }
 
-function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown) => void) {
+function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown) => void, t: TextFn) {
   switch (config.type) {
     case FILTER_TYPE.SELECT:
       return (
@@ -97,7 +99,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
       return (
         <div className="filter-drawer-range">
           <label className="filter-drawer-range-field">
-            <span>From</span>
+            <span>{t("filterFrom")}</span>
             <input
               type="date"
               value={range.from ?? ""}
@@ -105,7 +107,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
             />
           </label>
           <label className="filter-drawer-range-field">
-            <span>To</span>
+            <span>{t("filterTo")}</span>
             <input
               type="date"
               value={range.to ?? ""}
@@ -151,6 +153,8 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
 
 function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: FilterDrawerProps) {
   const formats = useDateTimeFormats();
+  const t = useText();
+  const text = useNoviqUIConfig()?.text;
   const [open, setOpen] = useState(false);
   const [draftValues, setDraftValues] = useState<Record<string, unknown>>({});
 
@@ -169,7 +173,7 @@ function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: Fil
 
   const handleApply = () => {
     const built = filters
-      .map((config) => buildActiveFilter(config, draftValues[config.id], formats))
+      .map((config) => buildActiveFilter(config, draftValues[config.id], formats, text))
       .filter((f): f is ActiveFilter => f !== null);
     onApplyFilter(built);
     setOpen(false);
@@ -190,22 +194,22 @@ function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: Fil
     <>
       <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={() => setOpen(true)}>
         <SlidersHorizontal size={16} />
-        Filters
+        {t("filtersButton")}
         {activeFilters.length > 0 && <span className="filter-drawer-badge">{activeFilters.length}</span>}
       </Button>
 
       <Drawer
         isOpen={open}
         onClose={() => setOpen(false)}
-        title="Filters"
+        title={t("filtersTitle")}
         closeOnOutside
         footer={
           <div className="filter-drawer-footer">
             <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={handleClearAll}>
-              Clear all
+              {t("filtersClearAll")}
             </Button>
             <Button variant={BUTTON_VARIANT.DEFAULT} size={BUTTON_SIZE.SM} onClick={handleApply}>
-              Apply
+              {t("filtersApply")}
             </Button>
           </div>
         }
@@ -215,7 +219,7 @@ function FilterDrawer({ filters, activeFilters, onApplyFilter, onClearAll }: Fil
             {filters.map((config) => (
               <div key={config.id} className="filter-drawer-section">
                 <span className="filter-drawer-section-label">{config.label}</span>
-                {renderField(config, draftValues[config.id], (v) => setDraft(config.id, v))}
+                {renderField(config, draftValues[config.id], (v) => setDraft(config.id, v), t)}
               </div>
             ))}
           </div>

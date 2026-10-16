@@ -7,6 +7,8 @@ import DatePicker from "../DatePicker/DatePicker";
 import MonthPicker from "../MonthPicker/MonthPicker";
 import TimePicker from "../TimePicker/TimePicker";
 import { useSelectEscapeGuard } from "../../hooks/useSelectEscapeGuard";
+import { useText } from "../../hooks/useText";
+import { richText } from "../../utils/richText";
 import { devError } from "../../utils/devWarn";
 import { BUTTON_TYPE, INPUT_TYPE, type HourCycle } from "../../constants";
 import "./Input.css";
@@ -175,7 +177,7 @@ function Input({
   options = [],
   placeholder = "",
   accept,
-  noOptionsMessage = () => "No Options",
+  noOptionsMessage: noOptionsMessageProp,
   disabled = false,
   minDate = "",
   maxDate = "",
@@ -186,6 +188,8 @@ function Input({
   hideClearIcon = false,
   onRemoveFile,
 }: InputProps) {
+  const t = useText();
+  const noOptionsMessage = noOptionsMessageProp ?? (() => t("inputNoOptions"));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -236,7 +240,7 @@ function Input({
           value={value || ""}
           name={fieldName(label)}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || "abc@email.com"}
+          placeholder={placeholder || t("inputEmailPlaceholder")}
           disabled={disabled}
           className={`input-field ${error ? "input-field-error" : ""}`}
           maxLength={maxLength}
@@ -344,7 +348,7 @@ function Input({
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={placeholder || "Enter Text"}
+          placeholder={placeholder || t("inputTextPlaceholder")}
           disabled={disabled}
           className={`input-field ${error ? "input-field-error" : ""}`}
           maxLength={maxLength}
@@ -361,7 +365,7 @@ function Input({
           rows={3}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || "Text Area"}
+          placeholder={placeholder || t("inputTextAreaPlaceholder")}
           disabled={disabled}
           autoFocus={autoFocus}
         />
@@ -375,7 +379,7 @@ function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={`search-input ${error ? "search-input-error" : ""}`}
-        placeholder={placeholder || "Search"}
+        placeholder={placeholder || t("inputSearchPlaceholder")}
         name={fieldName(label)}
         autoFocus={autoFocus}
         disabled={disabled}
@@ -398,7 +402,7 @@ function Input({
         <ReactSelect
           {...selectEscapeGuard}
           options={options}
-          placeholder={placeholder || "Select"}
+          placeholder={placeholder || t("inputSelectPlaceholder")}
           name={fieldName(label)}
           value={options?.filter((item) => item.value === value)}
           onChange={(e) => onChange((e as InputOption | null)?.value || "")}
@@ -549,7 +553,7 @@ function Input({
                 <Upload size={32} />
               </div>
               <p>
-                Drag and drop a file here, or <b className="browse">browse</b>
+                {richText(t, "inputDropFile", { browse: <b className="browse">{t("inputBrowse")}</b> })}
               </p>
               <span>{helper || accept}</span>
             </>
@@ -568,7 +572,7 @@ function Input({
               <p className="file-name" title={rawName}>
                 {displayName}
               </p>
-              <span>File selected</span>
+              <span>{t("inputFileSelected")}</span>
             </>
           )}
         </div>
@@ -621,7 +625,7 @@ function Input({
                 <Upload size={32} />
               </div>
               <p>
-                Drag and drop files here, or <b className="browse">browse</b>
+                {richText(t, "inputDropFiles", { browse: <b className="browse">{t("inputBrowse")}</b> })}
               </p>
               <span>{helper || accept}</span>
             </>
@@ -631,7 +635,9 @@ function Input({
                 <Upload size={32} />
               </div>
               <p className="file-name">
-                {files.length} file{files.length > 1 ? "s" : ""} selected
+                {t(files.length === 1 ? "inputFilesSelectedOne" : "inputFilesSelected", {
+                  count: files.length,
+                })}
               </p>
               <span>{helper || accept}</span>
             </>
@@ -648,14 +654,14 @@ function Input({
                   <div className="file-row-icon">
                     <FileText size={16} />
                   </div>
-                  <span className="file-row-name" title={itemName || "Attachment"}>
-                    {itemName || "Attachment"}
+                  <span className="file-row-name" title={itemName || t("inputAttachment")}>
+                    {itemName || t("inputAttachment")}
                   </span>
                   {(item instanceof File || itemUrl) && (
                     <button
                       type={BUTTON_TYPE.BUTTON}
                       className="file-row-button"
-                      title="View"
+                      title={t("inputView")}
                       onClick={(e) => {
                         e.stopPropagation();
                         const url = item instanceof File ? URL.createObjectURL(item) : itemUrl;
@@ -669,7 +675,7 @@ function Input({
                     <button
                       type={BUTTON_TYPE.BUTTON}
                       className="file-row-button file-row-delete"
-                      title="Remove"
+                      title={t("inputRemove")}
                       onClick={(e) => {
                         e.stopPropagation();
                         onRemoveFile(index);
@@ -726,10 +732,10 @@ function Input({
           {value ? (
             <p className="file-name">{value.name}</p>
           ) : (
-            <p>{placeholder || "Click to upload excel file"}</p>
+            <p>{placeholder || t("inputExcelPlaceholder")}</p>
           )}
 
-          <span>{helper || "CSV, XLSX, XLS"}</span>
+          <span>{helper || t("inputExcelHelper")}</span>
         </div>
 
         {error && <p className="error-text">{error}</p>}

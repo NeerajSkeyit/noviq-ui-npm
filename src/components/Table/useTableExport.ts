@@ -5,10 +5,10 @@ import {
   CSV_MIME_TYPE,
   CSV_UTF8_BOM,
   DEFAULT_EXPORT_FILE_BASE,
+  DEFAULT_TEXT,
   EXPORT_FALLBACK_ROWS_PER_PAGE,
   EXPORT_FILE_EXTENSION,
   EXPORT_HEADER_FILL,
-  EXPORT_MESSAGE,
   EXPORT_SHEET_NAME,
   NOTIFY_KIND,
   NO_TEXT_PLACEHOLDER,
@@ -19,7 +19,8 @@ import { extractRows } from "../../config/responseFormat";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import type { ResolvedFormats } from "../../utils/dateTimeFormat";
-import type { NotifyFn, TableRequestParamNames, TableResponseFormat } from "../../config/types";
+import { useText } from "../../hooks/useText";
+import type { NoviqUIText, NotifyFn, TableRequestParamNames, TableResponseFormat } from "../../config/types";
 
 
 export interface UseTableExportArgs<T> {
@@ -50,14 +51,15 @@ export interface UseTableExportResult {
 export function getExportCellValue<T>(
   row: T,
   column: TableColumn<T>,
-  formats: ResolvedFormats
+  formats: ResolvedFormats,
+  text?: NoviqUIText
 ): string | number {
   if (column.exportValue) return column.exportValue(row);
 
   const cellValue = getCellValue(row, column);
   if (!column.type) return cellValue;
   if (column.type === CELL_TYPE.STATUS) {
-    return cellValue === NO_TEXT_PLACEHOLDER ? cellValue : formatStatusLabel(cellValue);
+    return cellValue === NO_TEXT_PLACEHOLDER ? cellValue : formatStatusLabel(cellValue, text);
   }
   return formatTableCellValues(column.type, buildCellFormatOptions(row, column, cellValue), formats);
 }
@@ -77,8 +79,9 @@ function useTableExport<T>({
 }: UseTableExportArgs<T>): UseTableExportResult {
   const [exporting, setExporting] = useState(false);
   const formats = useDateTimeFormats(); // exports are formatted exactly as the table shows them
-  const configNotify = useNoviqUIConfig()?.notify; // unconditional: hooks can't be short-circuited
-  const notify = notifyArg ?? configNotify;
+  const config = useNoviqUIConfig(); // unconditional: hooks can't be short-circuited
+  const t = useText();
+  const notify = notifyArg ?? config?.notify;
 
   const exportColumns = columns.filter((c) => c.export !== false);
 
@@ -97,7 +100,7 @@ function useTableExport<T>({
 
   const buildAoa = (rows: T[]): unknown[][] => {
     const header = exportColumns.map((c) => c.heading);
-    const body = rows.map((row) => exportColumns.map((c) => getExportCellValue(row, c, formats)));
+    const body = rows.map((row) => exportColumns.map((c) => getExportCellValue(row, c, formats, config?.text)));
     return [header, ...body];
   };
 
@@ -124,10 +127,10 @@ function useTableExport<T>({
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, EXPORT_SHEET_NAME);
       XLSX.writeFile(wb, fileName);
-      notify?.(EXPORT_MESSAGE.SUCCESS, NOTIFY_KIND.SUCCESS);
+      notify?.(t("exportSuccess"), NOTIFY_KIND.SUCCESS);
     } catch (err) {
-      console.error(EXPORT_MESSAGE.FAILURE, err);
-      notify?.(EXPORT_MESSAGE.FAILURE, NOTIFY_KIND.ERROR);
+      console.error(DEFAULT_TEXT.exportFailure, err);
+      notify?.(t("exportFailure"), NOTIFY_KIND.ERROR);
     } finally {
       setExporting(false);
     }
@@ -151,10 +154,10 @@ function useTableExport<T>({
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      notify?.(EXPORT_MESSAGE.SUCCESS, NOTIFY_KIND.SUCCESS);
+      notify?.(t("exportSuccess"), NOTIFY_KIND.SUCCESS);
     } catch (err) {
-      console.error(EXPORT_MESSAGE.FAILURE, err);
-      notify?.(EXPORT_MESSAGE.FAILURE, NOTIFY_KIND.ERROR);
+      console.error(DEFAULT_TEXT.exportFailure, err);
+      notify?.(t("exportFailure"), NOTIFY_KIND.ERROR);
     } finally {
       setExporting(false);
     }
