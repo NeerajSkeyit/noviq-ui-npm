@@ -86,6 +86,7 @@ function ColumnSelector<T = any>({
         title={t("columnsTitle")}
         subtitle={t("columnsSubtitle")}
         closeOnOutside
+        unmountOnClose
         footer={
           <div className="column-selector-legend">
             <div className="column-selector-legend-item">

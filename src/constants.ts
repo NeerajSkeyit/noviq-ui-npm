@@ -125,6 +125,13 @@ export const MODAL_SIZE = {
 } as const;
 export type ModalSize = ValueOf<typeof MODAL_SIZE>;
 
+/**
+ * @internal How long a closing drawer's slide-out takes (`Drawer.css`: `transition: transform
+ * 0.25s`). A drawer that unmounts its children on close waits this long first so they don't
+ * vanish mid-animation; a test keeps this and the stylesheet in step.
+ */
+export const DRAWER_EXIT_MS = 250;
+
 /** @internal Height in px of a top/bottom drawer, by size. (Left/right drawers size by width, in CSS.) */
 export const DRAWER_HEIGHT_BY_SIZE: Record<DrawerSize, number> = {
   [DRAWER_SIZE.SM]: 420,

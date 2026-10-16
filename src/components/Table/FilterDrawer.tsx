@@ -223,6 +223,7 @@ function FilterDrawer({
         onClose={() => setOpen(false)}
         title={t("filtersTitle")}
         closeOnOutside
+        unmountOnClose
         footer={
           <div className="filter-drawer-footer">
             <Button variant={BUTTON_VARIANT.OUTLINE} size={BUTTON_SIZE.SM} onClick={handleClearAll}>
