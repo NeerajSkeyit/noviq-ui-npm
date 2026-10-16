@@ -493,6 +493,7 @@ function Input({
           className={`nq-input-field ${error ? "nq-input-field-error" : ""}`}
           maxLength={maxLength}
           autoFocus={autoFocus}
+          onWheel={(e) => e.currentTarget.blur()}
         />
       </InputContainer>
     );

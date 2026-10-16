@@ -22,7 +22,7 @@ export interface ModalProps {
 
 const backdropVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1 },
+  visible: { opacity: 1, transition: { duration: 0.2, ease: "easeOut" } },
 };
 
 const modalVariants: Variants = {
