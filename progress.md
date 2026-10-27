@@ -3,6 +3,7 @@
 _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" background)._
 
 ## Extraction roadmap
+
 1. **Phase 1 — Drawer + Modal + primitives** ✅ done, **published as `1.1.0`**.
 2. **Phase 2 — Form/Input system** ✅ done, **published as `2.0.0`** (breaking: `Input`'s
    `onChange` signature changed).
@@ -16,7 +17,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
      deferred**: `FullPageForm` has zero importers in HRMS. Its single-step sibling
      `FullPageSection` (8 call sites) was ported instead — see `4.2.0`.
    - Note: `INPUT_TYPE.DATE_RANGE` (and four others) were declared but never rendered; removed in
-     `4.2.1`. A date-range *field* is still unbuilt — `DatePicker` ×2 would be the basis.
+     `4.2.1`. A date-range _field_ is still unbuilt — `DatePicker` ×2 would be the basis.
 4. **Phase 3 — Table**, split into sub-phases:
    - **3a — Core table** ✅ done, **published as `2.1.0`**. Sortable/searchable/paginated table,
      `apiFunction`/`preFetchedData` data sources, `date`/`dateRange`/`dateTime`/`time`/`duration`/
@@ -49,6 +50,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
    `3.0.0` "Done" entry below.
 
 ## Done
+
 - [x] Package scaffolded (Vite + React + TS library mode); 5 versions live on npm, 1.0.1 → 1.0.5.
 - [x] **Phase 1** — `Button`, `ScrollArea`, `Drawer`, `Modal`. Published as `1.1.0`.
 - [x] **Phase 2** — `Input` rewritten (18 field types, `onChange(value)` breaking change),
@@ -232,12 +234,12 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `window.open()`s it instead (matching source, CSV option hidden in that mode).
   - [x] `Table.tsx` wired up: new `exportFileName`/`isExportHidden`/`responseSheetUrl` props, new
         `TableColumn.export`/`exportValue` fields. `ActionBar` gained an `exportControl?:
-        ReactNode` slot (same pattern as the `filters`/`columnSelector` slots from 3d-i/3b).
+ReactNode` slot (same pattern as the `filters`/`columnSelector` slots from 3d-i/3b).
   - [x] **Found and fixed a real bundle-size regression during the build-sanity-check step, not
         anticipated in planning**: `vite.config.ts`'s Rollup output had `inlineDynamicImports:
-        true` (set in Phase 1, to keep the library as one clean output file) — this forced the
+true` (set in Phase 1, to keep the library as one clean output file) — this forced the
         new `await import("xlsx-js-style")` to be inlined into the single `noviq-ui.mjs` output
-        too, ballooning the main bundle from ~124KB to ~467KB gzipped for *every* consumer,
+        too, ballooning the main bundle from ~124KB to ~467KB gzipped for _every_ consumer,
         whether or not they use export. Switched to Vite 8's `codeSplitting: true` output option,
         which correctly splits `xlsx-js-style` into its own lazy-loaded chunk (confirmed via a
         clean rebuild: main bundle back to ~129KB gzip, `xlsx-js-style` isolated into a separate
@@ -286,9 +288,9 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `colSpan` means "how many fields share this row" (`1` = alone/100%, `2` = one of two
         side-by-side/50% each, `3` = one of three/~33% each) — **not** "spans N of 3 grid
         columns." The demo's own `employeeFormFields` was written assuming the latter (`name:
-        colSpan 3` intending "full width," `status: colSpan 1` intending "narrow"), producing the
+colSpan 3` intending "full width," `status: colSpan 1` intending "narrow"), producing the
         exact odd layout reported (fields in unexpected positions, uneven empty space). A first
-        pass at fixing this *changed `Form.css` itself* to match the "spans N of 3" reading — but
+        pass at fixing this _changed `Form.css` itself_ to match the "spans N of 3" reading — but
         that would have broken the library's own published `README.md` Form example (two fields
         both set to `colSpan: 2`, relying on `2` meaning "50% each, side by side" to sit correctly
         next to each other), which only works under the original, "fields-per-row" semantics. That
@@ -297,10 +299,10 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         share this row" instead of the misleading "spans N of 3 columns" phrasing that caused the
         confusion in the first place, and (2) corrected `noviq-ui-demo`'s own `employeeFormFields`
         to use matching `colSpan` pairs (`department`/`status`/`joinDate`/`salary` all `colSpan:
-        2`, `name` alone at `colSpan: 1`) to get the intended layout. `Form.css` itself is
+2`, `name` alone at `colSpan: 1`) to get the intended layout. `Form.css` itself is
         unchanged from `2.5.0`.
   - [x] Verified both, live, against the real `noviq-ui-demo/web` app (via a temporary `npm
-        link` — built noviq-ui locally, linked it into the demo, cleared Vite's stale
+link` — built noviq-ui locally, linked it into the demo, cleared Vite's stale
         dependency-pre-bundle cache, then unlinked and restored the demo to the real registry
         dependency once verified): at a normal desktop width, "Add Employee" lays out as intended
         (Name alone, Department+Status paired, Join date+Salary paired); at a 480px narrow
@@ -310,14 +312,14 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `Drawer.css` changed (additive `@media` rule), `Form.css` unchanged, no behavior/API
         change beyond the JSDoc wording, so no new tests were needed.
 - [x] **`2.5.2` — a second, real overflow bug found in Edge after `2.5.1` shipped** (published):
-      the `2.5.1` responsive-breakpoint fix only covered narrow *viewports*
+      the `2.5.1` responsive-breakpoint fix only covered narrow _viewports_
       (`< 640px`); it didn't cover a **full-width, maximized** window where a single field's
       native rendering is simply wider than expected in that browser. Diagnosed live with the
       user (real screenshots + a `window.innerWidth`/`getBoundingClientRect()` check pasted from
       their own Edge DevTools console) rather than guessed at:
   - [x] **Root cause**: `.drawer-content` had no `overflow: hidden` of its own — only its inner
         `ScrollArea` (`.drawer-body`) did. `.drawer-content` is `position: fixed` with an explicit
-        `width`/`max-width`, so *its own box* never grows past 512px regardless of content — but
+        `width`/`max-width`, so _its own box_ never grows past 512px regardless of content — but
         with nothing containing overflow at that outer level, a child that refuses to shrink below
         its own intrinsic minimum width (a native `<input type="date">` can render with a
         meaningfully wider intrinsic minimum in Edge than in the Chromium build this session's
@@ -337,7 +339,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         reproduce in this session's own browser: forced a real `<input type="date">` inside the
         drawer to `min-width: 900px` via JS (simulating "a browser renders this input much wider
         than expected") and confirmed via screenshot that the drawer still renders with clean,
-        contained edges — no visible spillover — proving the fix holds regardless of *why* a field
+        contained edges — no visible spillover — proving the fix holds regardless of _why_ a field
         ends up oversized in some particular browser.
   - [x] `npm test` (202/202), `npm run build`, `npm pack --dry-run` all verified clean — both
         changes are additive CSS properties, no behavior/API change.
@@ -346,7 +348,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
       `docs/superpowers/specs/2026-09-04-config-provider-design.md` and
       `docs/superpowers/plans/2026-09-04-config-provider-implementation.md`.
   - [x] **Why**: `Table`'s `apiFunction` had to resolve to exactly `{ result: T[], totalCount:
-        number }` — a shape inherited from `noviq-hrms-ui`'s own backend envelope, not a neutral
+number }` — a shape inherited from `noviq-hrms-ui`'s own backend envelope, not a neutral
         contract, forcing every consumer with a differently-shaped backend to hand-write
         reshaping code per call site. No frontend depended on `noviq-ui` yet, so this was the
         cheapest moment to break it.
@@ -362,13 +364,13 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `NoviqUIConfigProvider.tsx`) + `Table.tsx`/`useTableExport.ts`.
   - [x] **Mandatory, by design**: a `Table` using `apiFunction` with neither a provider ancestor
         nor a `responseFormat` prop throws an actionable error on render, rather than silently
-        assuming HRMS's shape. A malformed provider config also throws at mount. (A *response*
+        assuming HRMS's shape. A malformed provider config also throws at mount. (A _response_
         that doesn't match the declared shape does not throw — it warns in development and
         renders an empty table; see Known limitations.)
   - [x] **Found while verifying 3.0.0 against the demo — `exports` had no `types` condition.**
         Under `moduleResolution: "bundler"` (the Vite default) TypeScript resolves through
         `exports` and ignores the top-level `types` field, so every typed consumer got the whole
-        library as implicit `any` (TS7016) — affecting *every* version published before 3.0.0.
+        library as implicit `any` (TS7016) — affecting _every_ version published before 3.0.0.
         Invisible until now because `noviq-ui`'s own tests/playground import local source, and
         because the demo's earlier "clean typecheck" was vacuous: the Vite template's root
         `tsconfig.json` has `files: []`, so a bare `tsc --noEmit` checks nothing — the real check
@@ -378,7 +380,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] **Also found: `<Form formik={useFormik<Values>()} />` didn't typecheck.** The prop was
         typed `FormikProps<Record<string, any>>`; Formik's helpers (`setValues`, …) are
         contravariant in the values type, so a concretely-typed instance wasn't assignable. Typed
-        as `FormikProps<any>` now. *No automated guard*: `tsconfig.json` excludes `*.test.tsx` and
+        as `FormikProps<any>` now. _No automated guard_: `tsconfig.json` excludes `*.test.tsx` and
         Vitest doesn't typecheck, so the existing `Form` tests (which only ever passed
         `Record<string, any>`) could never have caught it — the demo's `npm run build` is the
         real check.
@@ -395,7 +397,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
       "Ready to publish"; the briefly-staged `3.1.0` was never published and is folded in here):
   - [x] **`TimePicker` built** (`src/components/TimePicker/`), ported from HRMS's hand-rolled
         `common/TimeInput.jsx`. Standalone, additive: `<TimePicker value="09:30" onChange={...}
-        minuteStep={15} />`. Fixes vs. the source: placeholder instead of a fake `00:00` when empty;
+minuteStep={15} />`. Fixes vs. the source: placeholder instead of a fake `00:00` when empty;
         opens on click/ArrowDown/Enter rather than on bare focus; scroll-to-selected is scoped to
         its own dropdown (the source's global `document.querySelector` scrolled the wrong picker
         when two were on a page); repositions on scroll/resize and flips above near the viewport
@@ -417,7 +419,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         the display mode. Picking an hour keeps AM/PM, picking AM/PM keeps hour and minute; `12 AM`
         is `00`, `12 PM` is `12`. Keyboard: Enter walks hour → minute → AM/PM and closes after the
         last. 17 new tests (47 total), mutation-checked (5 deliberate breaks of the 12h logic).
-  - [x] **`formik` is no longer a dependency.** It was only ever a *type* import in `Form.tsx`
+  - [x] **`formik` is no longer a dependency.** It was only ever a _type_ import in `Form.tsx`
         (`FormikProps`); `Form` reads/writes just `values`, `errors`, `touched`, `setFieldValue`. The
         prop is now typed as a structural `FormController` (exported), which a real `useFormik()`
         satisfies as-is — verified by the demo's `tsc -b` against the packed tarball. The prop kept
@@ -426,7 +428,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         formik) to 0.
   - [x] **`react-hot-toast` is no longer a dependency; export feedback goes through
         `config.notify`.** `NoviqUIConfig` gained `notify?: (message, kind: "success" | "error") =>
-        void` — this is the "`config.notify`" item from the config-provider design spec's roadmap,
+void` — this is the "`config.notify`" item from the config-provider design spec's roadmap,
         built. `config.table` became optional so an app can configure only `notify`. A `"loading"`
         kind was deliberately not added (a callback can't dismiss it); the Export button's
         "Exporting…" state covers that. Without `notify` the table is silent and a failed export is
@@ -435,8 +437,8 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Guards: `src/packaging.test.ts` now fails if `formik`/`react-hot-toast` reappear under
         `dependencies`/`peerDependencies` or are imported (even as a type) by shipped source.
         Verified the dependency guards fail against the pre-change `package.json`.
-  - [x] **Constants consolidated into `src/constants.ts`** (standing convention from the user: *every
-        fixed value lives in constants, never as a bare literal*). Before this only `INPUT_TYPE`,
+  - [x] **Constants consolidated into `src/constants.ts`** (standing convention from the user: _every
+        fixed value lives in constants, never as a bare literal_). Before this only `INPUT_TYPE`,
         `CELL_TYPE` and `FILTER_TYPE` existed; variants, sizes, sides, button `type`, sort direction,
         sticky side, row/bulk action kinds, keyboard keys, hotkeys, column ids, defaults, the storage
         prefix and export strings were bare literals scattered through ~25 files. Now ~35 named
@@ -484,7 +486,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `constants.ts` (it was a private array in `buildActiveFilter.ts`).
   - [x] **Found while verifying in the demo — a bug in the demo, not the library:** its Add/Edit
         form kept `department`/`status` as `{ label, value }` objects, but `Input`'s select
-        compares and emits the option's *string* value, so the selects never showed the current
+        compares and emits the option's _string_ value, so the selects never showed the current
         value and `values.department?.value` was `undefined` after picking one (Add would have sent
         no department). Latent since Phase 4. Fixed and verified with real clicks: choosing Design
         stores `Design`.
@@ -519,7 +521,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Results: 37/37 pass; typecheck + production build pass; real-browser pass with a clean
         console; **also green on React 18.3.1** (single React copy, typecheck, tests, build) and the
         published `.d.ts` files typecheck on **TypeScript 4.9.5** with `skipLibCheck: false`.
-        No defect was found in the *behaviour* of any component; the failures along the way were
+        No defect was found in the _behaviour_ of any component; the failures along the way were
         my own wrong assumptions in tests/showcase (and one showcase bug: `<Label>`s with no
         `htmlFor`). Findings that ARE about the library are under "Known bugs / limitations".
   - [x] Corrected a stale fact: `noviq-hrms-ui` is on **Vite 6**, not CRA (the suite-level
@@ -549,7 +551,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         "Worng input type provided") and logs one dev `console.error` per type. A test renders
         every remaining `INPUT_TYPE` so the list can't drift from the implementation again.
   - [x] **Consumer-side regression suite** in `noviq-ui-demo` (7 tests, 44 total) asserting the
-        three fixes against the *installed package*. Run against the published `4.2.0` all 7 fail;
+        three fixes against the _installed package_. Run against the published `4.2.0` all 7 fail;
         against `4.2.1` all pass — my first version of two of them passed on 4.2.0 (vacuous: the
         Modal lingers in the DOM while animating out; the fallback text had changed), so they were
         rewritten to key off `body` scroll lock and the shared `title` attribute.
@@ -570,7 +572,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - [x] **`4.3.0` — configurable date, time and date-time formats** (`NoviqUIConfigProvider`
       `formats`; staged, see "Ready to publish"; absorbs the unpublished `4.2.1`).
   - [x] `config.formats = { date, time, dateTime }` with moment-style tokens (`YYYY MM DD dddd HH
-        hh KK mm ss A a [literal]`; `KK` is the zero-based 12-hour hour). Applied to Table
+hh KK mm ss A a [literal]`; `KK` is the zero-based 12-hour hour). Applied to Table
         date/time cells, Excel/CSV export, filter chips, and the Date/Month/Time pickers; plus
         `displayFormat` props and a public `useDateTimeFormatters()` for the app's own UI.
         Display only: emitted/stored values and backend payloads are unchanged.
@@ -580,8 +582,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `04/03/2024` in e.g. Los Angeles — in Table date cells and date-filter chips. Date-only
         strings are now calendar days in every zone (tested across LA/UTC/Kolkata/Auckland; the
         pre-fix output was reproduced first).
-  - [x] TimePicker follows `formats.time` for its clock and hour list (precedence: `hourCycle` prop
-        > configured format > 24-hour); not configured ⇒ identical to before. See context.md.
+  - [x] TimePicker follows `formats.time` for its clock and hour list (precedence: `hourCycle` prop > configured format > 24-hour); not configured ⇒ identical to before. See context.md.
   - [x] Provider validation: a non-string or blank pattern throws at mount, like a malformed
         `table` config.
   - [x] Tests: library 626 (up from 525; 101 new) — engine, resolution, hooks, provider, every
@@ -589,8 +590,8 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         52 (5 new), a "Date and time formats" showcase section with live presets, and the
         Employees page now configured with `DD MMM YYYY`. Verified in a real browser: grid
         cells, export file (`01 Jan 2023`), picker labels and all four presets.
-  - [x] Design calls worth knowing: month display is *derived* from the date pattern (no
-        `formats.month`); a nested provider *replaces* its parent's config (does not merge);
+  - [x] Design calls worth knowing: month display is _derived_ from the date pattern (no
+        `formats.month`); a nested provider _replaces_ its parent's config (does not merge);
         native date/time inputs can't be reformatted.
 
 - [x] **`4.3.1` — correctness patch** (staged, see "Ready to publish"; no API change).
@@ -598,8 +599,8 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         longer unlock the page under an open Modal, a closed Drawer can't cancel a Modal's lock,
         and the page's previous `overflow` is restored. 7 tests.
   - [x] **`isPrefetchedDataLoading` works while the array is empty** (prefetched mode is now "rows
-        given *or* no apiFunction"). Found a second, related flaw while testing it, fixed in the
-        same place: "No data found" rendered *under* the translucent spinner on every first load,
+        given _or_ no apiFunction"). Found a second, related flaw while testing it, fixed in the
+        same place: "No data found" rendered _under_ the translucent spinner on every first load,
         in `apiFunction` mode too; the empty state is now withheld while loading.
   - [x] **`Checkbox` no longer depends on `style.css` to hide its native input** (`hidden` +
         `aria-hidden`); a test removes the injected styles to prove it — my first version of that
@@ -614,7 +615,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] Left for `4.4.0`: `Input type="search"` label/error, the `cell()` placeholder gotcha.
 
 - [x] **`4.4.0` — regional settings and Table/Input ergonomics** (staged, see "Ready to publish";
-      absorbs `4.3.1`, which is *not* on the registry — see "Published").
+      absorbs `4.3.1`, which is _not_ on the registry — see "Published").
   - [x] **`formats.locale` / `formats.currency` / `formats.weekStart`.** `locale` (BCP-47) drives
         month/weekday names (`MMMM`, `MMM`, `dddd`, `ddd`, calendar headings, month chips),
         currency grouping/symbol placement, and the calendar's first day unless `weekStart`
@@ -628,7 +629,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         accept the wider `FormatsInput`, so hand-built `{date,time,dateTime}` objects still work.
   - [x] **`TimePicker` default clock follows the library time format (12-hour `hh:mm A`)** — the
         decision from the 4.3.x roadmap, taken by the user: the Table and the picker no longer
-        disagree out of the box. A *default change*, called out in the README ("What changed in
+        disagree out of the box. A _default change_, called out in the README ("What changed in
         4.4.0") with the one-line way back (`formats.time: "HH:mm"` or `hourCycle={24}`).
         Explicit `hourCycle` still wins; `hourCycle={12}` with no configured format keeps the
         `00 … 11` list the user asked for in 4.2.1. `useConfiguredTimePattern` stays internal.
@@ -749,7 +750,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   - [x] **z-index, re-verified in a real browser by hit-testing** (`elementFromPoint` at the centre
         of each popup, a harness stored in the demo's new Stacking section). Found and fixed:
         (1) the reject popover (`z-index: 10`) hidden behind any Modal/Drawer; (2) a Modal opened
-        from a Drawer rendered *behind* it — equal `z-index` 1200 and the Modal, rendered in place,
+        from a Drawer rendered _behind_ it — equal `z-index` 1200 and the Modal, rendered in place,
         earlier in the DOM; (3) `Modal` was never portaled although the README said so: a host
         wrapper with `transform` offset it from the viewport (overlay rect `[24,330,976×920]` in a
         1024×768 window), and one with `position: relative; z-index: 1` let the host's own z 1030
@@ -781,17 +782,17 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
       had no `license`, `author`, `repository`, `homepage` or `bugs` (so a panel can't reach the public
       GitHub repo `NeerajSkeyit/noviq-ui-npm`, which already lists the 1 contributor), no `LICENSE`,
       `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` or `FUNDING.yml` (GitHub community profile: 28%). Decisions
-      (user): **proprietary** — `"license": "UNLICENSED"`, © Satellite Key IT, all rights reserved;
+      (user): **proprietary** — `"license": "UNLICENSED"`, © Satellite Key IT Solutions, all rights reserved;
       author Neeraj Yadav; **funding skipped**; commit locally, the user pushes and publishes.
   - [x] Added `LICENSE`, `CONTRIBUTING.md` (proprietary-aware: issues welcome, PRs from staff/authorised
-        partners, a contribution grants Satellite Key IT a licence; the repo's real checks and the
+        partners, a contribution grants Satellite Key IT Solutions a licence; the repo's real checks and the
         conventions the tests enforce), `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, reports to
         neeraj.yadav@satellitekeyit.com), package.json `license` / `author` / `repository` / `homepage` /
         `bugs`, README "License / Third-party notices / Contributing / Code of conduct".
-  - [x] **Third-party notices, generated by the build.** Every dependency is *bundled* into `dist`
+  - [x] **Third-party notices, generated by the build.** Every dependency is _bundled_ into `dist`
         (only React is external) and minification strips their licence comments (0 licence strings in
         the 4.7.1 dist) — MIT/BSD/Apache-2.0 require the notice to travel with copies. `build/
-        thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) reads the
+thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) reads the
         modules that actually ended up in each chunk, resolves each package root (scoped, nested,
         pnpm, query/`\0` suffixes) and writes `dist/THIRD-PARTY-NOTICES.md`: 25 packages (23 MIT,
         BSD-3-Clause, Apache-2.0) + the full Lucide licence — which is ISC **plus the MIT terms for
@@ -800,7 +801,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         `xlsx-js-style` is a pre-minified file that inlines SheetJS's own Apache-2.0 sub-libraries
         (adler-32, cfb, crc-32, ssf…), covered by its licence; `fflate` is not in the bundle.
   - [x] Guards: `src/packageMetadata.test.ts` (metadata present and self-consistent — homepage/bugs
-        derive from `repository`; LICENSE names Satellite Key IT and the notices; CoC contact equals the
+        derive from `repository`; LICENSE names Satellite Key IT Solutions and the notices; CoC contact equals the
         author's email; README links all three files) and `build/thirdPartyNotices.test.ts` (25 tests).
         Mutation-checked; three survivors (query suffix, fence length, scoped fallback name) became tests.
   - [x] Tests 994 (up from 958). Demo: 90/90 against the 4.7.2 tarball, `vite build` fine. **Pre-existing,
@@ -811,6 +812,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
         pushed to `main`. Published versions ≤ 4.7.1 can't change (npm is immutable).
 
 ## Published
+
 - `1.1.0` — live on npm.
 - `2.0.0` — live on npm. Breaking release (`Input`'s `onChange` signature changed); README
   documents the migration.
@@ -884,6 +886,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   `40686c4`: number inputs blur on wheel (`Input`), and the Modal backdrop gets its own 0.2s fade.
 
 ## Ready to publish
+
 - `4.7.2` — **patch** (no code change): licence/author/repository metadata, `LICENSE`, `CONTRIBUTING.md`,
   `CODE_OF_CONDUCT.md`, `dist/THIRD-PARTY-NOTICES.md`, README sections. Gate: `tsc` clean, 994/994
   library tests, build, `npm pack` (`noviq-ui-4.7.2.tgz`, 67 files, sha1 `12d6b250…`), demo tests 90/90
@@ -891,6 +894,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
 - Nothing else is waiting: `4.3.1` … `4.7.1` are live (see "Published").
 
 ## Not started
+
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
       indefinitely, confirmed near-dead in HRMS (1 real working call site out of 97). Not part of
       Table 3a-3d at all; revisit only if a real consumer needs it.
@@ -905,6 +909,7 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
       `NoviqUIConfig` type is shaped so they can be added without another breaking change.
 
 ## Known bugs / limitations
+
 - `Table`: sorting is client-side and only reorders the currently-loaded page — for a
   server-paginated table, this means sorting doesn't span the full dataset. This is faithful to
   the HRMS source's actual behavior (confirmed by reading the sort comparator directly), not a
@@ -963,7 +968,9 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   can only be caught by building a real typed consumer — `noviq-ui-demo`'s `npm run build`.
 
 ### Open defects and gotchas (as of `4.4.0`)
+
 (From the 4.2.0 integration test, minus everything fixed since, plus what was verified later.)
+
 - **A closed `Drawer` keeps its children mounted** (hidden, `aria-hidden`). Each `Table`
   therefore mounts two hidden drawers (columns, filters); a form inside a closed Drawer stays live
   (state, effects, autofocus), and two drawers rendering the same `id` produce duplicate ids.
@@ -981,36 +988,43 @@ _Last updated 2026-10-14 (see `context.md` for the "how this fits the suite" bac
   the browser); only the CSV bytes are asserted.
 
 ## Roadmap (as of `4.5.0`)
+
 Each release is one theme, small enough to verify in the demo before publishing. Order is by
 user-visible damage first, then by how much later work depends on it.
 
 ### `4.3.1` — correctness patch (no API change) — done, published
+
 ~~1. Reference-counted body scroll lock.~~ ~~2. `isPrefetchedDataLoading` while empty (+ no "No
 data found" under the spinner).~~ ~~3. `Checkbox` accessible without `style.css`.~~ ~~4.
 `DropdownMenu` closes on Escape.~~ ~~5. `FilterDrawer.onRemoveFilter` optional.~~
 
 ### `4.4.0` — regional formats (builds on `4.3.0`'s `formats`) — done, published
+
 ~~1. `formats.locale` / `formats.currency`.~~ ~~2. `weekStart`, locale month/weekday names.~~ ~~3.
 Table client-side search (and paging) for `preFetchedData`; `cell()` raw value.~~ ~~4. `Input
 type="search"` label/error/helper.~~ ~~Time default unified: 12-hour `hh:mm A` everywhere.~~
 
 ### `4.5.0` — copy and localisation — done, staged
+
 ~~User-facing strings become constants and are overridable through `config.text`.~~ Left over:
 AM/PM markers (the `A` token and the picker's AM/PM column) are still fixed English; digits stay
 Latin; genitive month forms; the select-all / per-row checkboxes have no accessible name; RTL.
 
 ### `4.6.0` — Table ergonomics — done, staged
+
 ~~Server-side sort~~ (`serverSort`) ~~· chip click reopens the filter drawer · measured sticky
 offsets · closed `Drawer` children unmounted (opt-in)~~ ~~· nested-provider merge (opt-in `inherit`)~~
 ~~· accessible sort headers and checkboxes~~.
 
 ### Parked for a major (do NOT build until the user says to move to version 5)
+
 By the user's standing rule (2026-10-16) there is no `5.0.0` and nothing breaking ships in 4.x —
 see `memory/feedback-noviq-ui-no-major-versions`. What would need a major: renaming `Form`'s
 `formik` prop, making `inherit` (or unmounting closed drawers) the default, changing any other
 default. Each already has an opt-in in 4.x; leave the default alone.
 
 ### Next minors — candidates (none started)
+
 - **Quality gates:** `eslint.config.js` (lint is broken), CI, a typecheck gate for the library's own
   tests, `noviq-ui-demo` under git.
 - **Verification gaps:** open a real `.xlsx` from the export; Firefox/Safari; a screen-reader pass;
@@ -1020,6 +1034,7 @@ default. Each already has an opt-in in 4.x; leave the default alone.
 - `preFetchedData` + `filterConfigs` has no client-side filtering (filters only build API payloads).
 
 ### Alongside (no release of their own)
+
 - **Quality gates:** `eslint.config.js` (lint is broken), CI running tsc + tests + build + the
   constants guard + the demo's consumer suite against the packed tarball, a typecheck gate for the
   library's own tests, `noviq-ui-demo` under git.

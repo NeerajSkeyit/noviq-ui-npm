@@ -1,6 +1,7 @@
 # noviq-ui — Context
 
 ## What it is
+
 A standalone, lightweight **React component library** for the Noviq product suite. Published to
 the public npm registry as [`noviq-ui`](https://www.npmjs.com/package/noviq-ui), currently at
 **v4.6.0** on npm, with **`4.7.0` staged** (`1.1.0` shipped
@@ -52,6 +53,7 @@ dependency in their `package.json` yet, despite it being published. It's built b
 swapping a consumer frontend over to it is explicitly deferred to a later phase.
 
 ## Tech stack
+
 - React 18/19 (peer dependency, `>=18`) + TypeScript (`strict: true`)
 - Bundled with **Vite** (`vite build`) using library mode, output format ESM only
   (`dist/noviq-ui.mjs` + `dist/noviq-ui.css`), type declarations emitted via `vite-plugin-dts` /
@@ -73,7 +75,7 @@ swapping a consumer frontend over to it is explicitly deferred to a later phase.
   consumers get them for free rather than needing to install/version them themselves.
   **Deliberately not dependencies (as of `4.0.0`): `formik` and `react-hot-toast`.** Both are the
   consuming app's choice; `Form` is typed structurally (`FormController`) and Table export
-  feedback goes through `config.notify`. `formik` stays a *devDependency* — the `Form` tests and
+  feedback goes through `config.notify`. `formik` stays a _devDependency_ — the `Form` tests and
   the playground use a real `useFormik()` to keep the structural type honest — and
   `src/packaging.test.ts` fails if either is re-added to `dependencies` or imported by shipped
   source. `Table`
@@ -106,6 +108,7 @@ swapping a consumer frontend over to it is explicitly deferred to a later phase.
   `"files": ["dist"]`, so it never ships.
 
 ## Structure
+
 ```
 noviq-ui/
 ├── src/
@@ -156,6 +159,7 @@ noviq-ui/
 ## Components
 
 ### `Input`
+
 One component, `type`-switched (à la a spreadsheet of input variants). **Rewritten in full for
 2.0.0** — was previously a thin 11-type scaffold with an event-based `onChange(e)`; now ported
 from the real HRMS `design/form/Input.jsx` (881 lines, 92 call sites in HRMS). 18 field types now
@@ -185,33 +189,40 @@ place a public export was removed in a patch — justified because they never wo
 out in the release notes.
 
 ### `Button`
+
 Ported from `noviq-hrms-ui/src/components/ui/Button.jsx`. Variants: `default, outline,
 destructive, secondary, ghost, link`. Sizes: `sm, md, lg, icon`.
 
 ### `ScrollArea`
+
 Ported from `noviq-hrms-ui/src/components/ui/ScrollArea.jsx` — trivial styled scroll viewport,
 used internally by `Drawer` and exported standalone too.
 
 ### `Drawer`
+
 Ported from `noviq-hrms-ui/src/components/design/Drawer.jsx`. Portal-based slide-over panel,
 sides `right/left/top/bottom`, sizes `sm/md/lg`. `onClose` is consistently `() => void` (cleanup
 vs. source's inconsistent `onClose(false)`/`onClose()` calls).
 
 ### `Modal`
+
 Ported from `noviq-hrms-ui/src/components/design/Modal.jsx`. Portal-based centered modal
 animated with `framer-motion`, sizes `sm/md/lg/xl/auto`.
 
 ### `Label`
+
 Ported from `noviq-hrms-ui/src/components/ui/Label.jsx`. Styled `<label>` wrapper, used
 internally by `Input`'s `InputContainer` and exported standalone.
 
 ### `Switch`
+
 Ported from `noviq-hrms-ui/src/components/design/ui/Switch.jsx`. Toggle switch, used internally
 for `Input`'s `switch` type and exported standalone. Accessibility improvement vs. source: added
 `role="switch"`, `aria-checked`, keyboard support (Enter/Space) — source was mouse-only with no
 ARIA at all.
 
 ### `TimePicker`
+
 Ported from `noviq-hrms-ui/src/components/common/TimeInput.jsx` (hand-rolled, no picker library).
 Standalone — **`Input type="time"` still renders the native `<input type="time">`**; wiring it in
 is a pending product decision (native is better on mobile, the custom one is consistent across
@@ -239,10 +250,12 @@ stores doesn't depend on the display. Hours are ordered 12-first so the list ind
 after the last column.
 
 ### `DatePicker` / `MonthPicker`
+
 Ported from `noviq-hrms-ui/src/components/common/DateInput.js` + `DatePickerHeader.jsx` (and the
 `MONTH` branch of `design/form/Input.jsx`). The source sat on `react-datepicker` + `moment` +
 `react-i18next`; these are **hand-built, no new dependency** (the user had just asked to remove
 `formik`/`react-hot-toast`, so fewer dependencies was the clear direction).
+
 - **Dates are `{year, month, day}`, never `new Date("YYYY-MM-DD")`** (which reads as UTC and shifts
   the day for users west of UTC). All the math is in `DatePicker/dateParts.ts` — pure, 38 tests:
   leap years, month-end clamping (31 Jan + 1 month → 29 Feb), DST-safe day arithmetic, invalid
@@ -260,8 +273,10 @@ Ported from `noviq-hrms-ui/src/components/common/DateInput.js` + `DatePickerHead
   `PickerField` trigger shell (used by Date/MonthPicker; `TimePicker` keeps its own markup).
 
 ### `FullPageSection`
+
 Ported from `noviq-hrms-ui/src/components/design/form/FullPageSection.jsx` (8 real call sites).
 Back arrow + title/subtitle header, children in a card, sticky footer. **What was decided:**
+
 - **The router coupling is gone**: the source called react-router's `useNavigate` for its default
   back; all 8 callers pass their own `onBack`, so the port defaults to `window.history.back()`
   (equivalent for browser history) and the library stays router-agnostic.
@@ -273,10 +288,12 @@ Back arrow + title/subtitle header, children in a card, sticky footer. **What wa
   `ViewModeToggle`. `FullPageFormFooter` and `ProgressBar` only serve that wizard.
 
 ### `FormFooter`
+
 Ported from `noviq-hrms-ui/src/components/design/form/FormFooter.jsx`. Cancel/Save/extra-buttons
 row, built entirely on `Button`.
 
 ### `Form`
+
 Ported from `noviq-hrms-ui/src/components/design/Form.jsx`. Config-driven: an `inputList` array
 of field configs + a Formik instance renders a grid of `Input`s, auto-wiring
 `formik.setFieldValue`/`touched`/`errors`. Supports `colSpan` (1/2/3) grid placement and an
@@ -286,15 +303,18 @@ dependency; as of `4.0.0` it isn't one — the `formik` prop is typed as the str
 satisfies as-is. The prop kept its `formik` name to avoid a rename for existing callers.
 
 ### `Badge`
+
 Ported from `noviq-hrms-ui/src/components/ui/Badge.jsx`. Small pill, variants `default,
 secondary, destructive, outline`. Used internally by `Table`'s `status` cell type.
 
 ### `DropdownMenu` / `DropdownMenuItem`
+
 Ported from `noviq-hrms-ui/src/components/ui/Dropdown.jsx`. Portal-positioned menu with
 auto-flip/clamp against viewport edges, closes on outside click. Used internally by `Table`'s
 `ActionBar` for multi-option toolbar actions.
 
 ### `Checkbox`
+
 Ported from `noviq-hrms-ui/src/components/ui/Checkbox.jsx`. Used internally by `Table`'s
 auto-injected row-selection column, also exported standalone. **Accessibility fix vs. source**:
 the source's native `<input type="checkbox">` is visually hidden (`display: none`), which also
@@ -303,6 +323,7 @@ removes it from the accessibility tree — the port moves `role="checkbox"`/`ari
 pattern as `Switch` in Phase 2.
 
 ### `RejectAction`
+
 Ported from `noviq-hrms-ui/src/components/dataTable/RejectAction.jsx`. Confirm-with-reason
 popover built on `Button`, portal-rendered, positioned from the trigger button's bounding rect.
 Validates the typed reason with 4 rules ported verbatim from `utils/regex.js`: required, minimum
@@ -313,6 +334,7 @@ inside a form field (`enableOnFormTags` defaults to `false`) — so Escape silen
 the source. Fixed by passing `{ enableOnFormTags: true }` to the `useHotkeys("esc", ...)` call.
 
 ### `RowActionsMenu`
+
 Ported from `noviq-hrms-ui/src/components/dataTable/RowActionsMenu.jsx`. Renders a row's
 `RowAction[]`: `button`/`checkbox`-typed actions render inline, everything else (including
 untyped/`icon`-typed actions) groups into the existing `DropdownMenu`. `variant: "reject"` actions
@@ -325,11 +347,13 @@ argument `RejectAction` actually passes to its callback. Fixed by adding `reason
 `onConfirm`/`onClick` now actually receives what the user typed.
 
 ### `BulkActionsBar`
+
 Ported from `noviq-hrms-ui/src/components/dataTable/BulkActionsBar.jsx`. Near 1:1 port, fully
 controlled (`selectedCount`, `actions`, `selectedIds`, `onClearSelection`), renders `null` at zero
 selected.
 
 ### `buildActiveFilter`
+
 New (no direct source equivalent) — `src/components/Table/buildActiveFilter.ts`. Consolidates two
 independently-duplicated pieces of logic from `noviq-hrms-ui/src/components/dataTable/DataTable.jsx`
 (`buildInitialFilters`) and `dataTable/FilterDrawer.jsx` (`handleApply`), both of which
@@ -338,12 +362,14 @@ separately. Exports `FILTER_TYPE` (`search | date | select | dateRange | month`)
 `ActiveFilter` types.
 
 ### `FilterDrawer`
+
 Ported/rebuilt from `noviq-hrms-ui/src/components/dataTable/FilterDrawer.jsx` (464 lines).
 Self-contained trigger `Button` ("Filters", with an active-count badge) + `Drawer` — same
 self-contained pattern as `ColumnSelector` (3b), so `Table` doesn't need to manage the drawer's
 open/close state. Built on `Drawer`/`ScrollArea`/`Checkbox`. Draft state is local, only committed
 via `onApplyFilter` on "Apply" (matches source's all-at-once, not incremental, apply behavior).
 Two deliberate fixes vs. source:
+
 - **`date` type**: source's `FilterDrawer.jsx` falls `date` through to the same generic branch as
   `search`, rendering a bare, undecorated text input — no date picker at all, despite the type
   name (confirmed via source read: nothing else in the file treats `date` as "just text", strongly
@@ -357,14 +383,16 @@ Two deliberate fixes vs. source:
   `Input`'s own date/time/month types in Phase 2, reconfirmed for this sub-phase.
 
 ### `FilterChips`
+
 Ported/rebuilt from `noviq-hrms-ui/src/components/dataTable/FilterChips.jsx` (54 lines). **Bug
 fixed vs. source**: HRMS's "Clear all" handler also called `onSearchChange("")` alongside removing
-every filter — meaning clearing filters in the source silently wiped the *unrelated* main search
+every filter — meaning clearing filters in the source silently wiped the _unrelated_ main search
 box too. The port's `FilterChips` has no `onSearchChange` prop at all; "Clear all" only clears
 filters, matching the already-established precedent of `BulkActionsBar`'s `onClearSelection` only
 touching selection state.
 
 ### `cellValue.ts` (`getCellValue`, `buildCellFormatOptions`)
+
 New (no direct source equivalent) — `src/components/Table/cellValue.ts`. Extracted from
 `Table.tsx` during 3d-ii so both the render path (`Table`'s `getRenderValue`, via `TableCell`) and
 the export path (`useTableExport`, via `formatTableCellValues` directly) share the same per-column
@@ -373,11 +401,13 @@ value/options logic instead of duplicating the range-type field lookups
 confirmed via the full test suite passing unchanged before any export code was added on top of it.
 
 ### `Export` / `useTableExport`
+
 Ported/rebuilt from `noviq-hrms-ui/src/hooks/useTableExport.jsx` (256 lines) + `Export.jsx` (59
 lines, the dropdown UI). Excel export uses `xlsx-js-style` (matching source's choice — chosen over
 plain `xlsx` for its cell-styling support, used to bold+color the exported header row `#02699B`),
 CSV via `sheet_to_csv` + a UTF-8-BOM `Blob` + `<a download>` click, both ported near-verbatim from
 source. Decoupling/fix decisions:
+
 - **Fixed a real bug**: source's export always requested `rows_per_page: 10` and no real HRMS call
   site ever overrode it — every export in production HRMS today is silently truncated to 10 rows.
   The port fetches all rows matching the current search/filters in one call
@@ -399,16 +429,18 @@ source. Decoupling/fix decisions:
   `window.open()`s a pre-generated report link, hides the CSV option — matches source.
 - Column-level `export?: boolean` (default `true`) and `exportValue?: (row) => string | number` —
   new optional `TableColumn` fields, cheap ports of source's equivalent config.
-- Exports the currently-*visible* column set (`displayColumns`, the 3b visibility/order-filtered
+- Exports the currently-_visible_ column set (`displayColumns`, the 3b visibility/order-filtered
   list), not the full `columns` prop — matches source ("what you see is what you export").
 
 ### `Table` (sub-phases 3a-3d, now complete — core, column management, row/bulk actions, filters, export)
+
 Ported/rebuilt from `noviq-hrms-ui/src/components/dataTable/DataTable.jsx` (1360 lines) +
 `TableCell.jsx` + `TablePagination.jsx` + `ActionBar.jsx` + `ColumnSelector.jsx`. This is the
 biggest and most architecturally different extraction so far — research found the source's Redux
 usage (`tableDetailsSlice`) was pure persistence with zero real cross-component reads, its
 permission-gating imported the app's Redux **store singleton directly**, and `moment` handled all
 date/duration formatting. Decoupling decisions (confirmed with the user):
+
 - **Data-fetching contract simplified to just `apiFunction`**: `(params) => Promise<unknown>`
   (as of `3.0.0` — it resolved to a fixed `{result: T[], totalCount: number}` before; see
   "Config provider" below for how rows/total are read out of the raw response). The source's
@@ -458,12 +490,12 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
   approximate otherwise (no `ResizeObserver`/DOM-measurement pass) — a deliberate scope trade-off
   for this sub-phase, not a bug.
 - `ActionBar` in 3a only wired up search + toolbar `actions`; 3b added a `columnSelector?:
-  ReactNode` slot prop rather than threading column-visibility props through `ActionBar` itself —
+ReactNode` slot prop rather than threading column-visibility props through `ActionBar` itself —
   the filter/export/view-toggle slots for 3c/3d will likely follow the same pattern. Confirms the
   earlier note that `ActionBar` grows incrementally across sub-phases, not "ported once, done."
 - `preFetchedData` mode searches and pages client-side since `4.4.0` (it used to ignore the search
   box and render every row under a pager that claimed one page). The term matches the text of the
-  *visible* columns via `getExportCellValue` (dates as displayed, status labels, `exportValue`
+  _visible_ columns via `getExportCellValue` (dates as displayed, status labels, `exportValue`
   columns; the `-` placeholder never matches). One page of the searched, sorted rows renders when
   the pager is shown; `isPaginationHidden` renders all. Select-all = the page's rows; export =
   all searched rows; row-action `sn` counts from the list start. `apiFunction` tables are
@@ -508,6 +540,7 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
   either — same standing decision as every other Table feature.
 
 ## Gaps worth knowing about
+
 - **`lint` script still has no config** — ESLint 9 needs flat config, none exists. Confirmed
   still broken; intentionally out of scope across both phases so far.
 - **No CI/CD** — no GitHub Actions/Azure Pipelines config found, unlike `asset-management-system`.
@@ -523,14 +556,14 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
   published npm package. Worth remembering: the local playground is good for fast iteration, but
   isn't a substitute for testing against the actual built/published artifact, ideally at more than
   one viewport width and more than one real browser. (A second reported issue, `Form`'s field
-  layout looking wrong, turned out *not* to be a `Form.css` bug on investigation — see the `2.5.1`
+  layout looking wrong, turned out _not_ to be a `Form.css` bug on investigation — see the `2.5.1`
   notes in `progress.md` for the full story of how a misleading JSDoc comment led to a wrong first
   diagnosis, caught before it shipped.)
-- **`2.5.1`'s `Drawer` fix only covered narrow *viewports* — a real, related bug still got through
+- **`2.5.1`'s `Drawer` fix only covered narrow _viewports_ — a real, related bug still got through
   to `2.5.2`.** The user hit a case in Edge, on a full-width/maximized window, where a form field
   (a native date input) rendered with a wider intrinsic minimum width than this session's own
   Chromium-based testing tool ever produced, causing content to visually spill past the drawer's
-  fixed boundary even though the *viewport* was plenty wide. `Drawer.css`'s `.drawer-content` had
+  fixed boundary even though the _viewport_ was plenty wide. `Drawer.css`'s `.drawer-content` had
   no `overflow: hidden` of its own (only its inner `ScrollArea` did), and `Form.css`'s
   `.col-span-*` had no `min-width: 0` (flex items default to refusing to shrink below their
   content's intrinsic minimum). Neither gap depends on viewport width at all, which is exactly why
@@ -542,6 +575,7 @@ date/duration formatting. Decoupling decisions (confirmed with the user):
   rendering.
 
 ## `noviq-ui-demo` — a standalone integration-test sibling project
+
 `/Users/neerajyadav/Documents/sk/noviq/noviq-ui-demo/` (own README) is a small, separate project —
 `server/` (Express + TS, in-memory sample data) + `web/` (Vite + React + TS) — that installs
 `noviq-ui` from the **real npm registry** (not a local link) and exercises most of the library
@@ -566,9 +600,11 @@ messages from earlier server lifetimes, e.g. Vite HMR errors from before a depen
 export condition (fixed in `3.0.0`) went unnoticed through five published releases.
 
 ## Date and time formats (`config.formats`, `4.3.0`)
+
 `NoviqUIConfig.formats = { date?, time?, dateTime? }`: display patterns, moment-style tokens
 (`YYYY MM DD dddd HH hh KK mm ss A a [literal]`). **Display only** — pickers still emit
 `"YYYY-MM-DD"`/`"HH:mm"`/`"YYYY-MM"` and filter payloads stay ISO.
+
 - **Engine**: `utils/dateTimeFormat.ts` — a small hand-written tokenizer (no moment/date-fns;
   that stays a dependency-free library). `resolveFormats()` applies defaults (`DATE_FORMAT`,
   `TIME_FORMAT`) and derives `dateTime = "<date> <time>"` unless set. `hooks/useDateTimeFormats.ts`
@@ -579,13 +615,13 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   `DatePicker`/`MonthPicker`/`TimePicker` (+ `displayFormat` props). Defaults are unchanged.
 - **MonthPicker** derives its pattern from `formats.date` with the day token (and the adjacent
   separator) removed (`deriveMonthPattern`); there is deliberately no `formats.month`.
-- **TimePicker is the subtle one.** Its *clock* and hour list follow `formats.time`: `HH` →
+- **TimePicker is the subtle one.** Its _clock_ and hour list follow `formats.time`: `HH` →
   24-hour, `hh`/`h` → 12-hour listing `12, 01…11`, `KK`/`K` → 12-hour listing `00…11`. Precedence:
   explicit `hourCycle` prop > configured `formats.time` > the library default `hh:mm A`
   (**12-hour since `4.4.0`**; it was 24-hour until then, which is why a Table cell said
   `02:30 PM` next to a picker saying `14:30`). A pattern that contradicts the clock is ignored for
   that clock's default (`HH:mm` / `KK:mm A`) so the field never disagrees with its columns.
-  `hourCycle={12}` with *no* configured format keeps the zero-based `KK:mm A` (`00 … 11`) — the
+  `hourCycle={12}` with _no_ configured format keeps the zero-based `KK:mm A` (`00 … 11`) — the
   default text only applies when the clock itself is unset (`TimePicker.tsx`: `followedPattern`).
 - **Date-only strings are calendar days.** `"2024-03-05"` is read as that day in every zone. The old
   formatter ran it through `new Date()` (UTC midnight) and showed `04/03/2024` west of Greenwich —
@@ -596,10 +632,11 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
 - Not covered: native `<input type=date|time|month>` render in the browser's locale.
 
 ### Regional settings (`formats.locale` / `currency` / `weekStart`, `4.4.0`)
+
 - `locale` (BCP-47, default `DEFAULT_LOCALE = "en-IN"`), `currency` (ISO 4217, default
   `DEFAULT_CURRENCY = "INR"`), `weekStart` (0–6, 0 = Sunday). `resolveFormats()` fills them in;
   `weekStart` falls back to the locale's own first day (`Intl.Locale#getWeekInfo()`/`weekInfo`,
-  Monday = 1 … Sunday = 7, `% 7`) only when a locale was *configured*, else `WEEK_START`.
+  Monday = 1 … Sunday = 7, `% 7`) only when a locale was _configured_, else `WEEK_START`.
 - **Names**: `getDateNames(locale)` in `dateTimeFormat.ts` — English (and unreadable tags) use the
   built-in `MONTH_NAMES`/`WEEKDAY_NAMES` tables because ICU spells September "Sept" in en-GB/en-AU
   (probed); other languages are read from `Intl.DateTimeFormat` (UTC, a fixed Sunday-first sample
@@ -616,13 +653,15 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   forms. The provider validates the three settings and throws on mount.
 
 ## Text and translation (`config.text`, `4.5.0`)
+
 `NoviqUIConfig.text` = a per-key replacement of the library's English copy. **`DEFAULT_TEXT` in
 `constants.ts` is the single list** (96 keys, grouped by component prefix; public, with `TextKey`,
 `NoviqUIText`, `TextValue`, `TextParams`). A value is a string with `{placeholders}` or a function
 `(params) => string`.
+
 - **Resolution**: `utils/text.ts` — `formatText` (fills `{name}`; a missing param is left as written;
   the replacer is a function so `$&` in a param is inert) and `resolveText(defaults, overrides, key,
-  params)` (string override → function override, which falls back to the default if it throws or
+params)` (string override → function override, which falls back to the default if it throws or
   returns a non-string, with a dev warning). `hooks/useText.ts` returns `t(key, params)`, memoised on
   `config.text` identity. Components never read `config.text` directly except where a plain function
   needs it (`buildActiveFilter(…, text)`, `formatStatusLabel(status, text)`, `getExportCellValue`),
@@ -641,7 +680,7 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   an unknown key only `devWarn`s — a key removed in a later release must not crash an app.
 - **Guards**: `constants.test.ts` fails if any `DEFAULT_TEXT` value of ≥4 chars appears as a quoted
   literal or JSX text outside `constants.ts` (a `className="browse"` is exempt). `components/
-  localisedText.test.tsx` is the pseudo-localisation test — every default wrapped in `«»`, each
+localisedText.test.tsx` is the pseudo-localisation test — every default wrapped in `«»`, each
   component rendered, and any bare default left in the DOM text/aria-label/title/placeholder fails it.
 - **Not in the dictionary** (deliberately): app data (headings, filter/row-action labels, status
   values other than `true`/`false`), developer errors and warnings, the "Unsupported input type"
@@ -652,7 +691,8 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   the box is empty) but kept: the validation function is the same path as the others.
 
 ## Licence and community files (`4.7.2`)
-- **Proprietary.** `package.json` `"license": "UNLICENSED"`, `LICENSE` = © Satellite Key IT, all rights
+
+- **Proprietary.** `package.json` `"license": "UNLICENSED"`, `LICENSE` = © Satellite Key IT Solutions, all rights
   reserved (use needs a written agreement). Author Neeraj Yadav. **No funding** (declined). The package is
   still public on npm and GitHub (`github.com/NeerajSkeyit/noviq-ui-npm`) — that does not grant a licence.
 - **Metadata must keep `repository`, `homepage`, `bugs`, `author`, `license`**: panels find the GitHub
@@ -666,6 +706,7 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   added to `extraFiles` in `vite.config.ts`.
 
 ## CSS names and stacking (`4.7.0`)
+
 - **Namespacing rule** (user, 2026-10-16: "css names must not ever conflict with any other css of
   user's css"): every class `nq-`, every custom property `--nq-`, every keyframes `nq-`, no bare
   element / id / `:root` selector except the `--nq-` token block, react-select `classNamePrefix`
@@ -677,28 +718,29 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   guard doesn't scan it) is the opt-in bridge — each `--nq-X: var(--X, <default>)`; a test keeps the
   defaults identical.
 - **Stacking**: `--nq-z-sticky 2 < --nq-z-loading 5 < --nq-z-bar 6 < --nq-z-overlay 1200 <
-  --nq-z-popover (overlay + 310)`; `zIndexScale.test.ts` bans numeric z-indexes and asserts the order
+--nq-z-popover (overlay + 310)`; `zIndexScale.test.ts` bans numeric z-indexes and asserts the order
   and room (≥ 20 overlays). `hooks/useOverlayZIndex.ts`: module-level `Map<symbol, depth>`; a modal
   or drawer takes `highest + 1` in a layout effect when it opens (`calc(var(--nq-z-overlay) + 10*d)`,
   drawer panel `+1`), keeps it while open, deletes it on close/unmount, and keeps its last string while
   closing so it doesn't dip behind a lower layer mid-animation. `Modal` portals to `document.body`
   (null without a `document`). Popups use `Z_INDEX.POPOVER` inline or the token in CSS.
-- **Verifying stacking needs a real browser**: jsdom has no layout. The demo's *Stacking* section
+- **Verifying stacking needs a real browser**: jsdom has no layout. The demo's _Stacking_ section
   (`stack-open-modal`, `stack-open-drawer`, host-nav toggle, loading toggle, `fps-box`) exists so the
   hit-testing harness (centre of each popup → `elementFromPoint` → is it inside the popup?) can be
   re-run. Wait for a drawer's slide-in to finish (computed transform = identity) before measuring,
   and pick the top-most open drawer by z-index, not DOM order.
 
 ## 4.6.0 — Table ergonomics and opt-ins
+
 - **`serverSort`** (`Table.tsx`): `sortParams` (memo) = `{[sortBy]: column.sortKey ?? accessorKey ?? id,
-  [sortDirection]: dir}` when `serverSort && isUsingApiFunction` and a column is sorted, else `{}`; it
+[sortDirection]: dir}` when `serverSort && isUsingApiFunction` and a column is sorted, else `{}`; it
   is in the query key, spread into `apiFunction`'s params and into `useTableExport({ sortParams })`.
   `handleSort` resets the page to 1; `sortedData` skips the client sort when `serverSort &&
-  !usingPreFetched`. Param names: `DEFAULT_SORT_REQUEST_PARAMS` (separate from
+!usingPreFetched`. Param names: `DEFAULT_SORT_REQUEST_PARAMS` (separate from
   `DEFAULT_REQUEST_PARAMS`, whose three names go on every request) overridable through
   `config.table.requestParams.sortBy/sortDirection`.
 - **Search debounce**: the effect now returns early when `searchValue === debouncedSearch` — it used
-  to reset to page 1 half a second after *mount*.
+  to reset to page 1 half a second after _mount_.
 - **Chips → drawer**: `FilterChips.onChipClick` renders the chip text as `<button class="filter-chip-body">`
   (the remove `×` stays a sibling — no button in a button); `FilterDrawer` is controlled when
   `open` is given (`open = openProp ?? openState`; `onOpenChange` always called). `Table` owns
@@ -708,7 +750,7 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
   loop); a `ResizeObserver` on the `<table>` re-measures. Widths ≤ 0 (jsdom, hidden) are ignored →
   `columnWidthPx(declared)`. Tests stub `getBoundingClientRect` and `ResizeObserver`.
 - **`Drawer unmountOnClose`**: `lingering` state + `showContent = !unmountOnClose || isOpen ||
-  lingering`; the effect sets `lingering` true on open and, on close, a `DRAWER_EXIT_MS` timer to
+lingering`; the effect sets `lingering` true on open and, on close, a `DRAWER_EXIT_MS` timer to
   false (cleared on reopen/unmount). Title and header stay mounted. `ColumnSelector` and
   `FilterDrawer` pass it, so a closed Table has no column list / filter form in the DOM.
 - **`inherit`**: `mergeConfigs(parent, child)` in `NoviqUIConfigProvider.tsx` — undefined values are
@@ -722,29 +764,32 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
 - **Tooling**: `testTimeout: 20000` in both vitest configs (busy machine; see progress.md).
 
 ## Overlays and Escape
+
 `Modal` and `Drawer` register on a module-level **layer stack** (`hooks/useEscapeLayer.ts`): one
 window `keydown` listener, and only the topmost open overlay reacts to Escape. A `Drawer` that is
 open but not Escape-dismissable (no `closeOnOutside`) still occupies a layer, so it shields a
-`Modal` beneath it. Things that own an Escape *inside* an overlay consume it themselves with
+`Modal` beneath it. Things that own an Escape _inside_ an overlay consume it themselves with
 `stopPropagation()` so they close first: the three pickers (trigger and, for DatePicker/MonthPicker,
 the panel, because focus moves into the header `<select>`s after a mouse interaction), react-select
 menus (`hooks/useSelectEscapeGuard.ts`, used by `Input` and `TablePagination`), and `RejectAction`'s
-popover. The stack is ordered by *open* order, so a callback's identity is kept in a ref — registering
+popover. The stack is ordered by _open_ order, so a callback's identity is kept in a ref — registering
 again on each render would move the layer to the top.
 **Body scroll lock is reference-counted** (`hooks/useBodyScrollLock.ts`, `4.3.1`). `Modal` and
 `Drawer` each used to write `document.body.style.overflow = isOpen ? "hidden" : ""` from their own
-effect, so closing a nested Drawer unlocked the page under an open Modal, and a *closed* Drawer
-(every `Table` mounts two) could cancel a Modal's lock. Now only an *open* overlay takes a lock,
+effect, so closing a nested Drawer unlocked the page under an open Modal, and a _closed_ Drawer
+(every `Table` mounts two) could cancel a Modal's lock. Now only an _open_ overlay takes a lock,
 the page is locked until the last one closes, and the page's own previous `overflow` is restored
 (not blindly `""`). `DropdownMenu` also joins the Escape layer stack, so a menu opened inside a
 Modal closes before the Modal does.
 
 ## Constants — the standing convention
+
 **Every fixed value goes in `src/constants.ts`; component code never repeats it as a bare
 literal.** That covers variants/sizes/sides/types (`BUTTON_VARIANT`, `DRAWER_SIDE`, `MODAL_SIZE`,
 `SORT_DIRECTION`, `ROW_ACTION_TYPE`…), keyboard keys (`KEY`), hotkey specs (`HOTKEY`), the special
 column ids (`TABLE_COLUMN_ID`), defaults (`DEFAULT_PAGE_SIZE_OPTIONS`, `DEFAULT_COLUMN_WIDTH`,
 `SEARCH_DEBOUNCE_MS`), storage-key prefix, export file/MIME/sheet strings and notify messages.
+
 - One file, not per-component, so there is exactly one place to look (and to grep). It has no
   imports, so nothing can form a cycle through it.
 - **Public vs `@internal`**: public groups are re-exported from `src/index.ts` (consumers write
@@ -758,15 +803,17 @@ column ids (`TABLE_COLUMN_ID`), defaults (`DEFAULT_PAGE_SIZE_OPTIONS`, `DEFAULT_
   prefix…). The probe-file check proving each guard can fail is in the 4.0.0 "Done" notes.
   **When you add a new fixed value or a new variant/kind/type, add it to `constants.ts` first.**
 - **Deliberately stays inline**: web-platform vocabulary the browser owns — native `<input
-  type="date">`, `role=`/`aria-*`, CSS class names, third-party props like react-select's
+type="date">`, `role=`/`aria-*`, CSS class names, third-party props like react-select's
   `menuPlacement="auto"` — and **user-facing copy** ("Cancel", "Select time", "Export as CSV"…).
   Copy is a separate concern (localisation, the spec roadmap's `config.i18n`) and was not moved.
 - `INPUT_TYPE`, `CELL_TYPE` and `FILTER_TYPE` used to live in `Input.tsx`, `Table/constants.ts`
   and `Table/buildActiveFilter.ts`; they moved here and are still exported from the package root.
 
 ## Config provider (`NoviqUIConfigProvider`, `3.0.0`; `notify` added in `4.0.0`)
+
 Spec: `docs/superpowers/specs/2026-09-04-config-provider-design.md`; plan:
 `docs/superpowers/plans/2026-09-04-config-provider-implementation.md`. Code in `src/config/`.
+
 - `Table`'s `apiFunction` resolves to the backend's **raw** response. The app declares once, via
   `<NoviqUIConfigProvider config={{ table: { responseFormat } }}>`, how to read rows/total:
   `{ rowsPath, totalPath }` (dot-paths) **or** `{ getRows, getTotal }` (functions) — exactly one;
@@ -775,19 +822,20 @@ Spec: `docs/superpowers/specs/2026-09-04-config-provider-design.md`; plan:
 - **Mandatory**: `Table` + `apiFunction` with no provider ancestor and no `responseFormat` prop
   throws on render; a malformed provider config throws at mount. `preFetchedData` tables are
   exempt. `useNoviqUIConfig()` returns `undefined` outside a provider.
-- **Fails soft on a mismatched *response***: a path that doesn't resolve yields an empty table
+- **Fails soft on a mismatched _response_**: a path that doesn't resolve yields an empty table
   and a `console.warn` (dev only), never a throw — deliberate, since one bad response shouldn't
   crash a page, but it makes a wrong path in production look like "No data found."
 - **`notify`** (`4.0.0`): `config.notify?: (message, kind: "success" | "error") => void` receives
   Table export outcomes — see the Table export notes. `config.table` is **optional** (an app may
   configure only `notify`); if present it's still validated at mount. A notify-only provider does
-  *not* satisfy an `apiFunction` Table — that still throws, since there's no response format.
+  _not_ satisfy an `apiFunction` Table — that still throws, since there's no response format.
 - `NoviqUIConfig` is `{ table?, notify? }` so further sections (theme/locale — the spec's Roadmap)
   can be added without another breaking change. Those are not built.
 - `TableQueryResult` was removed; `TableQueryParams` is `Record<string, unknown>` since its keys
   are now configurable.
 
 ## How this fits the suite
+
 Suite-wide, HRMS/LMS/AMS each hand-roll their own form-input, table, and drawer/modal components
 today. `noviq-ui` is being built up as the shared alternative, one extraction phase at a time,
 closest in spirit to how `asset-management-system` already shares a `packages/shared` package

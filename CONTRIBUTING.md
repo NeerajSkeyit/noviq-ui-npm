@@ -6,9 +6,9 @@ request.
 
 ## Where this stands
 
-noviq-ui is proprietary software of **Satellite Key IT** (see [LICENSE](LICENSE)). The code is
+noviq-ui is proprietary software of **Satellite Key IT Solutions** (see [LICENSE](LICENSE)). The code is
 visible on GitHub and the package is on npm, but that does not grant a licence to use it — use
-needs a written agreement with Satellite Key IT. Within that, contributions are welcome as
+needs a written agreement with Satellite Key IT Solutions. Within that, contributions are welcome as
 described below.
 
 ## Reporting a bug or suggesting something
@@ -26,18 +26,18 @@ Security problems should not go in a public issue: write to the address in
 
 ## Code contributions
 
-Pull requests are accepted from Satellite Key IT staff and from partners authorised by Satellite Key
-IT. If that is you:
+Pull requests are accepted from Satellite Key IT Solutions staff and from partners authorised by Satellite Key
+IT Solutions. If that is you:
 
 1. **Open an issue first** and wait for a go-ahead, so nobody builds something that can't be merged.
 2. Fork or branch from `main`, keep the change small and about one thing.
 3. Add or update tests with the change (see below), and update the README if behaviour changes.
-4. Open the pull request, describe the *why*, and link the issue.
+4. Open the pull request, describe the _why_, and link the issue.
 
 **Terms of a contribution.** By submitting code, documentation or any other material you confirm that
-you have the right to submit it, and you grant Satellite Key IT a perpetual, worldwide,
+you have the right to submit it, and you grant Satellite Key IT Solutions a perpetual, worldwide,
 irrevocable, royalty-free licence to use, copy, modify, sublicense and distribute it as part of
-noviq-ui and its derivatives. Satellite Key IT may decline any contribution.
+noviq-ui and its derivatives. Satellite Key IT Solutions may decline any contribution.
 
 ## Setting up
 

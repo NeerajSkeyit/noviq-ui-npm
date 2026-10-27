@@ -21,13 +21,18 @@ describe("package.json identity", () => {
   });
 
   it("names its author, with a contact", () => {
-    const author = typeof pkg.author === "string" ? pkg.author : `${pkg.author?.name} <${pkg.author?.email}>`;
+    const author =
+      typeof pkg.author === "string"
+        ? pkg.author
+        : `${pkg.author?.name} <${pkg.author?.email}>`;
     expect(author).toMatch(/\S+ <[^@\s]+@[^@\s]+\.[^@\s]+>/);
   });
 
   it("points at its repository — how a panel finds the contributors", () => {
     expect(pkg.repository?.type).toBe("git");
-    expect(repoUrl).toMatch(/^git\+https:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git$/);
+    expect(repoUrl).toMatch(
+      /^git\+https:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git$/
+    );
   });
 
   it("links the homepage and the issue tracker to that same repository", () => {
@@ -41,14 +46,17 @@ describe("package.json identity", () => {
 });
 
 describe("the community files", () => {
-  it.each(["LICENSE", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"])("%s exists and is not empty", (file) => {
-    expect(existsSync(resolve(ROOT, file))).toBe(true);
-    expect(read(file).trim().length).toBeGreaterThan(200);
-  });
+  it.each(["LICENSE", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md"])(
+    "%s exists and is not empty",
+    (file) => {
+      expect(existsSync(resolve(ROOT, file))).toBe(true);
+      expect(read(file).trim().length).toBeGreaterThan(200);
+    }
+  );
 
   it("LICENSE says whose it is, that rights are reserved, and where third-party terms are", () => {
     const text = read("LICENSE");
-    expect(text).toMatch(/Copyright \(c\) \d{4} Satellite Key IT/);
+    expect(text).toMatch(/Copyright \(c\) \d{4} Satellite Key IT Solutions/);
     expect(text).toMatch(/All rights reserved/i);
     expect(text).toContain("THIRD-PARTY-NOTICES.md");
     expect(text).toMatch(/AS IS/);
@@ -56,7 +64,10 @@ describe("the community files", () => {
 
   it("CODE_OF_CONDUCT gives a way to report, and credits the Contributor Covenant", () => {
     const text = read("CODE_OF_CONDUCT.md");
-    const email = typeof pkg.author === "string" ? /<([^>]+)>/.exec(pkg.author)?.[1] : pkg.author?.email;
+    const email =
+      typeof pkg.author === "string"
+        ? /<([^>]+)>/.exec(pkg.author)?.[1]
+        : pkg.author?.email;
     expect(email).toBeTruthy();
     expect(text).toContain(email);
     expect(text).toMatch(/Contributor Covenant/);
@@ -66,8 +77,13 @@ describe("the community files", () => {
   it("CONTRIBUTING explains how to run the checks and points at the code of conduct", () => {
     const text = read("CONTRIBUTING.md");
     expect(text).toContain("CODE_OF_CONDUCT.md");
-    for (const command of ["npx tsc --noEmit", "npx vitest run", "npm run build"]) expect(text).toContain(command);
-    expect(text).toMatch(/Satellite Key IT/);
+    for (const command of [
+      "npx tsc --noEmit",
+      "npx vitest run",
+      "npm run build",
+    ])
+      expect(text).toContain(command);
+    expect(text).toMatch(/Satellite Key IT Solutions/);
   });
 
   it("the README links all three, so they are findable from the npm page", () => {

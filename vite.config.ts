@@ -10,7 +10,7 @@ const NOTICES_HEADER = `# Third-party notices
 
 noviq-ui bundles the open-source packages listed below into \`dist/\`. Each is licensed under its own
 terms, which are reproduced here as those terms require. noviq-ui's own code is proprietary to
-Satellite Key IT — see \`LICENSE\`.
+Satellite Key IT Solutions — see \`LICENSE\`.
 
 The icon shapes in \`src/components/Icon/icons.ts\` are copied from Lucide; its licence (ISC, plus the
 MIT terms for the icons derived from Feather) is at the end of this file.`;
@@ -22,7 +22,12 @@ export default defineConfig({
     thirdPartyNoticesPlugin({
       header: NOTICES_HEADER,
       extraFiles: [
-        { title: "Lucide icon shapes", path: fileURLToPath(new URL("./build/lucide-LICENSE.txt", import.meta.url)) },
+        {
+          title: "Lucide icon shapes",
+          path: fileURLToPath(
+            new URL("./build/lucide-LICENSE.txt", import.meta.url)
+          ),
+        },
       ],
     }),
   ],

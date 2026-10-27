@@ -59,7 +59,7 @@ depended on `noviq-ui`.
 - **`formik` is no longer installed with noviq-ui.** `<Form />` never needed it at runtime — it is
   typed against a small `FormController` shape (`values`, `errors`, `touched`,
   `setFieldValue`), which a `useFormik()` instance satisfies as-is. If your app imports from
-  `"formik"`, add it to *your* `package.json`; nothing else changes.
+  `"formik"`, add it to _your_ `package.json`; nothing else changes.
 - **`react-hot-toast` is no longer installed, and `<Table />` no longer shows its own
   toasts.** Export outcome is reported through the new `notify` option on
   `NoviqUIConfigProvider` — see "Export" below. Without it the table stays silent (the
@@ -93,7 +93,7 @@ puts in the page's CSS namespace. Two things you might notice:
   host wrapper with `transform`, `filter` or `z-index` it could be offset from the viewport or sit
   under your own header.
 - **Stacking fixes** (see "Stacking and z-index"): a Modal opened from a Drawer used to render
-  *behind* it; the reject popover was hidden behind any Modal or Drawer; a `FullPageSection`'s
+  _behind_ it; the reject popover was hidden behind any Modal or Drawer; a `FullPageSection`'s
   sticky footer was painted under a table's pinned columns.
 
 ## What changed in 4.6.0
@@ -104,7 +104,7 @@ was plainly wrong.
 - **`<Table serverSort>`** — sort on the server. See "Sorting" below.
 - **A filter chip reopens the filters drawer** when clicked. `FilterChips` gets `onChipClick`,
   `FilterDrawer` gets optional `open` / `onOpenChange`.
-- **Pinned columns are measured.** A pinned column used to be offset by the *declared* `width`
+- **Pinned columns are measured.** A pinned column used to be offset by the _declared_ `width`
   (140px when unset) of the pinned columns before it, so any column that rendered at another width
   left a gap or an overlap. The header cells are now measured after layout and on resize; a column
   that can't be measured falls back to its declared width.
@@ -169,20 +169,20 @@ The constants hold the same strings the props have always accepted, so plain lit
 (`variant="outline"`) keep working and nothing needs migrating. Each group also has a derived
 type (`ButtonVariant`, `DrawerSide`, …).
 
-| Constant | Used by |
-| --- | --- |
-| `INPUT_TYPE`, `FORM_FIELD_TYPE`, `COL_SPAN` | `Input` / `Form` field `type`s (incl. `DATE_PICKER`, `TIME_PICKER`, `MONTH_PICKER`) and `colSpan` |
-| `BUTTON_VARIANT`, `BUTTON_SIZE`, `BUTTON_TYPE` | `Button` (`BUTTON_TYPE` is the native `type` attribute) |
-| `BADGE_VARIANT` | `Badge` |
-| `DRAWER_SIDE`, `DRAWER_SIZE`, `MODAL_SIZE` | `Drawer`, `Modal` |
-| `HOUR_CYCLE`, `TIME_PERIOD` | `TimePicker` |
-| `CELL_TYPE`, `FILTER_TYPE` | `Table` column `type`, `filterConfigs` |
-| `SORT_DIRECTION`, `STICKY_POSITION`, `COLUMN_ALIGN` | `Table` columns |
-| `TABLE_COLUMN_ID` | ids of the auto-injected `select` / `actions` columns |
-| `ACTION_ID` | `Table` toolbar `actions` (`ACTION_ID.ADD` is the primary action) |
-| `ROW_ACTION_TYPE`, `ROW_ACTION_VARIANT`, `BULK_ACTION_VARIANT` | `rowActions`, `bulkActions` |
-| `NOTIFY_KIND` | the `kind` passed to `config.notify` |
-| `NO_TEXT_PLACEHOLDER` | what an empty table cell shows |
+| Constant                                                       | Used by                                                                                           |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `INPUT_TYPE`, `FORM_FIELD_TYPE`, `COL_SPAN`                    | `Input` / `Form` field `type`s (incl. `DATE_PICKER`, `TIME_PICKER`, `MONTH_PICKER`) and `colSpan` |
+| `BUTTON_VARIANT`, `BUTTON_SIZE`, `BUTTON_TYPE`                 | `Button` (`BUTTON_TYPE` is the native `type` attribute)                                           |
+| `BADGE_VARIANT`                                                | `Badge`                                                                                           |
+| `DRAWER_SIDE`, `DRAWER_SIZE`, `MODAL_SIZE`                     | `Drawer`, `Modal`                                                                                 |
+| `HOUR_CYCLE`, `TIME_PERIOD`                                    | `TimePicker`                                                                                      |
+| `CELL_TYPE`, `FILTER_TYPE`                                     | `Table` column `type`, `filterConfigs`                                                            |
+| `SORT_DIRECTION`, `STICKY_POSITION`, `COLUMN_ALIGN`            | `Table` columns                                                                                   |
+| `TABLE_COLUMN_ID`                                              | ids of the auto-injected `select` / `actions` columns                                             |
+| `ACTION_ID`                                                    | `Table` toolbar `actions` (`ACTION_ID.ADD` is the primary action)                                 |
+| `ROW_ACTION_TYPE`, `ROW_ACTION_VARIANT`, `BULK_ACTION_VARIANT` | `rowActions`, `bulkActions`                                                                       |
+| `NOTIFY_KIND`                                                  | the `kind` passed to `config.notify`                                                              |
+| `NO_TEXT_PLACEHOLDER`                                          | what an empty table cell shows                                                                    |
 
 ## Usage/Examples
 
@@ -291,7 +291,13 @@ function Example() {
   });
 
   const fields = [
-    { inputKey: "firstName", type: "text", label: "First name", required: true, colSpan: 2 },
+    {
+      inputKey: "firstName",
+      type: "text",
+      label: "First name",
+      required: true,
+      colSpan: 2,
+    },
     { inputKey: "lastName", type: "text", label: "Last name", colSpan: 2 },
   ];
 
@@ -310,7 +316,7 @@ is shown for a field only once its key is also truthy in `touched`.
 
 `colSpan` is **how many fields share a row**, not "columns spanned out of 3" — `1` = alone
 (100% width), `2` = one of two side by side (50% each), `3` = one of three side by side (~33%
-each). Fields meant to sit on the same row need the *same* `colSpan` value (as `firstName`/
+each). Fields meant to sit on the same row need the _same_ `colSpan` value (as `firstName`/
 `lastName` do above); a `2` next to a `1` won't fill the row evenly, they'll just wrap.
 
 ### TimePicker
@@ -328,8 +334,14 @@ function Example() {
   const [start, setStart] = useState("14:30");
   return (
     <>
-      <TimePicker value={start} onChange={setStart} />                              {/* 02:30 PM */}
-      <TimePicker value={start} onChange={setStart} hourCycle={24} minuteStep={15} /> {/* 14:30 */}
+      <TimePicker value={start} onChange={setStart} /> {/* 02:30 PM */}
+      <TimePicker
+        value={start}
+        onChange={setStart}
+        hourCycle={24}
+        minuteStep={15}
+      />{" "}
+      {/* 14:30 */}
     </>
   );
 }
@@ -373,12 +385,19 @@ import { DatePicker } from "noviq-ui";
 
 function Example() {
   const [joined, setJoined] = useState("2024-03-05");
-  return <DatePicker value={joined} onChange={setJoined} minDate="2020-01-01" maxDate="2030-12-31" />;
+  return (
+    <DatePicker
+      value={joined}
+      onChange={setJoined}
+      minDate="2020-01-01"
+      maxDate="2030-12-31"
+    />
+  );
 }
 ```
 
 - `value` / `onChange` / `minDate` / `maxDate` are `"YYYY-MM-DD"` strings (a trailing time such as
-  `"2024-03-05 09:30"` is accepted and ignored). Clearing calls `onChange("")`. The field *displays*
+  `"2024-03-05 09:30"` is accepted and ignored). Clearing calls `onChange("")`. The field _displays_
   `DD/MM/YYYY`. A value that isn't a real calendar date (`"2023-02-30"`) shows the placeholder.
 - Dates are handled as plain year/month/day — never through `new Date("YYYY-MM-DD")`, which reads
   as UTC and shifts the day in some time zones.
@@ -402,7 +421,12 @@ A month-and-year grid, for fields like a billing period.
 ```javascript
 import { MonthPicker } from "noviq-ui";
 
-<MonthPicker value="2024-03" onChange={setPeriod} minMonth="2023-01" maxMonth="2024-12" />;
+<MonthPicker
+  value="2024-03"
+  onChange={setPeriod}
+  minMonth="2023-01"
+  maxMonth="2024-12"
+/>;
 ```
 
 - `value` / `onChange` are `"YYYY-MM"`; `minMonth` / `maxMonth` take `"YYYY-MM"` (or a full
@@ -460,7 +484,10 @@ function App() {
       config={{
         table: {
           // For a backend returning { result: { result: [...], totalCount: 42 } }:
-          responseFormat: { rowsPath: "result.result", totalPath: "result.totalCount" },
+          responseFormat: {
+            rowsPath: "result.result",
+            totalPath: "result.totalCount",
+          },
         },
       }}
     >
@@ -473,13 +500,26 @@ function Example() {
   const columns = [
     { id: "name", heading: "Name", accessorKey: "name", sortable: true },
     { id: "status", heading: "Status", accessorKey: "status", type: "status" },
-    { id: "joinDate", heading: "Joined", accessorKey: "joinDate", type: "date" },
+    {
+      id: "joinDate",
+      heading: "Joined",
+      accessorKey: "joinDate",
+      type: "date",
+    },
   ];
 
   const fetchEmployees = (params) =>
-    fetch(`/api/employees?${new URLSearchParams(params)}`).then((r) => r.json());
+    fetch(`/api/employees?${new URLSearchParams(params)}`).then((r) =>
+      r.json()
+    );
 
-  return <Table columns={columns} apiFunction={fetchEmployees} searchPlaceholder="Search..." />;
+  return (
+    <Table
+      columns={columns}
+      apiFunction={fetchEmployees}
+      searchPlaceholder="Search..."
+    />
+  );
 }
 ```
 
@@ -516,7 +556,13 @@ By default a click on a `sortable` header reorders the rows the table already ha
 <Table
   columns={[
     { id: "name", heading: "Name", accessorKey: "name", sortable: true },
-    { id: "owner", heading: "Owner", accessorKey: "owner", sortable: true, sortKey: "owner_name" },
+    {
+      id: "owner",
+      heading: "Owner",
+      accessorKey: "owner",
+      sortable: true,
+      sortKey: "owner_name",
+    },
   ]}
   apiFunction={fetchEmployees}
   serverSort
@@ -546,7 +592,7 @@ Without `id`, column customization still works but is in-memory only (resets on 
 `localStorage` key: `noviq-ui-table-columns:${id}` — plain string, so a multi-tenant or
 multi-user app that wants isolated settings per tenant/user should build that into `id` itself,
 e.g. `id={`employees-${tenantId}`}`. Set `isColumnSettingHidden` to hide the chooser entirely.
-Column-level `visible`/`sticky` in a column definition set the *default* before any user
+Column-level `visible`/`sticky` in a column definition set the _default_ before any user
 customization (or persisted settings) apply.
 
 A pinned column is placed after the **measured** width of the pinned columns before it, so you don't
@@ -619,7 +665,7 @@ import { FILTER_TYPE } from "noviq-ui";
     },
     { id: "joinDate", label: "Join date", type: FILTER_TYPE.DATE_RANGE },
   ]}
-/>
+/>;
 ```
 
 - Types: `search` (text), `date` (single native date input), `select` (checkboxes, true
@@ -657,25 +703,31 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - While an export runs, the Export button shows "Exporting…" and is disabled. The outcome is
   reported through `notify` on `NoviqUIConfigProvider` — `noviq-ui` has no toast system of its
   own, so route it into whatever your app already uses:
+
   ```javascript
   import toast from "react-hot-toast"; // or any snackbar/notification library
   import { NoviqUIConfigProvider } from "noviq-ui";
 
   <NoviqUIConfigProvider
     config={{
-      table: { responseFormat: { rowsPath: "result", totalPath: "totalCount" } },
-      notify: (message, kind) => (kind === "error" ? toast.error(message) : toast.success(message)),
+      table: {
+        responseFormat: { rowsPath: "result", totalPath: "totalCount" },
+      },
+      notify: (message, kind) =>
+        kind === "error" ? toast.error(message) : toast.success(message),
     }}
   >
     <App />
-  </NoviqUIConfigProvider>
+  </NoviqUIConfigProvider>;
   ```
+
   `notify(message, kind)` is called once per export with `kind` `"success"` (`"Export complete"`)
   or `"error"` (`"Export failed"`). With no `notify` configured nothing is announced; a failed
   export is still logged with `console.error`. `config.table` is optional when you only want
   `notify` (e.g. an app whose tables all use `preFetchedData`).
+
 - Per-column control: set `export: false` on a column to exclude it, or `exportValue={(row) =>
-  ...}` for a custom cell value. Only currently-visible columns (per the "Columns" chooser, if
+...}` for a custom cell value. Only currently-visible columns (per the "Columns" chooser, if
   enabled) are exported — hidden columns are skipped, matching what's on screen.
 - `preFetchedData` mode exports the currently-sorted in-memory array directly — no extra fetch.
 - `responseSheetUrl` skips the whole export flow and just opens a pre-generated report link
@@ -707,9 +759,9 @@ cells; the Excel and CSV export (so a file matches the screen); filter chips; an
 
 ```javascript
 const { formatDate, formatTime, formatDateTime } = useDateTimeFormatters();
-formatDate("2024-03-05");                       // "05 Mar 2024"
-formatDateTime("2024-03-05T14:30:00");          // "05 Mar 2024, 14:30"
-formatDateTime(isoFromApi, { isUtc: true });    // treat a zone-less value as UTC
+formatDate("2024-03-05"); // "05 Mar 2024"
+formatDateTime("2024-03-05T14:30:00"); // "05 Mar 2024, 14:30"
+formatDateTime(isoFromApi, { isUtc: true }); // treat a zone-less value as UTC
 ```
 
 **Display only.** Values never change shape: pickers still emit `"YYYY-MM-DD"`, `"HH:mm"` and
@@ -718,20 +770,21 @@ date or time is shown as it was, not as `NaN/NaN/NaN`.
 
 ### Tokens
 
-| Token | Output | Token | Output |
-| --- | --- | --- | --- |
-| `YYYY` / `YY` | `2024` / `24` | `HH` / `H` | `00`–`23` / `0`–`23` |
-| `MMMM` / `MMM` | `March` / `Mar` | `hh` / `h` | `01`–`12` / `1`–`12` (12 = midnight/noon) |
-| `MM` / `M` | `03` / `3` | `KK` / `K` | `00`–`11` / `0`–`11` (zero-based) |
-| `DD` / `D` | `05` / `5` | `mm` / `m` | `07` / `7` |
-| `dddd` / `ddd` | `Tuesday` / `Tue` | `ss` / `s` | `09` / `9` |
-| `A` / `a` | `PM` / `pm` | `[text]` | `text`, literally |
+| Token          | Output            | Token      | Output                                    |
+| -------------- | ----------------- | ---------- | ----------------------------------------- |
+| `YYYY` / `YY`  | `2024` / `24`     | `HH` / `H` | `00`–`23` / `0`–`23`                      |
+| `MMMM` / `MMM` | `March` / `Mar`   | `hh` / `h` | `01`–`12` / `1`–`12` (12 = midnight/noon) |
+| `MM` / `M`     | `03` / `3`        | `KK` / `K` | `00`–`11` / `0`–`11` (zero-based)         |
+| `DD` / `D`     | `05` / `5`        | `mm` / `m` | `07` / `7`                                |
+| `dddd` / `ddd` | `Tuesday` / `Tue` | `ss` / `s` | `09` / `9`                                |
+| `A` / `a`      | `PM` / `pm`       | `[text]`   | `text`, literally                         |
 
 Anything else is printed as written. Escape words that contain a token letter — `"DD MMM [at]
 HH:mm"` — exactly as you would in moment. `KK` is the one token moment doesn't have; it's the
 zero-based 12-hour clock where midnight and noon read `00`.
 
 ### How the pickers use it
+
 - **`DatePicker`** shows `formats.date`; the calendar days are labelled the same way.
   `displayFormat="…"` overrides it for one picker.
 - **`MonthPicker`** shows `formats.date` with the day removed (`DD/MM/YYYY` → `MM/YYYY`,
@@ -774,7 +827,8 @@ data shows the code before the number instead of breaking the table. `useDateTim
 returns the resolved values as `formats.locale`, `formats.currency` and `formats.weekStart`.
 
 ### Nested providers replace, unless you say `inherit`
-A `NoviqUIConfigProvider` inside another one *replaces* the outer config for its subtree. To change
+
+A `NoviqUIConfigProvider` inside another one _replaces_ the outer config for its subtree. To change
 only the formats for one screen, add `inherit` and it is laid over the parent's config instead:
 
 ```javascript
@@ -791,6 +845,7 @@ are never mixed). A key set to `undefined` in the child does not wipe the inheri
 `responseFormat` would throw.
 
 ### Not covered
+
 The browser's own `<input type="date|time|month">` (`Input type="date"`, the date fields inside the
 filter drawer) is rendered by the browser in the user's locale and can't be reformatted. Use
 `datePicker` / `timePicker` / `monthPicker` where the format has to match.
@@ -838,7 +893,7 @@ dictionary, and `config.text` replaces any of it:
   `filter…`/`export…`/`status…` (Table and its parts), `reject…` (the reject-with-reason popover and
   its validation), `time…`/`date…`/`month…` (the pickers), `form…`/`drawer…` (FormFooter,
   FullPageSection, Drawer), `input…` (placeholders, select, file and Excel upload).
-- **Not in the dictionary:** copy that is *your data* — column headings, filter labels, row-action
+- **Not in the dictionary:** copy that is _your data_ — column headings, filter labels, row-action
   labels, status values (other than `true`/`false`, shown as Active/Inactive), the `Form`'s field
   labels — which you already write in your own language; developer-facing errors and warnings
   (they stay English); the AM/PM markers; and the "Unsupported input type" fallback.
@@ -850,7 +905,9 @@ come out bare:
 
 ```javascript
 import { DEFAULT_TEXT } from "noviq-ui";
-const pseudo = Object.fromEntries(Object.entries(DEFAULT_TEXT).map(([k, v]) => [k, `«${v}»`]));
+const pseudo = Object.fromEntries(
+  Object.entries(DEFAULT_TEXT).map(([k, v]) => [k, `«${v}»`])
+);
 // <NoviqUIConfigProvider config={{ text: pseudo }}> … anything shown without « » is still hard-coded
 ```
 
@@ -925,21 +982,21 @@ never collide with your own stylesheet: classes are `nq-…`, custom properties 
 }
 ```
 
-| Token | Default | Is |
-| --- | --- | --- |
-| `--nq-primary` / `--nq-primary-hover` | `#02699b` / `#025a85` | brand colour, primary buttons, focus, selection |
-| `--nq-danger` / `--nq-danger-hover` | `#ff0000` / `#e60000` | destructive actions, errors |
-| `--nq-heading` / `--nq-text-color` | `#272727` / `#6b6b6b` | headings and labels / body text |
-| `--nq-muted` / `--nq-muted-hover` | `#6b7280` / `#4b5563` | secondary text and icons |
-| `--nq-light` | `#ffffff` | surfaces (cards, inputs, popups) |
-| `--nq-secondary-background` | `#f2f2f2` | disabled fields, soft fills |
-| `--nq-surface-hover` | `#e6f1fe` | hovered rows, menu items |
-| `--nq-border-color` | `#e0e5eb` | borders and dividers |
-| `--nq-radius` / `--nq-radius-sm` | `6px` / `4px` | corner radii |
-| `--nq-shadow` | `0 20px 40px rgba(0,0,0,.15)` | modals, drawers, popups |
-| `--nq-overlay-bg` | `rgba(0,0,0,.5)` | the backdrop behind a modal or drawer |
-| `--nq-font-size` | `14px` | base font size |
-| `--nq-z-sticky`, `-loading`, `-bar`, `-overlay`, `-popover` | see below | the z-index scale |
+| Token                                                       | Default                       | Is                                              |
+| ----------------------------------------------------------- | ----------------------------- | ----------------------------------------------- |
+| `--nq-primary` / `--nq-primary-hover`                       | `#02699b` / `#025a85`         | brand colour, primary buttons, focus, selection |
+| `--nq-danger` / `--nq-danger-hover`                         | `#ff0000` / `#e60000`         | destructive actions, errors                     |
+| `--nq-heading` / `--nq-text-color`                          | `#272727` / `#6b6b6b`         | headings and labels / body text                 |
+| `--nq-muted` / `--nq-muted-hover`                           | `#6b7280` / `#4b5563`         | secondary text and icons                        |
+| `--nq-light`                                                | `#ffffff`                     | surfaces (cards, inputs, popups)                |
+| `--nq-secondary-background`                                 | `#f2f2f2`                     | disabled fields, soft fills                     |
+| `--nq-surface-hover`                                        | `#e6f1fe`                     | hovered rows, menu items                        |
+| `--nq-border-color`                                         | `#e0e5eb`                     | borders and dividers                            |
+| `--nq-radius` / `--nq-radius-sm`                            | `6px` / `4px`                 | corner radii                                    |
+| `--nq-shadow`                                               | `0 20px 40px rgba(0,0,0,.15)` | modals, drawers, popups                         |
+| `--nq-overlay-bg`                                           | `rgba(0,0,0,.5)`              | the backdrop behind a modal or drawer           |
+| `--nq-font-size`                                            | `14px`                        | base font size                                  |
+| `--nq-z-sticky`, `-loading`, `-bar`, `-overlay`, `-popover` | see below                     | the z-index scale                               |
 
 **Coming from 4.6 or earlier, where the tokens had no prefix** (`--primary`, `--radius`,
 `--border-color`, `--shadow`, `--z-overlay`…): rename your overrides — the new name is the old one
@@ -958,12 +1015,12 @@ Don't import the bridge otherwise: it makes noviq-ui read your app's own `--prim
 
 Every layer comes from one scale in `tokens.css`; no component has its own number.
 
-| Layer | Token | Default |
-| --- | --- | --- |
-| a table's pinned columns | `--nq-z-sticky` | `2` |
-| a table's loading veil | `--nq-z-loading` | `5` |
-| a sticky page bar (`FullPageSection`'s footer) | `--nq-z-bar` | `6` |
-| modals and drawers | `--nq-z-overlay` | `1200` |
+| Layer                                            | Token            | Default                         |
+| ------------------------------------------------ | ---------------- | ------------------------------- |
+| a table's pinned columns                         | `--nq-z-sticky`  | `2`                             |
+| a table's loading veil                           | `--nq-z-loading` | `5`                             |
+| a sticky page bar (`FullPageSection`'s footer)   | `--nq-z-bar`     | `6`                             |
+| modals and drawers                               | `--nq-z-overlay` | `1200`                          |
 | pickers, menus, select lists, the reject popover | `--nq-z-popover` | `--nq-z-overlay` + 310 (`1510`) |
 
 - **Overlays stack in the order they open**, not the order they were mounted: each modal or drawer
@@ -979,16 +1036,17 @@ Every layer comes from one scale in `tokens.css`; no component has its own numbe
   one token — the popups follow it:
 
 ```css
-:root { --nq-z-overlay: 3000; }
+:root {
+  --nq-z-overlay: 3000;
+}
 ```
 
 Keep your toast/notification layer above `--nq-z-popover` if you want it over modals.
 
-
 ## License
 
-noviq-ui is proprietary software of **Satellite Key IT**. All rights reserved: using it requires a
-written agreement with Satellite Key IT — being public on npm and GitHub does not grant one. See
+noviq-ui is proprietary software of **Satellite Key IT Solutions**. All rights reserved: using it requires a
+written agreement with Satellite Key IT Solutions — being public on npm and GitHub does not grant one. See
 [LICENSE](LICENSE).
 
 ### Third-party notices
@@ -1000,7 +1058,7 @@ package — generated by the build from what was actually bundled.
 ## Contributing
 
 Bug reports and ideas are welcome as [issues](https://github.com/NeerajSkeyit/noviq-ui-npm/issues);
-code contributions are accepted from Satellite Key IT staff and authorised partners. How to set up,
+code contributions are accepted from Satellite Key IT Solutions staff and authorised partners. How to set up,
 what to run before a pull request, and the conventions the tests enforce are in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
