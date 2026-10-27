@@ -651,6 +651,20 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
 - The reject action's `rejectReasonRequired` is unreachable by clicking (Confirm is disabled while
   the box is empty) but kept: the validation function is the same path as the others.
 
+## Licence and community files (`4.7.2`)
+- **Proprietary.** `package.json` `"license": "UNLICENSED"`, `LICENSE` = © Satellite Key IT, all rights
+  reserved (use needs a written agreement). Author Neeraj Yadav. **No funding** (declined). The package is
+  still public on npm and GitHub (`github.com/NeerajSkeyit/noviq-ui-npm`) — that does not grant a licence.
+- **Metadata must keep `repository`, `homepage`, `bugs`, `author`, `license`**: panels find the GitHub
+  contributors through `repository`, and read the licence from `license` + the `LICENSE` file.
+  `src/packageMetadata.test.ts` fails if any of it, or `CONTRIBUTING.md` / `CODE_OF_CONDUCT.md`, goes.
+- **Third-party notices are generated**, not hand-kept: `build/thirdPartyNotices.ts` is a Vite plugin
+  (`vite.config.ts`) that writes `dist/THIRD-PARTY-NOTICES.md` from the modules actually bundled (deps are
+  bundled; only React is external; minification drops licence comments). Static extra: Lucide's full licence
+  (`build/lucide-LICENSE.txt`: ISC + Feather MIT) for `components/Icon/icons.ts`. Adding a bundled dependency
+  or copying third-party code in? The plugin picks up imports automatically; copied code needs its licence
+  added to `extraFiles` in `vite.config.ts`.
+
 ## CSS names and stacking (`4.7.0`)
 - **Namespacing rule** (user, 2026-10-16: "css names must not ever conflict with any other css of
   user's css"): every class `nq-`, every custom property `--nq-`, every keyframes `nq-`, no bare

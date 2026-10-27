@@ -1,8 +1,21 @@
 {
   "name": "noviq-ui",
   "private": false,
-  "version": "4.7.1",
+  "version": "4.7.2",
   "description": "Lightweight React component library — forms, data tables, drawers, and modals — for the Noviq product suite.",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Neeraj Yadav",
+    "email": "neeraj.yadav@satellitekeyit.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NeerajSkeyit/noviq-ui-npm.git"
+  },
+  "homepage": "https://github.com/NeerajSkeyit/noviq-ui-npm#readme",
+  "bugs": {
+    "url": "https://github.com/NeerajSkeyit/noviq-ui-npm/issues"
+  },
   "keywords": [
     "react",
     "react-components",
