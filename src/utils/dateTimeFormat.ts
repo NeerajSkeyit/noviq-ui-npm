@@ -1,5 +1,6 @@
 import {
   BUILT_IN_NAMES_LANGUAGE,
+  DEFAULT_TEXT,
   DATE_FORMAT,
   DAYS_IN_WEEK,
   DEFAULT_CURRENCY,
@@ -16,7 +17,8 @@ import {
   WEEK_START,
   type HourStyle,
 } from "../constants";
-import type { NoviqUIFormats } from "../config/types";
+import type { NoviqUIFormats, NoviqUIText } from "../config/types";
+import { resolveText } from "./text";
 
 /** A wall-clock moment broken into parts. `month` is 1–12, `hour` is 0–23, `weekday` 0 = Sunday. */
 export interface DateTimeParts {
@@ -191,13 +193,26 @@ const TOKEN_PATTERN =
 
 const pad = (n: number, width = 2) => String(n).padStart(width, "0");
 
+/** What `A` / `a` print before and after noon. Default `AM` / `PM`; `config.text` can replace them. */
+export interface PeriodMarkers {
+  am: string;
+  pm: string;
+}
+
+const DEFAULT_MARKERS: PeriodMarkers = { am: TIME_PERIOD.AM, pm: TIME_PERIOD.PM };
+
 /**
- * Renders `parts` with `pattern`. `locale` picks the language of month and weekday names;
- * numbers and the AM/PM marker are the same in every locale.
+ * Renders `parts` with `pattern`. `locale` picks the language of month and weekday names, and
+ * `markers` what `A` / `a` print (`a` is the lower-case form); numbers are the same everywhere.
  */
-export function formatParts(parts: DateTimeParts, pattern: string, locale?: string): string {
+export function formatParts(
+  parts: DateTimeParts,
+  pattern: string,
+  locale?: string,
+  markers: PeriodMarkers = DEFAULT_MARKERS
+): string {
   const { year, month, day, hour, minute, second, weekday } = parts;
-  const period = hour >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
+  const period = hour >= 12 ? markers.pm : markers.am;
   const names = getDateNames(locale);
 
   return pattern.replace(TOKEN_PATTERN, (match: string, literal: string | undefined) => {
@@ -224,7 +239,7 @@ export function formatParts(parts: DateTimeParts, pattern: string, locale?: stri
       case "ss": return pad(second);
       case "s": return String(second);
       case "A": return period;
-      case "a": return period.toLowerCase();
+      case "a": return period.toLocaleLowerCase(locale);
       default: return match;
     }
   });
@@ -238,10 +253,11 @@ export function formatValue(
   value: DateTimeInput,
   pattern: string,
   isUtc?: boolean,
-  locale?: string
+  locale?: string,
+  markers?: PeriodMarkers
 ): string {
   const parts = toDateTimeParts(value, isUtc);
-  return parts ? formatParts(parts, pattern, locale) : String(value);
+  return parts ? formatParts(parts, pattern, locale, markers) : String(value);
 }
 
 /** Splits a pattern into tokens and literal text, keeping `[escaped]` text as a literal. */
@@ -309,6 +325,8 @@ export interface ResolvedFormats {
   currency: string;
   /** First day of the calendar week, `0` = Sunday. */
   weekStart: number;
+  /** What `A` / `a` print: `AM` / `PM` unless `config.text` sets `timeAm` / `timePm`. */
+  periods: PeriodMarkers;
 }
 
 /**
@@ -338,7 +356,7 @@ function localeWeekStart(locale: string): number | undefined {
  * Applies the defaults. `dateTime` follows a customised `date` and `time` unless it is set; the
  * week starts where the configured locale's does, and on Sunday if none is configured.
  */
-export function resolveFormats(input?: NoviqUIFormats): ResolvedFormats {
+export function resolveFormats(input?: NoviqUIFormats, text?: NoviqUIText): ResolvedFormats {
   const date = input?.date ?? DATE_FORMAT;
   const time = input?.time ?? TIME_FORMAT;
   const weekStart =
@@ -350,5 +368,9 @@ export function resolveFormats(input?: NoviqUIFormats): ResolvedFormats {
     locale: input?.locale ?? DEFAULT_LOCALE,
     currency: input?.currency ?? DEFAULT_CURRENCY,
     weekStart,
+    periods: {
+      am: resolveText(DEFAULT_TEXT, text, "timeAm"),
+      pm: resolveText(DEFAULT_TEXT, text, "timePm"),
+    },
   };
 }

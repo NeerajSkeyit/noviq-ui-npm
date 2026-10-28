@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Clock, X } from "../Icon/Icon";
 import ScrollArea from "../ScrollArea/ScrollArea";
 import { useFloatingPanel } from "../../hooks/useFloatingPanel";
-import { useConfiguredTimePattern } from "../../hooks/useDateTimeFormats";
+import { useConfiguredTimePattern, useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { useText } from "../../hooks/useText";
 import { formatParts, hourStyleOf } from "../../utils/dateTimeFormat";
 import {
@@ -103,6 +103,7 @@ function TimePicker({
   "aria-label": ariaLabel,
 }: TimePickerProps) {
   const t = useText();
+  const { periods } = useDateTimeFormats(); // what AM and PM are called: `config.text`
   const placeholder = placeholderProp ?? t("timePlaceholder");
   const baseId = useId();
   const listId: Record<Column, string> = {
@@ -323,7 +324,7 @@ function TimePicker({
                   triggerRef.current?.focus();
                 }}
               >
-                {item}
+                {column === TIME_COLUMN.PERIOD ? (item === TIME_PERIOD.PM ? periods.pm : periods.am) : item}
               </div>
             );
           })}
@@ -343,7 +344,9 @@ function TimePicker({
           second: 0,
           weekday: 4,
         },
-        pattern
+        pattern,
+        undefined,
+        periods
       )
     : placeholder;
 

@@ -46,10 +46,10 @@ export function formatTableCellValues(
   formats: FormatsInput = resolveFormats()
 ): string {
   const { isUtc } = options;
-  const dateOf = (v: string | number | Date) => formatValue(v, formats.date, isUtc, formats.locale);
-  const timeOf = (v: string | number | Date) => formatValue(v, formats.time, isUtc, formats.locale);
+  const dateOf = (v: string | number | Date) => formatValue(v, formats.date, isUtc, formats.locale, formats.periods);
+  const timeOf = (v: string | number | Date) => formatValue(v, formats.time, isUtc, formats.locale, formats.periods);
   const dateTimeOf = (v: string | number | Date) =>
-    formatValue(v, formats.dateTime, isUtc, formats.locale);
+    formatValue(v, formats.dateTime, isUtc, formats.locale, formats.periods);
 
   switch (type) {
     case CELL_TYPE.DATE:

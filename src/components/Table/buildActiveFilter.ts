@@ -69,7 +69,7 @@ export function buildActiveFilter(
   formats: FormatsInput = resolveFormats(),
   text?: NoviqUIText
 ): ActiveFilter | null {
-  const formatDate = (value: string) => formatValue(value, formats.date, false, formats.locale);
+  const formatDate = (value: string) => formatValue(value, formats.date, false, formats.locale, formats.periods);
   const base = { id: config.id, label: config.label, mandatory: config.mandatory };
 
   switch (config.type) {

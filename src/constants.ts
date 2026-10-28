@@ -540,6 +540,8 @@ export const DEFAULT_TEXT = {
   timeHours: "Hours",
   timeMinutes: "Minutes",
   timePeriod: "AM/PM",
+  timeAm: "AM",
+  timePm: "PM",
   timeHourHeading: "HH",
   timeMinuteHeading: "MM",
   datePlaceholder: "Select date",

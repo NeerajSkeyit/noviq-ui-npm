@@ -336,6 +336,9 @@ describe("Picker copy", () => {
     expect(screen.getByRole("listbox", { name: w("timeHours") })).toBeInTheDocument();
     expect(screen.getByRole("listbox", { name: w("timeMinutes") })).toBeInTheDocument();
     expect(screen.getByRole("listbox", { name: w("timePeriod") })).toBeInTheDocument();
+    // …and the AM/PM options themselves, which used to be fixed English
+    expect(screen.getByRole("option", { name: w("timeAm") })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: w("timePm") })).toBeInTheDocument();
     expect(screen.getByText(w("timeHourHeading"))).toBeInTheDocument();
     expect(screen.getByText(w("timeMinuteHeading"))).toBeInTheDocument();
     expectNoUntranslatedCopy();

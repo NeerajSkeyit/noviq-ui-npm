@@ -20,6 +20,7 @@ describe("useDateTimeFormats", () => {
       locale: "en-IN",
       currency: "INR",
       weekStart: 0,
+      periods: { am: "AM", pm: "PM" },
     });
   });
 
