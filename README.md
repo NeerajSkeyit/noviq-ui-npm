@@ -75,6 +75,31 @@ depended on `noviq-ui`.
   >
 ```
 
+## What changed in 4.8.0
+
+Five fixes to things that looked supported and weren't. All additive; nothing that worked changes.
+
+- **Filters work on a `preFetchedData` table.** The Filters drawer and its chips used to appear and
+  do nothing to the rows (they only built a payload for an `apiFunction`). The table now filters the
+  rows itself — see "Filters". With an `apiFunction` nothing changes: your server filters.
+- **AM and PM are translatable.** Two new text keys, `timeAm` and `timePm` (default `"AM"` / `"PM"`),
+  are what the `A` / `a` format tokens print — in table cells, filter chips and exports, and in the
+  `TimePicker`'s AM/PM column. A Spanish app sets `"a. m."` / `"p. m."`. The value the picker hands
+  back is still 24-hour `HH:mm`. A dictionary you typed as `Record<TextKey, TextValue>` will ask for
+  the two new keys, as intended.
+- **Excel export sizes each column to its content.** A column was only as wide as its heading, so a
+  long cell (a shift window, an address) was cut off when the file opened. Columns are now as wide as
+  their widest cell, between 10 and 60 characters. The header's white text colour is also written
+  the way the file format specifies.
+- **The filter drawer's controls have accessible names.** A text, date or month filter's input is
+  named by the filter's `label`, and each option's checkbox by the option, so a screen reader — or
+  `getByRole("checkbox", { name: "Engineering" })` in your tests — can find them. Only the section
+  titles had text before, and nothing tied it to the control.
+- **A closed `Drawer` no longer casts a shadow onto the page.** A closed drawer waits just off the
+  edge of the screen, and its drop shadow reaches back past that edge, so every page with a
+  mounted-but-closed drawer had a faint dark strip down one side (darker with several). The shadow
+  now appears with the slide.
+
 ## What changed in 4.7.0
 
 A real-browser pass over every popup inside every overlay, plus an audit of everything noviq-ui
@@ -675,6 +700,14 @@ import { FILTER_TYPE } from "noviq-ui";
   defaults to `{[id]: "YYYY-MM"}`, or split via `monthKey`/`yearKey`).
 - Filters are applied all-at-once via an "Apply" button in the drawer, not incrementally as each
   field changes.
+- **With `preFetchedData` the table filters the rows itself**, by the row field named in the
+  filter's `accessorKey` (default: its `id`). All the active filters must match; then the search,
+  sort and paging apply to what is left, the pager goes back to page 1, and an export writes the
+  filtered rows. `select`: the field (or any item, if it is an array) is one of the chosen values,
+  compared as text. `search`: the field contains the text, ignoring case. `date`: the same calendar
+  day. `dateRange`: the day falls between "From" and "To", both included, and either end may be left
+  open. `month`: the same month. A row with no value in that field matches no active filter. Set
+  `accessorKey` whenever the filter's `id` is not the row's field name.
 - `mandatory: true` on a filter config makes it non-removable (no "X" on its chip, survives
   "Clear all").
 - Clicking a chip's text reopens the drawer. Standalone, `FilterChips` takes `onChipClick`
@@ -729,7 +762,10 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
 - Per-column control: set `export: false` on a column to exclude it, or `exportValue={(row) =>
 ...}` for a custom cell value. Only currently-visible columns (per the "Columns" chooser, if
   enabled) are exported — hidden columns are skipped, matching what's on screen.
-- `preFetchedData` mode exports the currently-sorted in-memory array directly — no extra fetch.
+- `preFetchedData` mode exports the filtered, sorted in-memory array directly — no extra fetch.
+- In the Excel file every cell is the text the table shows (a date as displayed, a currency with its
+  symbol), except an `exportValue` that returns a number, which stays a number. Each column is as wide
+  as its widest cell, from 10 to 60 characters.
 - `responseSheetUrl` skips the whole export flow and just opens a pre-generated report link
   instead (and hides the CSV option) — useful if your backend already produces the file.
 - `Export` and the `useTableExport` hook it's built on are also exported standalone.
@@ -816,7 +852,7 @@ Three more options on `formats` set the language and conventions of what the UI 
   calendar's month list and weekday headings, a month filter's chip), how `currency` cells group
   digits and place the symbol (`1.234.567,50 €`), and — unless `weekStart` is set — which day the
   calendar week starts on. English locales keep the built-in names, so a date reads the same on
-  every browser. Digits and the AM/PM marker are not translated.
+  every browser. Digits are not translated; the AM/PM marker is, through `text.timeAm` / `text.timePm`.
 - **`currency`** is what a `currency` column uses when it sets no `currency` of its own.
 - **`weekStart`** overrides the locale's first day of the week.
 
@@ -891,12 +927,13 @@ dictionary, and `config.text` replaces any of it:
   component, exactly as before.
 - **Where the keys live**, by prefix: `table…`/`pagination…`/`bulk…`/`columns…`/`column…`/
   `filter…`/`export…`/`status…` (Table and its parts), `reject…` (the reject-with-reason popover and
-  its validation), `time…`/`date…`/`month…` (the pickers), `form…`/`drawer…` (FormFooter,
+  its validation), `time…`/`date…`/`month…` (the pickers; `timeAm` / `timePm` are the AM and PM
+  markers wherever a time is shown), `form…`/`drawer…` (FormFooter,
   FullPageSection, Drawer), `input…` (placeholders, select, file and Excel upload).
 - **Not in the dictionary:** copy that is _your data_ — column headings, filter labels, row-action
   labels, status values (other than `true`/`false`, shown as Active/Inactive), the `Form`'s field
   labels — which you already write in your own language; developer-facing errors and warnings
-  (they stay English); the AM/PM markers; and the "Unsupported input type" fallback.
+  (they stay English); and the "Unsupported input type" fallback.
 - **Nested providers replace**, as with `formats`: a `NoviqUIConfigProvider` inside another one
   does not inherit its `text` — unless it has `inherit`, which merges the two key by key.
 

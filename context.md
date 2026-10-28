@@ -653,13 +653,13 @@ export condition (fixed in `3.0.0`) went unnoticed through five published releas
 - **Types**: `ResolvedFormats` has the three new required fields; `FormatsInput` (the three
   patterns + `Partial<ResolvedFormats>`) is what `formatTableCellValues` / `buildActiveFilter`
   accept, so callers that built `{ date, time, dateTime }` by hand keep compiling.
-- **Not translated**: digits (always Latin), the AM/PM marker, UI copy (4.5.0), genitive month
-  forms. The provider validates the three settings and throws on mount.
+- **Not translated**: digits (always Latin), genitive month forms (UI copy is `config.text` since 4.5.0, the
+  AM/PM marker `text.timeAm`/`timePm` since 4.8.0). The provider validates the three settings and throws on mount.
 
 ## Text and translation (`config.text`, `4.5.0`)
 
 `NoviqUIConfig.text` = a per-key replacement of the library's English copy. **`DEFAULT_TEXT` in
-`constants.ts` is the single list** (96 keys, grouped by component prefix; public, with `TextKey`,
+`constants.ts` is the single list** (100 keys as of 4.8.0, grouped by component prefix; public, with `TextKey`,
 `NoviqUIText`, `TextValue`, `TextParams`). A value is a string with `{placeholders}` or a function
 `(params) => string`.
 
@@ -688,7 +688,7 @@ localisedText.test.tsx` is the pseudo-localisation test — every default wrappe
   component rendered, and any bare default left in the DOM text/aria-label/title/placeholder fails it.
 - **Not in the dictionary** (deliberately): app data (headings, filter/row-action labels, status
   values other than `true`/`false`), developer errors and warnings, the "Unsupported input type"
-  and "Invalid cell type" fallbacks, AM/PM markers. New accessible names this release: the pager's
+  and "Invalid cell type" fallbacks. New accessible names this release: the pager's
   four arrows and the Drawer's close button. `EXPORT_MESSAGE` no longer exists; the export strings are
   `exportSuccess`/`exportFailure`.
 - The reject action's `rejectReasonRequired` is unreachable by clicking (Confirm is disabled while
@@ -708,6 +708,27 @@ localisedText.test.tsx` is the pseudo-localisation test — every default wrappe
   (`build/lucide-LICENSE.txt`: ISC + Feather MIT) for `components/Icon/icons.ts`. Adding a bundled dependency
   or copying third-party code in? The plugin picks up imports automatically; copied code needs its licence
   added to `extraFiles` in `vite.config.ts`.
+
+## Filters, AM/PM, export, lint (`4.8.0`)
+
+- **Filters on `preFetchedData`**: the table filters the rows itself. `Table.tsx` pipeline `data → filteredData →
+  searchedData (visible-column text) → sortedData → pageRows`; the per-type rules are in `Table/matchFilter.ts`
+  (unit-tested, plus UI-driven `prefetchedFilters.test.tsx`). `FilterConfig.accessorKey` = the row field (default `id`);
+  `buildActiveFilter` now also returns `ActiveFilter.value` (select → the chosen values, range → `{from,to}`, else the raw
+  value). `apiFunction` tables are untouched — the server filters from `apiPayload`. Export uses the filtered rows.
+- **AM/PM** are text keys `timeAm`/`timePm`. `resolveFormats(input?, text?)` fills `ResolvedFormats.periods`; formatters and
+  `TimePicker` read it via `useDateTimeFormats()`. `formatParts`/`formatValue` accept a markers argument and default to
+  English, so pure callers are unchanged. The `a` token lower-cases with the locale; `A` prints the marker as given.
+- **Export**: `useTableExport.exportColumnWidth` sizes columns (10–60 chars). Cells are text as displayed, except an
+  `exportValue` number. To check a real file, read it with `src/test/xlsxParts.ts` (no dependency) or open it in LibreOffice
+  (`soffice --headless --convert-to png|csv`, with `-env:UserInstallation=` pointing at a scratch dir). `exportWorkbook.test.tsx`
+  mocks only `writeFile` (to capture the bytes) and keeps the real library; `useTableExport.test.tsx` mocks the library.
+- **Lint**: see "Gaps". **Tests are not typechecked** (`tsconfig` excludes them and vitest strips types): a wrong prop name in
+  a test (`position` for `side`) passes silently — check props against the component.
+- **Drawer shadow**: `.nq-drawer-content` has `box-shadow: none`; `.nq-drawer-open` has the token. Don't move it back to the base
+  rule: a parked drawer's shadow reaches ~40px back onto the page.
+- **Verifying visuals when the Browser pane is hidden**: screenshots time out and CSS transitions don't advance. Read computed
+  styles, hit-test with `elementFromPoint`, and call `el.getAnimations().forEach(a => a.finish())` before measuring.
 
 ## CSS names and stacking (`4.7.0`)
 

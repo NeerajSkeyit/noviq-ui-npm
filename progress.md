@@ -809,7 +809,48 @@ thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) r
         `ROW_ACTION_TYPE` is imported but only used in a commented-out line.
   - [ ] After publish, the panel shows: License **UNLICENSED**, Contributors **1**, CONTRIBUTING / Code of
         conduct **Yes**, Funding **No** (a funding link was declined). GitHub's own checks need the files
-        pushed to `main`. Published versions ≤ 4.7.1 can't change (npm is immutable).
+        pushed to `main`. Published versions ≤ 4.7.1 can't change (npm is immutable). **Done:** 4.7.2 is live.
+- [x] **`4.8.0` — things that looked supported and weren't** (staged; scope was mine, announced to the user,
+      who said "published, start with 4.8.0"). Gate: `tsc` clean, lint 0 errors, 1073 library tests (up from 994),
+      demo 102 (up from 90; the 12 new fail on 4.7.2).
+  - [x] **Filters on `preFetchedData`.** The drawer and chips used to appear and change nothing (they only built an
+        API payload). Pipeline is now `data → filteredData → searchedData → sortedData → pageRows`.
+        `Table/matchFilter.ts`: select = the field (or any item of a list) is one of the chosen values, as text; search =
+        case-insensitive substring; date = same calendar day; dateRange = day between From and To, both inclusive, either
+        end open; month = same `YYYY-MM`; no value → no match; a bare `HH:mm` is not a date. `FilterConfig.accessorKey`
+        names the row field (default `id`); `ActiveFilter.value` carries the raw value. Export writes the filtered rows;
+        the pager returns to page 1; an `apiFunction` table is untouched. (No existing prop exposed the filters, so nobody
+        could have relied on the old no-op.)
+  - [x] **AM/PM translatable.** `timeAm`/`timePm` text keys (`DEFAULT_TEXT` now 100); `ResolvedFormats.periods`;
+        `formatParts`/`formatValue` take optional markers (default English); `useDateTimeFormats` resolves them from
+        `config.text` and memoises on the two strings; `TimePicker`'s AM/PM column and the field text follow. The value
+        it hands back stays 24-hour `HH:mm`. A `Record<TextKey, TextValue>` dictionary must add the two keys (the demo's
+        `spanish.ts` did).
+  - [x] **A real `.xlsx` opened.** In the browser the Blob was captured and the zip read byte by byte (CRCs, parts),
+        and a file written through the hook was opened in LibreOffice. It found: every column as wide as its heading
+        only (a 43-character shift window clipped at 10.8) → widths now `exportColumnWidth` (widest cell, heading
+        included, 10–60 chars; a loop, not `Math.max(...)`, for 100k rows); the header font colour was 6-digit
+        `FFFFFF`, outside the file format's ARGB → `FFFFFFFF`. New constants `EXPORT_MIN/MAX_COLUMN_WIDTH`,
+        `EXPORT_HEADER_TEXT_COLOR`. `exportWorkbook.test.tsx` runs the real library and reads the bytes with
+        `src/test/xlsxParts.ts` (also the CSV's BOM and quoting). Mutation-checked, 5/5 caught. The existing
+        `useTableExport.test.tsx` mocks the library, which is why none of this was visible.
+  - [x] **ESLint flat config.** 58 errors on the first run: unused imports, a redundant disable, literal NBSPs in two test
+        regexes (now `\u00a0\u202f`) were fixed; the rest are configured, with reasons in `eslint.config.js`
+        (21 `any` in public generics → warn, since tightening breaks consumers' types; 2 `set-state-in-effect` → warn;
+        tests may use `any`; two helper-beside-component files opt out of react-refresh). Proved it can fail
+        (a `debugger` in `src/` → exit 1). Added to CONTRIBUTING's checks.
+  - [x] **Found while verifying in the demo (not in the original scope):** (1) the filter drawer's text/date/month inputs
+        and select checkboxes had no accessible name → `aria-label` from the filter / option label; (2) a closed `Drawer`
+        kept its `0 20px 40px` shadow while parked off-screen, drawing a dark strip down the edge of any page with a mounted
+        closed drawer (19 in the showcase) → the shadow now belongs to `.nq-drawer-open` and transitions with the slide.
+        Both mutation-checked.
+  - [x] **Real-browser pass** (fresh tab, tarball bundle byte-identical to the install): drove the filter drawer with real
+        clicks (Engineering + SQL → Ada, Cy; chips, badge "2"); Spanish table cells "09:30 a. m." / "03:45 p. m." and the
+        picker's AM/PM options "a. m." / "p. m."; the exported `.xlsx` has Window 43.8 wide (was 10.8), header `FFFFFFFF`
+        on `FF02699B`, CRCs ok; 0 of 19 closed drawers cast a shadow, an open one gets `rgba(0,0,0,.15) 0 20px 40px` and
+        hit-tests as topmost; console clean. **Caveat:** the Browser pane was not displayed, so no screenshot could be taken
+        and CSS transitions did not advance on their own — I finished them with `getAnimations()` and measured instead.
+  - [ ] Demo `tsc` still reports `src/App.tsx(19)` `ROW_ACTION_TYPE` unused — the user's edit, left alone.
 
 ## Published
 
@@ -884,22 +925,27 @@ thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) r
 - `4.7.0` — live on npm (published 2026-10-16 08:10Z; sha1 `51c2cb9f…` identical to the staged tarball, 65 files).
 - `4.7.1` — live on npm (published 2026-10-16 13:14Z, sha1 `2767db86…`, 65 files). The user's patch
   `40686c4`: number inputs blur on wheel (`Input`), and the Modal backdrop gets its own 0.2s fade.
+- `4.7.2` — live on npm (published 2026-10-27 14:01Z, sha1 `ab320851…`). Licence metadata, community files,
+  generated third-party notices. Not byte-identical to the tarball I staged (`12d6b250…`): the user's own
+  commit `cbb3d85` (company name corrected to "Satellite Key IT Solutions", formatting) went in between.
 
 ## Ready to publish
 
-- `4.7.2` — **patch** (no code change): licence/author/repository metadata, `LICENSE`, `CONTRIBUTING.md`,
-  `CODE_OF_CONDUCT.md`, `dist/THIRD-PARTY-NOTICES.md`, README sections. Gate: `tsc` clean, 994/994
-  library tests, build, `npm pack` (`noviq-ui-4.7.2.tgz`, 67 files, sha1 `12d6b250…`), demo tests 90/90
-  against the tarball. Awaiting the user: `git push` (for GitHub's community profile) and `npm publish`.
-- Nothing else is waiting: `4.3.1` … `4.7.1` are live (see "Published").
+- `4.8.0` — **minor**, additive (nothing breaking; no major, nothing added to any other repo). Table filters
+  work on `preFetchedData`; AM/PM are `config.text` keys `timeAm`/`timePm`; the Excel export sizes its columns
+  and writes valid colours; the filter drawer's controls are named; a closed Drawer casts no shadow; a working
+  ESLint config. Gate: `tsc` clean, `npm run lint` 0 errors (23 known warnings), 1073/1073 library tests,
+  build, `npm pack` (`noviq-ui-4.8.0.tgz`, 68 files, sha1 `9458d45a…`), demo 102/102 against the tarball (the 12
+  new consumer tests fail on 4.7.2; the installed bundle is byte-identical to the tarball's), real-browser
+  checks (see "Done"). Awaiting the user: `npm publish` (and a `git push` when they want one).
+- Nothing else is waiting: `4.3.1` … `4.7.2` are live (see "Published").
 
 ## Not started
 
 - [ ] `ViewModeToggle`/`ViewComponent` (the alternate "card view" escape hatch) — deferred
       indefinitely, confirmed near-dead in HRMS (1 real working call site out of 97). Not part of
       Table 3a-3d at all; revisit only if a real consumer needs it.
-- [ ] No `eslint.config.js` — `npm run lint` still fails (ESLint 9 needs flat config). Confirmed
-      still broken after four phases; intentionally left out of scope each time.
+- [x] ~~No `eslint.config.js`~~ — added in `4.8.0`; `npm run lint` passes (0 errors, 23 known warnings).
 - [ ] No CI/CD pipeline.
 - [ ] No consumer integration — not a dependency of any of the four frontend repos yet.
 - [ ] `noviq-ui-demo` is still not a git repository (`noviq-ui` itself now is — remote
@@ -953,7 +999,7 @@ thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) r
 - `Input type="time" | "date" | "month"` still render the browser's native inputs on purpose; the
   custom pickers are the separate `timePicker` / `datePicker` / `monthPicker` types.
 - Locale support is names, numbers/currency and week start only: digits stay Latin (`ar-EG` does
-  not get Arabic-Indic digits), the AM/PM marker is always "AM"/"PM", and month names are the
+  not get Arabic-Indic digits), the AM/PM marker is `text.timeAm`/`timePm` (since `4.8.0`), and month names are the
   standalone form (so a Russian "D MMMM" reads nominative, not genitive). UI copy ("Cancel",
   "Showing x to y…") is English until `4.5.0`.
 - **A response that doesn't match the declared `responseFormat` fails soft.** If `rowsPath`/
@@ -977,15 +1023,16 @@ thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) r
 - `TableColumn.cell(row, cellValue)` receives the library's placeholder `"-"` for an empty value,
   not `""` — easy to get backwards (`value ? … : …` is always truthy). Since `4.4.0` the 4th
   argument is the raw value, which is `null`/`undefined` when empty.
-- `Table` `preFetchedData` + `filterConfigs`: the filter drawer builds API payloads only, so with
-  handed-over rows filters have nothing to act on (no client-side filtering, no change callback).
+- ~~`Table` `preFetchedData` + `filterConfigs` did nothing to the rows~~ — fixed in `4.8.0` (client-side). There is
+  still no change callback: the applied filters are not exposed to the host app.
 - **Unnamed table checkboxes.** The header select-all box and each row's box are `role="checkbox"`
   with no accessible name (`Checkbox` has no `aria-label` prop). Add a prop and two text keys.
 - **Fixed English that is deliberately not in `config.text`:** developer errors/warnings, the
-  "Unsupported input type" fallback and "Invalid cell type" message, the AM/PM markers.
+  "Unsupported input type" fallback and "Invalid cell type" message. (AM/PM are keys since `4.8.0`.)
 - Only Chromium was exercised: no Firefox/Safari run, no screen-reader pass, no RTL.
-- The Excel (`.xlsx`) export path was never opened and validated end-to-end (CSV is, in jsdom and
-  the browser); only the CSV bytes are asserted.
+- ~~The Excel (`.xlsx`) export was never validated end-to-end~~ — done in `4.8.0` (see "Done"): it found two defects,
+  both fixed. Every cell is written as text (the table's display text; only an `exportValue` number stays a number),
+  so a spreadsheet can't sum a "€1,234.50" column — deliberate ("a file matches the screen"), but worth knowing.
 
 ## Roadmap (as of `4.5.0`)
 
@@ -1007,7 +1054,7 @@ type="search"` label/error/helper.~~ ~~Time default unified: 12-hour `hh:mm A` e
 ### `4.5.0` — copy and localisation — done, staged
 
 ~~User-facing strings become constants and are overridable through `config.text`.~~ Left over:
-AM/PM markers (the `A` token and the picker's AM/PM column) are still fixed English; digits stay
+~~AM/PM markers~~ (done in `4.8.0`); digits stay
 Latin; genitive month forms; the select-all / per-row checkboxes have no accessible name; RTL.
 
 ### `4.6.0` — Table ergonomics — done, staged
@@ -1015,6 +1062,12 @@ Latin; genitive month forms; the select-all / per-row checkboxes have no accessi
 ~~Server-side sort~~ (`serverSort`) ~~· chip click reopens the filter drawer · measured sticky
 offsets · closed `Drawer` children unmounted (opt-in)~~ ~~· nested-provider merge (opt-in `inherit`)~~
 ~~· accessible sort headers and checkboxes~~.
+
+### `4.8.0` — things that looked supported and weren't — done, staged
+
+~~Client-side filtering for `preFetchedData`~~ · ~~AM/PM as `text` keys~~ · ~~a real `.xlsx` opened and checked
+(column widths, ARGB colour)~~ · ~~an ESLint flat config~~ · ~~named filter-drawer controls~~ · ~~closed Drawer
+shadow~~.
 
 ### Parked for a major (do NOT build until the user says to move to version 5)
 
@@ -1025,19 +1078,19 @@ default. Each already has an opt-in in 4.x; leave the default alone.
 
 ### Next minors — candidates (none started)
 
-- **Quality gates:** `eslint.config.js` (lint is broken), CI, a typecheck gate for the library's own
-  tests, `noviq-ui-demo` under git.
-- **Verification gaps:** open a real `.xlsx` from the export; Firefox/Safari; a screen-reader pass;
-  RTL.
-- **More text:** the AM/PM markers (picker column and the `A` token) as `text` keys; `Form` field
-  labels already come from the app.
-- `preFetchedData` + `filterConfigs` has no client-side filtering (filters only build API payloads).
+- **Quality gates:** CI, a typecheck gate for the library's own tests (vitest doesn't typecheck: a wrong
+  prop name in a test passes silently — it nearly did this release), `noviq-ui-demo` under git.
+- **Verification gaps:** Firefox/Safari; a screen-reader pass; RTL.
+- **Lint warnings:** 21 `any`s in public generics and 2 `set-state-in-effect` (Drawer, Input) — each a
+  considered decision, not a backlog.
+- A way for the host to read the applied filters (`onFiltersChange`) — `preFetchedData` filters itself now, but an
+  `apiFunction` table can only see them through the request.
 
 ### Alongside (no release of their own)
 
-- **Quality gates:** `eslint.config.js` (lint is broken), CI running tsc + tests + build + the
+- **Quality gates:** CI running tsc + lint + tests + build + the
   constants guard + the demo's consumer suite against the packed tarball, a typecheck gate for the
   library's own tests, `noviq-ui-demo` under git.
-- **Verification gaps:** Firefox/Safari, a screen-reader pass, RTL, and opening a real `.xlsx`.
+- **Verification gaps:** Firefox/Safari, a screen-reader pass, RTL.
 - **Adoption: NOT happening.** The user said (2026-10-16) never to add this package to any other repo;
   `noviq-ui-demo` is the only consumer. (`memory/feedback-noviq-ui-not-in-other-repos`.)
