@@ -90,6 +90,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
               <div key={opt.value} className="nq-filter-drawer-option">
                 <Checkbox
                   checked={selected}
+                  aria-label={opt.label}
                   onChange={(checked) => {
                     const current = Array.isArray(value) ? (value as string[]) : [];
                     onChange(checked ? [...current, opt.value] : current.filter((v) => v !== opt.value));
@@ -130,6 +131,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
       return (
         <input
           type="month"
+          aria-label={config.label}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
           className="nq-filter-drawer-input"
@@ -140,6 +142,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
       return (
         <input
           type="date"
+          aria-label={config.label}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
           className="nq-filter-drawer-input"
@@ -151,6 +154,7 @@ function renderField(config: FilterConfig, value: unknown, onChange: (v: unknown
       return (
         <input
           type="text"
+          aria-label={config.label}
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
           className="nq-filter-drawer-input"

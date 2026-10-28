@@ -106,3 +106,62 @@ describe("FilterDrawer", () => {
     expect(props.onClearAll).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("FilterDrawer — every control has an accessible name", () => {
+  const named: FilterConfig[] = [
+    {
+      id: "department",
+      label: "Department",
+      type: FILTER_TYPE.SELECT,
+      options: [
+        { value: "eng", label: "Engineering" },
+        { value: "sales", label: "Sales" },
+      ],
+    },
+    { id: "name", label: "Name contains", type: FILTER_TYPE.SEARCH },
+    { id: "day", label: "Start day", type: FILTER_TYPE.DATE },
+    { id: "month", label: "Billing month", type: FILTER_TYPE.MONTH },
+    { id: "joinDate", label: "Join date", type: FILTER_TYPE.DATE_RANGE },
+  ];
+
+  async function open() {
+    const user = userEvent.setup();
+    renderDrawer({ filters: named });
+    await user.click(screen.getByRole("button", { name: /Filters/ }));
+    return user;
+  }
+
+  it("names each select option's checkbox by the option", async () => {
+    await open();
+    expect(screen.getByRole("checkbox", { name: "Engineering" })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "Sales" })).toBeInTheDocument();
+  });
+
+  it("names a text, date and month filter's input by the filter's label", async () => {
+    await open();
+    expect(screen.getByRole("textbox", { name: "Name contains" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Start day")).toHaveAttribute("type", "date");
+    expect(screen.getByLabelText("Billing month")).toHaveAttribute("type", "month");
+  });
+
+  it("still names a date range's two inputs From and To", async () => {
+    await open();
+    expect(screen.getByLabelText("From")).toHaveAttribute("type", "date");
+    expect(screen.getByLabelText("To")).toHaveAttribute("type", "date");
+  });
+
+  it("the named controls still work: ticking Engineering applies it", async () => {
+    const user = userEvent.setup();
+    const props = renderDrawer({ filters: named });
+    await user.click(screen.getByRole("button", { name: /Filters/ }));
+    await user.click(screen.getByRole("checkbox", { name: "Engineering" }));
+    await user.type(screen.getByRole("textbox", { name: "Name contains" }), "ad");
+    await user.click(screen.getByRole("button", { name: "Apply" }));
+
+    const applied = props.onApplyFilter.mock.calls[0][0] as ActiveFilter[];
+    expect(applied.map((f) => [f.id, f.value])).toEqual([
+      ["department", ["eng"]],
+      ["name", "ad"],
+    ]);
+  });
+});
