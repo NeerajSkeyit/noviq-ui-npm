@@ -423,6 +423,12 @@ export const DEFAULT_EXPORT_FILE_BASE = "export";
 export const EXPORT_SHEET_NAME = "Sheet1";
 /** @internal Excel header row fill (hex, no `#`). */
 export const EXPORT_HEADER_FILL = "02699B";
+/** @internal Excel header row text colour. ARGB: the file format has no 6-digit colour, only the library's fills add the alpha. */
+export const EXPORT_HEADER_TEXT_COLOR = "FFFFFFFF";
+/** @internal Narrowest an exported Excel column is made, in characters (the heading may need more). */
+export const EXPORT_MIN_COLUMN_WIDTH = 10;
+/** @internal Widest an exported Excel column is made, in characters — a very long cell is clipped, not stretched. */
+export const EXPORT_MAX_COLUMN_WIDTH = 60;
 /** @internal `rows_per_page` used to fetch "everything" when the table doesn't know its total. */
 export const EXPORT_FALLBACK_ROWS_PER_PAGE = 100000;
 /** @internal Lets Excel open a UTF-8 CSV with the right encoding. */

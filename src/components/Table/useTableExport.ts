@@ -9,6 +9,9 @@ import {
   EXPORT_FALLBACK_ROWS_PER_PAGE,
   EXPORT_FILE_EXTENSION,
   EXPORT_HEADER_FILL,
+  EXPORT_HEADER_TEXT_COLOR,
+  EXPORT_MAX_COLUMN_WIDTH,
+  EXPORT_MIN_COLUMN_WIDTH,
   EXPORT_SHEET_NAME,
   NOTIFY_KIND,
   NO_TEXT_PLACEHOLDER,
@@ -66,6 +69,16 @@ export function getExportCellValue<T>(
   return formatTableCellValues(column.type, buildCellFormatOptions(row, column, cellValue), formats);
 }
 
+/** Characters wide that column `index` of the sheet needs: its widest cell, heading included. */
+function exportColumnWidth(aoa: unknown[][], index: number): number {
+  let widest = EXPORT_MIN_COLUMN_WIDTH;
+  for (const row of aoa) {
+    const length = String(row[index] ?? "").length;
+    if (length > widest) widest = length;
+  }
+  return Math.min(widest, EXPORT_MAX_COLUMN_WIDTH); // a loop, not Math.max(...): exports can be 100k rows
+}
+
 function useTableExport<T>({
   apiFunction,
   responseFormat,
@@ -120,12 +133,12 @@ function useTableExport<T>({
         const address = XLSX.utils.encode_cell({ r: 0, c: i });
         if (ws[address]) {
           ws[address].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
+            font: { bold: true, color: { rgb: EXPORT_HEADER_TEXT_COLOR } },
             fill: { patternType: "solid", fgColor: { rgb: EXPORT_HEADER_FILL } },
           };
         }
         ws["!cols"] = ws["!cols"] || [];
-        ws["!cols"][i] = { wch: Math.max(column.heading.length, 10) };
+        ws["!cols"][i] = { wch: exportColumnWidth(aoa, i) };
       });
 
       const wb = XLSX.utils.book_new();
