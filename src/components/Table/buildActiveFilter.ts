@@ -17,6 +17,11 @@ export interface FilterConfig {
   id: string;
   label: string;
   type: FilterType;
+  /**
+   * The row field a `<Table preFetchedData>` reads to apply this filter on the client. Defaults to
+   * `id`. (With an `apiFunction` the server filters, using the payload.)
+   */
+  accessorKey?: string;
   mandatory?: boolean;
   defaultValue?: unknown;
   /** SELECT only. */
@@ -36,6 +41,12 @@ export interface ActiveFilter {
   displayValue: string;
   mandatory?: boolean;
   apiPayload: Record<string, unknown>;
+  /**
+   * What the filter holds, for applying it to rows already on the client: the chosen values (a
+   * select), `{ from, to }` (a date range), or the text / date / `"YYYY-MM"`. `apiPayload` is
+   * the same thing shaped for a backend.
+   */
+  value?: unknown;
 }
 
 export interface DateRangeValue {
@@ -70,6 +81,7 @@ export function buildActiveFilter(
         ...base,
         displayValue: labels.join(", "),
         apiPayload: { [config.id]: values.join(",") },
+        value: values,
       };
     }
 
@@ -91,7 +103,10 @@ export function buildActiveFilter(
         displayValue = resolveText(DEFAULT_TEXT, text, "filterChipUntil", { date: formatDate(to!) });
       }
 
-      return { ...base, displayValue, apiPayload };
+      const value: DateRangeValue = {};
+      if (!isBlank(from)) value.from = from;
+      if (!isBlank(to)) value.to = to;
+      return { ...base, displayValue, apiPayload, value };
     }
 
     case FILTER_TYPE.MONTH: {
@@ -107,7 +122,7 @@ export function buildActiveFilter(
               [config.yearKey ?? FILTER_PAYLOAD_KEY.YEAR]: yearStr,
             }
           : { [config.id]: rawValue };
-      return { ...base, displayValue, apiPayload };
+      return { ...base, displayValue, apiPayload, value: rawValue };
     }
 
     case FILTER_TYPE.DATE: {
@@ -116,6 +131,7 @@ export function buildActiveFilter(
         ...base,
         displayValue: formatDate(rawValue as string),
         apiPayload: { [config.id]: rawValue },
+        value: rawValue,
       };
     }
 
@@ -126,6 +142,7 @@ export function buildActiveFilter(
         ...base,
         displayValue: String(rawValue),
         apiPayload: { [config.id]: rawValue },
+        value: rawValue,
       };
     }
   }

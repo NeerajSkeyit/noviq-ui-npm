@@ -19,6 +19,7 @@ describe("buildActiveFilter", () => {
       mandatory: undefined,
       displayValue: "engineering",
       apiPayload: { q: "engineering" },
+      value: "engineering",
     });
   });
 

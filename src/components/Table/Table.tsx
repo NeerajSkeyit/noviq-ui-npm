@@ -40,6 +40,7 @@ import {
   Z_INDEX,
 } from "../../constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
+import { matchesFilter } from "./matchFilter";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { useText } from "../../hooks/useText";
@@ -428,18 +429,28 @@ function TableInner<T extends Record<string, any> = any>({
   const data: T[] = usingPreFetched ? preFetchedData : extracted.rows;
   const isLoading = usingPreFetched ? isPrefetchedDataLoading : isQueryLoading;
 
-  // Rows handed over by the caller are searched here, against the text the visible columns show
-  // (a date as "05/03/2024", a status as its label). With an `apiFunction` the term goes to the
-  // server instead and the rows that come back are already the answer.
+  // Rows handed over by the caller are filtered and searched here: there is no server to ask. The
+  // filters (every one must pass) read the row's own fields; the search term is matched against the
+  // text the visible columns show (a date as "05/03/2024", a status as its label). With an
+  // `apiFunction` both go to the server instead and the rows that come back are already the answer.
+  const filteredData = useMemo(() => {
+    if (!usingPreFetched || activeFilters.length === 0) return data;
+    const applied = activeFilters.flatMap((active) => {
+      const config = filterConfigs.find((c) => c.id === active.id);
+      return config ? [{ config, value: active.value }] : [];
+    });
+    return data.filter((row) => applied.every(({ config, value }) => matchesFilter(row, config, value)));
+  }, [data, usingPreFetched, activeFilters, filterConfigs]);
+
   const searchedData = useMemo(() => {
     const term = debouncedSearch.trim().toLowerCase();
-    if (!usingPreFetched || term === "") return data;
+    if (!usingPreFetched || term === "") return filteredData;
     const textOf = (row: T, column: TableColumn<T>) => {
       const text = String(getExportCellValue(row, column, dateTimeFormats, noviqConfig?.text));
       return text === NO_TEXT_PLACEHOLDER ? "" : text.toLowerCase();
     };
-    return data.filter((row) => displayColumns.some((column) => textOf(row, column).includes(term)));
-  }, [data, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats, noviqConfig?.text]);
+    return filteredData.filter((row) => displayColumns.some((column) => textOf(row, column).includes(term)));
+  }, [filteredData, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats, noviqConfig?.text]);
 
   const totalItems = usingPreFetched ? searchedData.length : extracted.total;
 

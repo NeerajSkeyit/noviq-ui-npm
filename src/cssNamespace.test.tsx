@@ -302,7 +302,7 @@ describe("what actually renders", () => {
         isRowActionsWithoutDropdown
         bulkActions={[{ id: "x", label: "Do", onClick: () => {} }]}
         filterConfigs={[
-          { id: "state", label: "State", type: FILTER_TYPE.SELECT, options: [{ value: "a", label: "A" }], defaultValue: ["a"] },
+          { id: "status", label: "State", type: FILTER_TYPE.SELECT, options: [{ value: "true", label: "A" }], defaultValue: ["true"] }, // keeps the odd rows
           { id: "when", label: "When", type: FILTER_TYPE.DATE_RANGE },
         ]}
       />
