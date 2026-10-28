@@ -21,6 +21,43 @@ describe("Drawer", () => {
     expect(panel).toHaveAttribute("aria-hidden", "true");
   });
 
+  it("casts no shadow while closed: the parked panel would bleed it back onto the page", () => {
+    // A closed drawer waits just off-screen (translated by its own width). Its box-shadow reaches
+    // ~40px back past that edge, so an always-on shadow draws a dark strip down the side of the page.
+    for (const side of ["right", "left", "top", "bottom"] as const) {
+      const { unmount } = render(
+        <Drawer isOpen={false} onClose={vi.fn()} title="Side" side={side}>
+          Body
+        </Drawer>
+      );
+      const panel = document.querySelector(".nq-drawer-content") as HTMLElement;
+      expect(getComputedStyle(panel).boxShadow, side).toBe("none");
+      unmount();
+    }
+  });
+
+  it("casts its shadow once open", () => {
+    render(
+      <Drawer isOpen onClose={vi.fn()} title="Open">
+        Body
+      </Drawer>
+    );
+    const panel = document.querySelector(".nq-drawer-content") as HTMLElement;
+    expect(getComputedStyle(panel).boxShadow).not.toBe("none");
+    expect(getComputedStyle(panel).boxShadow).toBe("var(--nq-shadow)");
+  });
+
+  it("fades the shadow with the slide instead of snapping it on or off", () => {
+    render(
+      <Drawer isOpen={false} onClose={vi.fn()} title="Fade">
+        Body
+      </Drawer>
+    );
+    const panel = document.querySelector(".nq-drawer-content") as HTMLElement;
+    expect(getComputedStyle(panel).transition).toMatch(/box-shadow/);
+    expect(getComputedStyle(panel).transition).toMatch(/transform/);
+  });
+
   it("renders title, subtitle, children and footer when open", () => {
     render(
       <Drawer

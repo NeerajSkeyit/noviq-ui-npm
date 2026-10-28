@@ -8,12 +8,14 @@
 .nq-drawer-content {
   position: fixed;
   background: var(--nq-light);
-  box-shadow: var(--nq-shadow);
+  /* No shadow while closed: the panel waits just off-screen, and a shadow reaches back ~40px past
+     that edge — so an always-on one draws a dark strip down the side of the page. */
+  box-shadow: none;
   z-index: var(--nq-z-overlay);
   padding: 0;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   /* .nq-drawer-content has an explicit width/max-width, so its own box never
      grows — but without this, a child that refuses to shrink (a native
      date input renders with a wider intrinsic minimum width in some
@@ -54,6 +56,7 @@
 
 .nq-drawer-open {
   transform: translate(0, 0);
+  box-shadow: var(--nq-shadow);
 }
 
 .nq-drawer-content-sm {
