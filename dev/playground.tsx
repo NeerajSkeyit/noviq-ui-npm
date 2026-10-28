@@ -121,6 +121,8 @@ function useAutoClear(
     if (!value) return;
     const t = setTimeout(clear, ms);
     return () => clearTimeout(t);
+    // `clear` is an inline arrow in every caller: depending on it would restart the timer on each render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 }
 
@@ -481,7 +483,7 @@ function Playground() {
           getRowId={(row) => String(row.id)}
           onRowSelectionChange={(ids) => console.log("selected ids", ids)}
           isRowActionsWithoutDropdown
-          rowActions={(row) => [
+          rowActions={() => [
             {
               label: "View",
               type: "button",

@@ -541,8 +541,12 @@ ReactNode` slot prop rather than threading column-visibility props through `Acti
 
 ## Gaps worth knowing about
 
-- **`lint` script still has no config** — ESLint 9 needs flat config, none exists. Confirmed
-  still broken; intentionally out of scope across both phases so far.
+- **`npm run lint` works (since 4.8.0)** — `eslint.config.js` is a flat config (`@eslint/js`,
+  `typescript-eslint`, react-hooks, react-refresh). It passes with 0 errors and 23 known warnings:
+  21 × `no-explicit-any` in the public generics (`TableColumn<T = any>`, `FormController`, `Input`'s
+  value — tightening them would break consumers' types, so they stay) and 2 ×
+  `react-hooks/set-state-in-effect` (Drawer, Input — reworking them is a behaviour change). Tests may
+  use `any`. Keep errors at 0; don't add a new `any` to shipped code without a reason.
 - **No CI/CD** — no GitHub Actions/Azure Pipelines config found, unlike `asset-management-system`.
 - Two duplicate primitive sets still exist in `noviq-hrms-ui` (`ui/` vs `design/ui/` for Button,
   Switch, ScrollArea) that were **not** reconciled there — only resolved on the `noviq-ui` side by

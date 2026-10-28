@@ -3,7 +3,7 @@ import { formatParts, formatValue, getDateNames, resolveFormats } from "./dateTi
 import { formatCurrency } from "./numberFormat";
 
 // NBSP and narrow NBSP appear between a number and its symbol in several locales.
-const plain = (s: string) => s.replace(/[  ]/g, " ");
+const plain = (s: string) => s.replace(/[\u00a0\u202f]/g, " ");
 
 describe("getDateNames", () => {
   it("is English with no locale", () => {

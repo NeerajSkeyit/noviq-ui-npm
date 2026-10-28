@@ -50,6 +50,7 @@ npm run dev        # the Vite dev server for the library's own scratch page
 
 ```bash
 npx tsc --noEmit   # types
+npm run lint       # ESLint: errors fail it; the warnings are known (see eslint.config.js)
 npx vitest run     # the whole test suite
 npm run build      # type-check + production build (writes dist/)
 ```

@@ -9,7 +9,7 @@ import { NoviqUIConfigProvider } from "../../config/NoviqUIConfigProvider";
 import { CELL_TYPE, FILTER_TYPE } from "../../constants";
 import type { NoviqUIFormats } from "../../config/types";
 
-const plain = (s: string | null | undefined) => (s ?? "").replace(/[  ]/g, " ").trim();
+const plain = (s: string | null | undefined) => (s ?? "").replace(/[\u00a0\u202f]/g, " ").trim();
 
 interface Invoice {
   id: number;

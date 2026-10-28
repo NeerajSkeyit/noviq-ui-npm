@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import ReactSelect, { type StylesConfig } from "react-select";
-import { Eye, EyeOff, FileText, Trash2, Upload, X } from "../Icon/Icon";
+import { Eye, EyeOff, FileText, Trash2, Upload } from "../Icon/Icon";
 import Label from "../Label/Label";
 import Switch from "../Switch/Switch";
 import DatePicker from "../DatePicker/DatePicker";

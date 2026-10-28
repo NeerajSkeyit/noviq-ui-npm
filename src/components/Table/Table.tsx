@@ -19,7 +19,6 @@ import { useTableColumnSettings } from "./useTableColumnSettings";
 import {
   ACTIONS_COLUMN_WIDTH,
   ARIA_SORT,
-  CELL_TYPE,
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_EXPORT_FILE_BASE,
   DEFAULT_PAGE_SIZE,

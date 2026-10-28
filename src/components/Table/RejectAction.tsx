@@ -110,7 +110,6 @@ function RejectAction({ rejectText, onConfirm, disabled }: RejectActionProps) {
     if (open) {
       requestAnimationFrame(() => calculatePosition());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useHotkeys(
