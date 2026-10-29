@@ -75,6 +75,23 @@ depended on `noviq-ui`.
   >
 ```
 
+## What changed in 4.8.1
+
+All additive: with nothing configured, a `status` column looks exactly as it did.
+
+- **`status` cells are configurable** — your own statuses, their colour classes and labels, a fallback,
+  or a `render` for the whole pill — on `NoviqUIConfigProvider` (`statuses`), on a `<Table statuses>`
+  and on a single column (`column.statuses`). See "Status cells".
+- **The pill's colours are custom properties** you can override: `--nq-status-success-bg`, `-text`,
+  `-border`, and the same for `danger`, `warning`, `info` and `default` (see "Theming"). No colour is
+  written into the component's CSS any more.
+- **Fixed: your own status class could lose.** A status pill was an outline `Badge`, and a class of
+  yours has the same specificity as that variant — so it won or lost depending on which stylesheet
+  loaded first (the built-in tones only won through `!important`). The pill is now a plain `nq-badge`
+  with just the status class, and the tone classes no longer use `!important`. Status pills no longer
+  carry the `nq-badge-outline` class; how they look is unchanged.
+- `Table`'s `statusVariantMap` still works; `statuses.styles` supersedes it.
+
 ## What changed in 4.8.0
 
 Five fixes to things that looked supported and weren't. All additive; nothing that worked changes.
@@ -770,6 +787,69 @@ downloads an Excel (`.xlsx`, styled header row) or CSV file:
   instead (and hides the CSV option) — useful if your backend already produces the file.
 - `Export` and the `useTableExport` hook it's built on are also exported standalone.
 
+#### Status cells
+
+A column with `type: "status"` shows a coloured pill. These statuses have a built-in tone —
+`active`, `true`, `approved`, `completed`, `resolved` green; `inactive`, `false`, `rejected`,
+`cancelled`, `failed` red; `pending`, `queued` amber; `in progress` blue — and anything else is grey.
+They are only defaults (`DEFAULT_STATUS_STYLES`, with the tone class names in `STATUS_CLASS`):
+add your own, or change these, at any of three levels.
+
+```jsx
+// the whole app
+<NoviqUIConfigProvider
+  config={{
+    statuses: {
+      styles: {
+        draft: "my-status-draft", // a class name
+        shipped: { className: "my-status-ok", label: "On its way" }, // and the text shown
+        pending: { label: "Awaiting review" }, // a label alone keeps pending's built-in colour
+      },
+      fallback: "my-status-neutral", // for a status with no entry (default: the grey tone)
+    },
+  }}
+>
+
+// one table
+<Table statuses={{ styles: { draft: "my-status-draft" } }} … />
+
+// one column — say a table with an approval status and a payment status that both use "pending"
+{ id: "payment", heading: "Payment", accessorKey: "payment", type: "status",
+  statuses: { styles: { pending: "my-payment-wait" } } }
+```
+
+- **Precedence, most specific first:** the column, the table, the provider, the built-in tones. Your
+  entries are added to the built-in ones, and each level merges over the one beneath it status by
+  status and field by field (a table can change a status's class and keep the provider's label).
+- **Keys are matched on the trimmed, lower-case text — write them as your data spells them.**
+  `in_progress` is not `in progress`: the label shows "in progress" either way, but only the spelling
+  you list gets your class (map both if your data has both).
+- **Your class is the only thing that colours the pill** — it replaces the built-in tone rather than
+  sitting beside it — so it wins no matter which stylesheet loads first. Use your own variables:
+
+  ```css
+  .my-status-draft {
+    background-color: var(--brand-grey-100);
+    color: var(--brand-grey-700);
+    border-color: var(--brand-grey-300);
+  }
+  ```
+
+- A **`label`** is what the cell shows, what an Excel/CSV export writes, and what the search box
+  matches.
+- **`render`** replaces the whole pill with your own component. It receives
+  `{ status, label, className, row }` — `className` is the class the status resolved to, so you can keep
+  the tone — and is not called for an empty status (the `-` placeholder shows):
+
+  ```jsx
+  statuses={{ render: ({ status, label, row }) => <StatusPill value={status} owner={row.owner}>{label}</StatusPill> }}
+  ```
+
+- To **re-theme a built-in tone** without writing a class, override its custom properties (see "Theming").
+- A nested `NoviqUIConfigProvider` replaces `statuses` like everything else; with `inherit` the two are
+  merged. `TableCell` used on its own takes the same `statuses` prop (and the provider's).
+- `statusVariantMap` (a status → class-name map on `Table`) still works; `statuses.styles` supersedes it.
+
 ## Date and time formats
 
 Declare how dates and times read **once**, on `NoviqUIConfigProvider`, and every place the UI shows
@@ -1034,6 +1114,28 @@ never collide with your own stylesheet: classes are `nq-…`, custom properties 
 | `--nq-overlay-bg`                                           | `rgba(0,0,0,.5)`              | the backdrop behind a modal or drawer           |
 | `--nq-font-size`                                            | `14px`                        | base font size                                  |
 | `--nq-z-sticky`, `-loading`, `-bar`, `-overlay`, `-popover` | see below                     | the z-index scale                               |
+
+Each built-in status tone is three more tokens — its fill, its text and its border — so a status pill can
+be re-themed from your own CSS (see "Status cells"):
+
+| Tone      | Fill                       | Text                        | Border                        |
+| --------- | -------------------------- | --------------------------- | ----------------------------- |
+| `success` | `--nq-status-success-bg`   | `--nq-status-success-text`  | `--nq-status-success-border`  |
+| `danger`  | `--nq-status-danger-bg`    | `--nq-status-danger-text`   | `--nq-status-danger-border`   |
+| `warning` | `--nq-status-warning-bg`   | `--nq-status-warning-text`  | `--nq-status-warning-border`  |
+| `info`    | `--nq-status-info-bg`      | `--nq-status-info-text`     | `--nq-status-info-border`     |
+| `default` | `--nq-status-default-bg`   | `--nq-status-default-text`  | `--nq-status-default-border`  |
+
+```css
+:root {
+  --nq-status-success-bg: #e6f7ee;
+  --nq-status-success-text: #0b6b3a;
+  --nq-status-success-border: #b7e4cb;
+}
+```
+
+The defaults are the colours the pills have always had; `danger`'s text follows `--nq-danger`, and `default`
+follows `--nq-secondary-background`, `--nq-muted` and `--nq-border-color`.
 
 **Coming from 4.6 or earlier, where the tokens had no prefix** (`--primary`, `--radius`,
 `--border-color`, `--shadow`, `--z-overlay`…): rename your overrides — the new name is the old one

@@ -709,6 +709,28 @@ localisedText.test.tsx` is the pseudo-localisation test — every default wrappe
   or copying third-party code in? The plugin picks up imports automatically; copied code needs its licence
   added to `extraFiles` in `vite.config.ts`.
 
+## Status cells (`4.8.1`)
+
+- **Config**: `NoviqUIStatusConfig { styles, fallback, render }` on `config.statuses`, `<Table statuses>`, `TableColumn.statuses`
+  (`config/types.ts`). Resolution is `Table/statusStyle.ts`: `mergeStatusConfigs(...layers)` (least specific first: provider, table
+  incl. the old `statusVariantMap` as `{ styles }`, column) over the built-ins (`DEFAULT_STATUS_STYLES` in `constants.ts`) →
+  `MergedStatusConfig` (a `Map`, so a status named `constructor` / `__proto__` is safe; keys trimmed + lower-cased, **underscores are
+  not spaces** — kept deliberately); `resolveStatus(status, merged, text)` → `{ label, className }`. Statuses merge status by status and
+  field by field. `Table` builds one merged config per status column (`statusesByColumn`, memoised) and uses it for the cell, the
+  client search (`getExportCellValue(..., statuses)`) and — through `useTableExport({ statuses })`, which merges provider + table +
+  column itself — the export, so a custom label is what the screen, the search and the file all say. `TableCell` (public, usable
+  alone) takes `statuses` and merges the provider's under it; `mergedStatuses` is the internal prop `Table` passes.
+- **Provider**: `validateStatuses` throws on bad shapes; `inherit` merges statuses status by status and field by field
+  (`mergeStatuses` / `mergeStatusStyle` in `NoviqUIConfigProvider.tsx`); a plain nested provider replaces.
+- **The pill** is `<div class="nq-badge {status class}">` — no `Badge` variant. **A user's class only wins in both stylesheet orders
+  if nothing in the library sets a colour at the same specificity**: `TableCell.css` has no `!important`, and `Badge.css` keeps
+  `border-width`/`border-style` on `.nq-badge` and the default `border-color: transparent` in `:where(.nq-badge)` (zero specificity).
+  Don't put a colour (or the `border:` shorthand) back on the base rule; `statusTokens.test.ts` fails if you do. Verify by inserting
+  a `<style>` before and after the library's in a real browser and reading computed style.
+- **Colours are tokens**: `--nq-status-<tone>-{bg,text,border}` (15, in `styles/tokens.css`; `TableCell.css` is only `var()`s). This is
+  the user's rule (2026-10-29): no colour literal in a component's CSS — a `--nq-` variable users can override. Only the status pill
+  is done; see progress.md for what still has literals.
+
 ## Filters, AM/PM, export, lint (`4.8.0`)
 
 - **Filters on `preFetchedData`**: the table filters the rows itself. `Table.tsx` pipeline `data → filteredData →

@@ -851,6 +851,44 @@ thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) r
         hit-tests as topmost; console clean. **Caveat:** the Browser pane was not displayed, so no screenshot could be taken
         and CSS transitions did not advance on their own — I finished them with `getAnimations()` and measured instead.
   - [ ] Demo `tsc` still reports `src/App.tsx(19)` `ROW_ACTION_TYPE` unused — the user's edit, left alone.
+- [x] **`4.8.1` — configurable status cells** (staged; on top of 4.8.0; patch number chosen by the user). The ask: the
+      status → colour mapping and the colour classes were fixed inside `TableCell`; keep only defaults, let apps
+      define their own statuses, colour classes and a render component, on the provider and on a table, and **no
+      colour hard-coded in the component — every colour a `--nq-` variable users can override**.
+  - [x] **API.** `NoviqUIStatusConfig { styles, fallback, render }` — `config.statuses` (provider), `<Table statuses>`,
+        `TableColumn.statuses` (the user chose to include the column level). `styles`: status → class string or
+        `{ className?, label? }`; `fallback`: a class string (a fallback *label* would rename every unknown status);
+        `render({ status, label, className, row })` replaces the pill, never called for an empty status. Precedence column
+        > table (`statuses`, then the old `statusVariantMap`) > provider > built-ins, merged status by status **and field by
+        field**; `inherit` merges the same way, a plain nested provider replaces. Validation throws on bad shapes. A label
+        also drives the export and the search. `statusVariantMap` kept (class-only), marked `@deprecated`.
+        Matching stays `trim().toLowerCase()` — **the user chose "keep exactly as today"**, so `in_progress` does not match
+        the built-in `"in progress"` and stays grey unless mapped (README says so). New exports: `STATUS_CLASS`,
+        `DEFAULT_STATUS_STYLES` (moved out of `TableCell.tsx` into `constants.ts`), the three types.
+  - [x] **Colours.** 15 tokens `--nq-status-{success,danger,warning,info,default}-{bg,text,border}` in `tokens.css` with
+        today's values (danger's text follows `--nq-danger`; default's three follow `--nq-secondary-background`,
+        `--nq-muted`, `--nq-border-color`); `TableCell.css` is only `var(--nq-status-…)`. Guarded by `src/statusTokens.test.ts`
+        (no hex / `rgb()` / colour name / `!important` in `TableCell.css`, the exact defaults, each rule uses its own tone's
+        tokens, the README names every token).
+  - [x] **A user's class did not reliably win — found, then found again.** The pill was an outline `Badge`; a class of the
+        user's tied with `.nq-badge-outline` so stylesheet order decided (a real-browser check on 4.8.0: placed before the
+        library's CSS it lost on background, text and border). Fix 1: the pill is a plain `nq-badge` + the status class,
+        no variant, no `!important`. **The first fix was not enough**: flipping the stylesheet order again showed the
+        user's *border* still lost, because `.nq-badge`'s `border: 1px solid transparent` carries a colour. Fix 2
+        (`Badge.css`): `border-width`/`border-style` on `.nq-badge` and the default colour in `:where(.nq-badge)` (zero
+        specificity). Every Badge variant and status pill is computed-style identical (checked), and a user's class now
+        wins on all three colours in both orders. Both guarded in `statusTokens.test.ts`.
+  - [x] **Verification.** 1210 library tests (up from 1073), every new one mutation-checked (resolver, TableCell — one
+        survivor became a stronger assertion —, Table wiring, export hook, provider, CSS/token guard). Demo: 9 new
+        consumer tests (all fail on 4.8.0). Real browser (fresh tab, `.vite` cleared, bundle byte-identical): the six
+        unconfigured status pills × 18 computed properties and the four Badge variants are identical to the 4.8.0
+        baseline; a user class wins in both stylesheet orders; `--nq-status-success-*` overridden on `:root` and in a local
+        scope changes only that tone, and the default tone follows `--nq-muted`; provider / table / column / render levels
+        render the app's classes with their exact colours; the exported `.xlsx` has "On its way" and "Awaiting review";
+        console clean.
+  - [ ] One demo test (`regressions` Escape/Modal) timed out once at 23.8 s under a machine load average of ~8.8 (it takes ~3 s
+        alone) and passed on both re-runs — contention from nine files each rendering the whole showcase, not a regression;
+        the showcase has more tables now, so expect it on a busy machine.
 
 ## Published
 
@@ -938,6 +976,13 @@ thirdPartyNotices.ts` (+ a Vite plugin in `vite.config.ts`, no new dependency) r
   build, `npm pack` (`noviq-ui-4.8.0.tgz`, 68 files, sha1 `9458d45a…`), demo 102/102 against the tarball (the 12
   new consumer tests fail on 4.7.2; the installed bundle is byte-identical to the tarball's), real-browser
   checks (see "Done"). Awaiting the user: `npm publish` (and a `git push` when they want one).
+- `4.8.1` — **patch** (the user asked for a patch number: "we are keeping it as a patch only"), additive. Configurable
+  `status` cells and tokenised pill colours — see "Done". It is built on the 4.8.0 commits, so **it contains
+  everything in 4.8.0**; the registry's latest is still `4.7.2`, so either publish 4.8.0 first and then 4.8.1, or
+  publish only 4.8.1 (the 4.8.0 number then never exists). Gate: `tsc` clean, lint 0 errors (the same 23 known
+  warnings), 1210/1210 library tests, build, `npm pack` (`noviq-ui-4.8.1.tgz`, 69 files, sha1 `ee44ea7a…`), demo
+  111/111 against the tarball (the 9 new consumer tests fail on 4.8.0). The staged `noviq-ui-4.8.0.tgz`
+  (sha1 `9458d45a…`) is untouched.
 - Nothing else is waiting: `4.3.1` … `4.7.2` are live (see "Published").
 
 ## Not started
@@ -1069,6 +1114,11 @@ offsets · closed `Drawer` children unmounted (opt-in)~~ ~~· nested-provider me
 (column widths, ARGB colour)~~ · ~~an ESLint flat config~~ · ~~named filter-drawer controls~~ · ~~closed Drawer
 shadow~~.
 
+### `4.8.1` — configurable status cells — done, staged
+
+~~`config.statuses` / `<Table statuses>` / `column.statuses` (classes, labels, fallback, render)~~ · ~~status pill colours as
+`--nq-status-*` tokens~~ · ~~a user's class wins in either stylesheet order (pill + `Badge` base)~~.
+
 ### Parked for a major (do NOT build until the user says to move to version 5)
 
 By the user's standing rule (2026-10-16) there is no `5.0.0` and nothing breaking ships in 4.x —
@@ -1081,6 +1131,10 @@ default. Each already has an opt-in in 4.x; leave the default alone.
 - **Quality gates:** CI, a typecheck gate for the library's own tests (vitest doesn't typecheck: a wrong
   prop name in a test passes silently — it nearly did this release), `noviq-ui-demo` under git.
 - **Verification gaps:** Firefox/Safari; a screen-reader pass; RTL.
+- **Other components still carry literal colours in CSS** (focus rings in Input/TimePicker/PickerField/DatePicker/MonthPicker,
+  the `ColumnSelector`/`BulkActionsBar` tints, `Dropdown`'s danger fill, `LoadingOverlay`, shadows). The user's rule from the
+  status work — "no colour hard-coded in the component, every colour a variable users can override" — has so far been applied
+  to the status pill only; extending it is a candidate patch, to be confirmed.
 - **Lint warnings:** 21 `any`s in public generics and 2 `set-state-in-effect` (Drawer, Input) — each a
   considered decision, not a backlog.
 - A way for the host to read the applied filters (`onFiltersChange`) — `preFetchedData` filters itself now, but an
