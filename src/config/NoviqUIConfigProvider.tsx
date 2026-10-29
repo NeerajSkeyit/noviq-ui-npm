@@ -3,8 +3,10 @@ import type {
   NoviqUIConfig,
   NoviqUIFormats,
   NoviqUIInheritedConfig,
+  NoviqUIStatusConfig,
   NoviqUITableConfig,
   NoviqUIText,
+  StatusStyle,
 } from "./types";
 import { devWarn } from "../utils/devWarn";
 import {
@@ -109,6 +111,48 @@ function validateText(text: NoviqUIText): void {
   }
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function validateStatuses(statuses: NoviqUIStatusConfig): void {
+  if (!isPlainObject(statuses)) {
+    throw new Error(
+      `noviq-ui: config.statuses must be an object of { styles?, fallback?, render? } — got ${
+        Array.isArray(statuses) ? "an array" : JSON.stringify(statuses)
+      }.`
+    );
+  }
+  const { styles, fallback, render } = statuses;
+  if (styles !== undefined) {
+    if (!isPlainObject(styles)) {
+      throw new Error(
+        "noviq-ui: config.statuses.styles must be an object of { status: class name | { className?, label? } } — " +
+          `got ${Array.isArray(styles) ? "an array" : JSON.stringify(styles)}.`
+      );
+    }
+    for (const [status, style] of Object.entries(styles)) {
+      if (style === undefined || typeof style === "string") continue;
+      const fine =
+        isPlainObject(style) &&
+        (style.className === undefined || typeof style.className === "string") &&
+        (style.label === undefined || typeof style.label === "string");
+      if (!fine) {
+        throw new Error(
+          `noviq-ui: config.statuses.styles.${status} must be a class name or { className?, label? } with ` +
+            `string values — got ${JSON.stringify(style)}.`
+        );
+      }
+    }
+  }
+  if (fallback !== undefined && typeof fallback !== "string") {
+    throw new Error(`noviq-ui: config.statuses.fallback must be a class name — got ${JSON.stringify(fallback)}.`);
+  }
+  if (render !== undefined && typeof render !== "function") {
+    throw new Error(`noviq-ui: config.statuses.render must be a function — got ${JSON.stringify(render)}.`);
+  }
+}
+
 /** A copy of `value` without its `undefined` entries, so an unset key never wipes an inherited one. */
 function definedEntries<T extends object>(value: T | undefined): Partial<T> {
   return Object.fromEntries(Object.entries(value ?? {}).filter(([, v]) => v !== undefined)) as Partial<T>;
@@ -120,8 +164,28 @@ function mergeObjects<T extends object>(base: T | undefined, over: T | undefined
   return { ...definedEntries(base), ...definedEntries(over) } as T;
 }
 
+/** One status's style with `over` laid on `base` field by field; two class-name strings stay a string. */
+function mergeStatusStyle(base: StatusStyle | undefined, over: StatusStyle): StatusStyle {
+  if (base === undefined || (typeof base === "string" && typeof over === "string")) return over;
+  const lower = typeof base === "string" ? { className: base } : base;
+  const upper = typeof over === "string" ? { className: over } : over;
+  return { ...definedEntries(lower), ...definedEntries(upper) };
+}
+
+function mergeStatuses(base: NoviqUIStatusConfig | undefined, over: NoviqUIStatusConfig | undefined) {
+  if (base === undefined && over === undefined) return undefined;
+  const styles: Record<string, StatusStyle> = { ...base?.styles };
+  for (const [status, style] of Object.entries(over?.styles ?? {})) {
+    if (style !== undefined) styles[status] = mergeStatusStyle(styles[status], style);
+  }
+  const merged: NoviqUIStatusConfig = { ...definedEntries(base), ...definedEntries(over) };
+  if (base?.styles !== undefined || over?.styles !== undefined) merged.styles = styles;
+  return merged;
+}
+
 /**
- * `child` laid over `parent`: `formats`, `text` and the table's `requestParams` merge key by key,
+ * `child` laid over `parent`: `formats`, `text`, `statuses` (status by status, field by field) and the
+ * table's `requestParams` merge key by key,
  * every other key is the child's if it set one. A child `table.responseFormat` replaces the
  * parent's as a whole — its two shapes (paths or functions) are never mixed.
  */
@@ -132,6 +196,8 @@ function mergeConfigs(parent: NoviqUIConfig | undefined, child: NoviqUIInherited
   const text = mergeObjects(parent.text, child.text);
   if (formats) merged.formats = formats;
   if (text) merged.text = text;
+  const statuses = mergeStatuses(parent.statuses, child.statuses);
+  if (statuses) merged.statuses = statuses;
   if (parent.table || child.table) {
     const table = { ...parent.table, ...definedEntries(child.table) } as Record<string, unknown>;
     const requestParams = mergeObjects(parent.table?.requestParams, child.table?.requestParams);
@@ -160,6 +226,7 @@ export function NoviqUIConfigProvider({ config, inherit = false, children }: Nov
   if (resolved.table !== undefined) validateTableConfig(resolved.table);
   if (resolved.formats !== undefined) validateFormats(resolved.formats);
   if (resolved.text !== undefined) validateText(resolved.text);
+  if (resolved.statuses !== undefined) validateStatuses(resolved.statuses);
   return <NoviqUIConfigContext.Provider value={resolved}>{children}</NoviqUIConfigContext.Provider>;
 }
 

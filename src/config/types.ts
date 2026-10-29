@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { DEFAULT_REQUEST_PARAMS, type NotifyKind, type TextKey } from "../constants";
 
 export { DEFAULT_REQUEST_PARAMS };
@@ -86,6 +87,41 @@ export type TextValue = string | ((params: TextParams) => string);
 export type NoviqUIText = Partial<Record<TextKey, TextValue>>;
 
 /**
+ * How one status looks: a string is a class name (shorthand for `{ className }`); the object form
+ * can also change the label shown, in the cell, the export and the search.
+ */
+export type StatusStyle = string | { className?: string; label?: string };
+
+/** What a custom status `render` receives. */
+export interface StatusRenderProps {
+  /** The status exactly as the row has it. */
+  status: string;
+  /** The text the table shows, exports and searches for it. */
+  label: string;
+  /** The class the status resolved to — reuse it to keep the tone, or ignore it. */
+  className: string;
+  /** The row, when a `Table` renders the cell. */
+  row?: unknown;
+}
+
+/**
+ * The look of a table's `status` cells. Set on `NoviqUIConfigProvider` for the whole app, on a
+ * `<Table statuses>`, or on a column's `statuses`; the most specific level wins. Your entries are
+ * added to the built-in ones (`DEFAULT_STATUS_STYLES`) rather than replacing them.
+ */
+export interface NoviqUIStatusConfig {
+  /**
+   * By status value, matched on the trimmed, lower-case text — write the key as your data spells it.
+   * A level merges field by field over the one beneath it.
+   */
+  styles?: Record<string, StatusStyle>;
+  /** The class for a status with no entry. Default: the built-in grey tone. */
+  fallback?: string;
+  /** Draw the whole pill yourself; skipped for an empty status. */
+  render?: (props: StatusRenderProps) => ReactNode;
+}
+
+/**
  * What a `<NoviqUIConfigProvider inherit>` accepts: a config in which `table` may leave out
  * `responseFormat` (the parent's supplies it).
  */
@@ -103,4 +139,6 @@ export interface NoviqUIConfig {
   formats?: NoviqUIFormats;
   /** Optional. Replacements for the built-in English copy — labels, placeholders, messages. */
   text?: NoviqUIText;
+  /** Optional. The colours, labels and renderer of a table's `status` cells. */
+  statuses?: NoviqUIStatusConfig;
 }

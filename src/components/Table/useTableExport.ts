@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { TableColumn, TableQueryParams } from "./Table";
 import {
   CELL_TYPE,
@@ -17,13 +17,20 @@ import {
   NO_TEXT_PLACEHOLDER,
 } from "../../constants";
 import { getCellValue, buildCellFormatOptions } from "./cellValue";
-import { formatTableCellValues, formatStatusLabel } from "./TableCell";
+import { formatTableCellValues } from "./TableCell";
+import { DEFAULT_MERGED_STATUSES, mergeStatusConfigs, resolveStatus, type MergedStatusConfig } from "./statusStyle";
 import { extractRows } from "../../config/responseFormat";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import type { ResolvedFormats } from "../../utils/dateTimeFormat";
 import { useText } from "../../hooks/useText";
-import type { NoviqUIText, NotifyFn, TableRequestParamNames, TableResponseFormat } from "../../config/types";
+import type {
+  NoviqUIStatusConfig,
+  NoviqUIText,
+  NotifyFn,
+  TableRequestParamNames,
+  TableResponseFormat,
+} from "../../config/types";
 
 
 export interface UseTableExportArgs<T> {
@@ -41,6 +48,9 @@ export interface UseTableExportArgs<T> {
   sortParams?: Record<string, unknown>;
   apiParams?: Record<string, unknown>;
   totalItems: number;
+  /** The table's `statuses`, so a custom status label is what the file says. A column's own `statuses` and the
+   * provider's are laid under and over it, as in the table. */
+  statuses?: NoviqUIStatusConfig;
   /** Where to report the outcome. Defaults to `NoviqUIConfigProvider`'s `config.notify`; when
    * neither is set the hook stays silent (a failure is still `console.error`ed). */
   notify?: NotifyFn;
@@ -57,14 +67,15 @@ export function getExportCellValue<T>(
   row: T,
   column: TableColumn<T>,
   formats: ResolvedFormats,
-  text?: NoviqUIText
+  text?: NoviqUIText,
+  statuses: MergedStatusConfig = DEFAULT_MERGED_STATUSES
 ): string | number {
   if (column.exportValue) return column.exportValue(row);
 
   const cellValue = getCellValue(row, column);
   if (!column.type) return cellValue;
   if (column.type === CELL_TYPE.STATUS) {
-    return cellValue === NO_TEXT_PLACEHOLDER ? cellValue : formatStatusLabel(cellValue, text);
+    return cellValue === NO_TEXT_PLACEHOLDER ? cellValue : resolveStatus(cellValue, statuses, text).label;
   }
   return formatTableCellValues(column.type, buildCellFormatOptions(row, column, cellValue), formats);
 }
@@ -92,6 +103,7 @@ function useTableExport<T>({
   apiParams,
   totalItems,
   notify: notifyArg,
+  statuses,
 }: UseTableExportArgs<T>): UseTableExportResult {
   const [exporting, setExporting] = useState(false);
   const formats = useDateTimeFormats(); // exports are formatted exactly as the table shows them
@@ -100,6 +112,17 @@ function useTableExport<T>({
   const notify = notifyArg ?? config?.notify;
 
   const exportColumns = columns.filter((c) => c.export !== false);
+  const providerStatuses = config?.statuses;
+  // One merged config per status column, so a thousand rows don't each rebuild it
+  const statusesByColumn = useMemo(
+    () =>
+      new Map(
+        columns
+          .filter((c) => c.type === CELL_TYPE.STATUS)
+          .map((c) => [c.id, mergeStatusConfigs(providerStatuses, statuses, c.statuses)] as const)
+      ),
+    [columns, providerStatuses, statuses]
+  );
 
   const fetchRows = async (): Promise<T[]> => {
     if (usingPreFetched) return preFetchedData;
@@ -117,7 +140,7 @@ function useTableExport<T>({
 
   const buildAoa = (rows: T[]): unknown[][] => {
     const header = exportColumns.map((c) => c.heading);
-    const body = rows.map((row) => exportColumns.map((c) => getExportCellValue(row, c, formats, config?.text)));
+    const body = rows.map((row) => exportColumns.map((c) => getExportCellValue(row, c, formats, config?.text, statusesByColumn.get(c.id))));
     return [header, ...body];
   };
 

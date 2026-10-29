@@ -37,6 +37,7 @@ describe("constants", () => {
     "ROW_ACTION_VARIANT",
     "BULK_ACTION_VARIANT",
     "NOTIFY_KIND",
+    "STATUS_CLASS",
   ] as const;
 
   it.each(PUBLIC_GROUPS)("exports %s from the package root, identical to src/constants", (name) => {
@@ -46,6 +47,24 @@ describe("constants", () => {
   it.each(PUBLIC_GROUPS)("%s has no duplicate values", (name) => {
     const values = valuesOf((C as unknown as Record<string, Record<string, string | number>>)[name]);
     expect(new Set(values).size).toBe(values.length);
+  });
+
+  it("exports the built-in status styles, and every one is a real tone class", () => {
+    expect(pkg.DEFAULT_STATUS_STYLES).toBe(C.DEFAULT_STATUS_STYLES);
+    const tones = valuesOf(C.STATUS_CLASS);
+    for (const [status, className] of Object.entries(C.DEFAULT_STATUS_STYLES)) {
+      expect(tones, `${status} → ${className}`).toContain(className);
+      expect(status, "keys are matched trimmed and lower-case").toBe(status.trim().toLowerCase());
+    }
+    // the statuses the table has always coloured, and the tone of each (nothing moved)
+    expect(C.DEFAULT_STATUS_STYLES).toEqual({
+      active: "nq-status-success", true: "nq-status-success", approved: "nq-status-success",
+      completed: "nq-status-success", resolved: "nq-status-success",
+      inactive: "nq-status-danger", false: "nq-status-danger", rejected: "nq-status-danger",
+      cancelled: "nq-status-danger", failed: "nq-status-danger",
+      pending: "nq-status-warning", queued: "nq-status-warning",
+      "in progress": "nq-status-info",
+    });
   });
 
   it("keeps the exact strings the props have always accepted", () => {

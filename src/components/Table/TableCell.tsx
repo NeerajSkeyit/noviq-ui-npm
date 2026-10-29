@@ -1,10 +1,7 @@
-import React from "react";
-import Badge from "../Badge/Badge";
+import React, { useMemo } from "react";
 import {
-  BADGE_VARIANT,
   CELL_TYPE,
   DEFAULT_CURRENCY,
-  DEFAULT_TEXT,
   NO_TEXT_PLACEHOLDER,
   type CellType,
 } from "../../constants";
@@ -13,9 +10,12 @@ import { formatValue, resolveFormats, type FormatsInput } from "../../utils/date
 import { formatCurrency } from "../../utils/numberFormat";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
-import { resolveText } from "../../utils/text";
-import type { NoviqUIText } from "../../config/types";
+import type { NoviqUIStatusConfig } from "../../config/types";
+import { mergeStatusConfigs, resolveStatus, type MergedStatusConfig } from "./statusStyle";
+import "../Badge/Badge.css"; // the pill's shape (`nq-badge`); its colours come from the status class
 import "./TableCell.css";
+
+export { formatStatusLabel } from "./statusStyle";
 
 export interface CellFormatOptions {
   date?: string | number | Date | null;
@@ -95,55 +95,40 @@ export function formatTableCellValues(
   }
 }
 
-const DEFAULT_STATUS_VARIANTS: Record<string, string> = {
-  active: "nq-status-success",
-  true: "nq-status-success",
-  approved: "nq-status-success",
-  completed: "nq-status-success",
-  resolved: "nq-status-success",
-
-  inactive: "nq-status-danger",
-  false: "nq-status-danger",
-  rejected: "nq-status-danger",
-  cancelled: "nq-status-danger",
-  failed: "nq-status-danger",
-
-  pending: "nq-status-warning",
-  queued: "nq-status-warning",
-
-  "in progress": "nq-status-info",
-};
-
 export interface TableCellProps {
   type: CellType;
   options?: CellFormatOptions;
-  /** Extend/override the status -> tone mapping used by the `status` cell type. */
+  /** @deprecated Use `statuses.styles`; kept working. A status → class-name map for the `status` type. */
   statusVariantMap?: Record<string, string>;
+  /**
+   * How `status` cells look here: your own statuses, their classes and labels, a fallback class, or a
+   * `render`. Laid over `NoviqUIConfigProvider`'s `statuses`, which is laid over the built-in tones.
+   */
+  statuses?: NoviqUIStatusConfig;
+  /** The row, handed on to a custom status `render`. */
+  row?: unknown;
+  /** @internal What `Table` passes: its provider / table / column levels already merged, once per column. */
+  mergedStatuses?: MergedStatusConfig;
 }
 
-/** A status as it is shown: `"true"`/`"false"` read as Active/Inactive (in the configured `text`),
- * anything else has its underscores turned to spaces. */
-export function formatStatusLabel(status: string, text?: NoviqUIText): string {
-  if (status === "true") return resolveText(DEFAULT_TEXT, text, "statusActive");
-  if (status === "false") return resolveText(DEFAULT_TEXT, text, "statusInactive");
-  return status.replace(/_/g, " ");
-}
-
-function TableCell({ type, options = {}, statusVariantMap }: TableCellProps) {
+function TableCell({ type, options = {}, statusVariantMap, statuses, row, mergedStatuses }: TableCellProps) {
   const formats = useDateTimeFormats();
-  const text = useNoviqUIConfig()?.text;
+  const config = useNoviqUIConfig();
+  const text = config?.text;
+  const providerStatuses = config?.statuses;
+  const merged = useMemo(
+    () => mergedStatuses ?? mergeStatusConfigs(providerStatuses, { styles: statusVariantMap }, statuses),
+    [mergedStatuses, providerStatuses, statusVariantMap, statuses]
+  );
+
   if (type === CELL_TYPE.STATUS) {
     if (!options.status) return <>{NO_TEXT_PLACEHOLDER}</>;
 
-    const key = options.status.trim().toLowerCase();
-    const variantClass =
-      statusVariantMap?.[key] ?? DEFAULT_STATUS_VARIANTS[key] ?? "nq-status-default";
-
-    return (
-      <Badge variant={BADGE_VARIANT.OUTLINE} className={variantClass}>
-        {formatStatusLabel(options.status, text)}
-      </Badge>
-    );
+    const { label, className } = resolveStatus(options.status, merged, text);
+    if (merged.render) return <>{merged.render({ status: options.status, label, className, row })}</>;
+    // A plain pill, no Badge variant: nothing but the status class colours it, so a class of the app's
+    // own can't lose to a variant's rule.
+    return <div className={`nq-badge ${className}`}>{label}</div>;
   }
 
   return <>{formatTableCellValues(type, options, formats)}</>;

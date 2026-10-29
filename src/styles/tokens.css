@@ -20,6 +20,24 @@
   --nq-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   --nq-overlay-bg: rgba(0, 0, 0, 0.5);
 
+  /* Status pills (a Table's `status` cells): the fill, the text and the border of each built-in tone.
+     Override any of them to re-theme that tone; a class of your own in `config.statuses` adds a new one. */
+  --nq-status-success-bg: rgba(33, 196, 93, 0.1);
+  --nq-status-success-text: #21c45d;
+  --nq-status-success-border: rgba(33, 196, 93, 0.2);
+  --nq-status-danger-bg: rgba(255, 0, 0, 0.08);
+  --nq-status-danger-text: var(--nq-danger);
+  --nq-status-danger-border: rgba(255, 0, 0, 0.2);
+  --nq-status-warning-bg: rgba(245, 159, 10, 0.1);
+  --nq-status-warning-text: #f59f0a;
+  --nq-status-warning-border: rgba(245, 159, 10, 0.2);
+  --nq-status-info-bg: rgba(2, 132, 199, 0.15);
+  --nq-status-info-text: #37a7df;
+  --nq-status-info-border: #37a7df;
+  --nq-status-default-bg: var(--nq-secondary-background);
+  --nq-status-default-text: var(--nq-muted);
+  --nq-status-default-border: var(--nq-border-color);
+
   /* Stacking scale — see "Stacking" in the README. Raise --nq-z-overlay to sit above your own
      layers: popups follow it, because they must stay above every overlay. */
   --nq-z-sticky: 2; /* a table's pinned columns */

@@ -19,6 +19,7 @@ import { useTableColumnSettings } from "./useTableColumnSettings";
 import {
   ACTIONS_COLUMN_WIDTH,
   ARIA_SORT,
+  CELL_TYPE,
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_EXPORT_FILE_BASE,
   DEFAULT_PAGE_SIZE,
@@ -44,7 +45,8 @@ import { useNoviqUIConfig } from "../../config/NoviqUIConfigProvider";
 import { useDateTimeFormats } from "../../hooks/useDateTimeFormats";
 import { useText } from "../../hooks/useText";
 import { extractRows, extractTotal } from "../../config/responseFormat";
-import type { TableResponseFormat } from "../../config/types";
+import type { NoviqUIStatusConfig, TableResponseFormat } from "../../config/types";
+import { mergeStatusConfigs, type MergedStatusConfig } from "./statusStyle";
 import "./Table.css";
 
 function columnWidthPx(width: string | number | undefined): number {
@@ -96,6 +98,8 @@ export interface TableColumn<T = any> {
   export?: boolean;
   /** Custom export cell value, overriding the default accessor/formatting-based value. */
   exportValue?: (row: T) => string | number;
+  /** For a `status` column: its own statuses, laid over the table's `statuses` and the provider's. */
+  statuses?: NoviqUIStatusConfig;
 }
 
 export type TableQueryParams = Record<string, unknown>;
@@ -131,7 +135,14 @@ export interface TableProps<T = any> {
   searchPlaceholder?: string;
   actions?: ActionBarAction[];
   emptyMessage?: string;
+  /** @deprecated Use `statuses.styles`; kept working. A status → class-name map for `status` columns. */
   statusVariantMap?: Record<string, string>;
+  /**
+   * How this table's `status` columns look: your own statuses with their classes and labels, a
+   * fallback class, or a `render` for the whole pill. Laid over `NoviqUIConfigProvider`'s `statuses`
+   * (and under a column's own `statuses`), which are laid over the built-in tones.
+   */
+  statuses?: NoviqUIStatusConfig;
   pageSizeOptions?: readonly number[];
   onRowClick?: (row: T) => void;
   /** Presence enables row selection (an auto-injected, always-sticky-left checkbox column). */
@@ -171,6 +182,7 @@ function TableInner<T extends Record<string, any> = any>({
   actions,
   emptyMessage,
   statusVariantMap,
+  statuses,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   onRowClick,
   getRowId,
@@ -355,6 +367,18 @@ function TableInner<T extends Record<string, any> = any>({
   }, [searchValue]);
 
   const noviqConfig = useNoviqUIConfig();
+  const providerStatuses = noviqConfig?.statuses;
+  // The provider's, the table's (and the old statusVariantMap) and the column's `statuses`, laid over the
+  // built-in tones — merged once per status column, then shared by the cell, the search and the export.
+  const statusesByColumn = useMemo(
+    () =>
+      new Map<string, MergedStatusConfig>(
+        columns
+          .filter((c) => c.type === CELL_TYPE.STATUS)
+          .map((c) => [c.id, mergeStatusConfigs(providerStatuses, { styles: statusVariantMap }, statuses, c.statuses)])
+      ),
+    [columns, providerStatuses, statusVariantMap, statuses]
+  );
   const responseFormat = responseFormatProp ?? noviqConfig?.table?.responseFormat;
   const requestParamNames = {
     ...DEFAULT_REQUEST_PARAMS,
@@ -445,11 +469,13 @@ function TableInner<T extends Record<string, any> = any>({
     const term = debouncedSearch.trim().toLowerCase();
     if (!usingPreFetched || term === "") return filteredData;
     const textOf = (row: T, column: TableColumn<T>) => {
-      const text = String(getExportCellValue(row, column, dateTimeFormats, noviqConfig?.text));
+      const text = String(
+        getExportCellValue(row, column, dateTimeFormats, noviqConfig?.text, statusesByColumn.get(column.id))
+      );
       return text === NO_TEXT_PLACEHOLDER ? "" : text.toLowerCase();
     };
     return filteredData.filter((row) => displayColumns.some((column) => textOf(row, column).includes(term)));
-  }, [filteredData, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats, noviqConfig?.text]);
+  }, [filteredData, debouncedSearch, usingPreFetched, displayColumns, dateTimeFormats, noviqConfig?.text, statusesByColumn]);
 
   const totalItems = usingPreFetched ? searchedData.length : extracted.total;
 
@@ -467,11 +493,12 @@ function TableInner<T extends Record<string, any> = any>({
         <TableCell
           type={column.type}
           options={buildCellFormatOptions(row, column, cellValue)}
-          statusVariantMap={statusVariantMap}
+          mergedStatuses={statusesByColumn.get(column.id)}
+          row={row}
         />
       );
     },
-    [statusVariantMap]
+    [statusesByColumn]
   );
 
   const sortedData = useMemo(() => {
@@ -515,6 +542,7 @@ function TableInner<T extends Record<string, any> = any>({
     sortParams,
     apiParams,
     totalItems,
+    statuses, // labels only matter to a file; the old statusVariantMap has none
   });
 
   const handleSort = (columnId: string) => {

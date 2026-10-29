@@ -6,8 +6,16 @@
   font-size: 12px;
   line-height: 16px;
   font-weight: 500;
-  border: 1px solid transparent;
+  /* Width and style only: a colour here would tie, at equal specificity, with a class of an app's own
+     (a status class, say) and the stylesheet that loaded last would win. The default is below. */
+  border-width: 1px;
+  border-style: solid;
   white-space: nowrap;
+}
+
+/* The default border colour, at zero specificity: every variant and any class of yours overrides it. */
+:where(.nq-badge) {
+  border-color: transparent;
 }
 
 .nq-badge-default {

@@ -29,6 +29,8 @@ export {
   NOTIFY_KIND,
   NO_TEXT_PLACEHOLDER,
   DEFAULT_TEXT,
+  STATUS_CLASS,
+  DEFAULT_STATUS_STYLES,
 } from "./constants";
 export type {
   InputType,
@@ -50,6 +52,7 @@ export type {
   RowActionType,
   RowActionVariant,
   BulkActionVariant,
+  StatusClass,
   TextKey,
 } from "./constants";
 
@@ -117,6 +120,9 @@ export type {
   NotifyKind,
   NoviqUIFormats,
   NoviqUIText,
+  NoviqUIStatusConfig,
+  StatusStyle,
+  StatusRenderProps,
   NoviqUIInheritedConfig,
   TextValue,
   TextParams,

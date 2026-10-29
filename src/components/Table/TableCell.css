@@ -1,29 +1,33 @@
+/* A status pill's colours come only from custom properties (tokens.css), so an app re-themes a tone by
+   overriding --nq-status-<tone>-bg / -text / -border. The pill's shape (.nq-badge) sets no colour above zero
+   specificity, so a class of the app's own (config.statuses) wins no matter which stylesheet loads first. */
+
 .nq-status-success {
-  background-color: rgba(33, 196, 93, 0.1) !important;
-  color: #21c45d !important;
-  border-color: rgba(33, 196, 93, 0.2) !important;
+  background-color: var(--nq-status-success-bg);
+  color: var(--nq-status-success-text);
+  border-color: var(--nq-status-success-border);
 }
 
 .nq-status-danger {
-  background-color: rgba(255, 0, 0, 0.08) !important;
-  color: var(--nq-danger) !important;
-  border-color: rgba(255, 0, 0, 0.2) !important;
+  background-color: var(--nq-status-danger-bg);
+  color: var(--nq-status-danger-text);
+  border-color: var(--nq-status-danger-border);
 }
 
 .nq-status-warning {
-  background-color: rgba(245, 159, 10, 0.1) !important;
-  color: #f59f0a !important;
-  border-color: rgba(245, 159, 10, 0.2) !important;
+  background-color: var(--nq-status-warning-bg);
+  color: var(--nq-status-warning-text);
+  border-color: var(--nq-status-warning-border);
 }
 
 .nq-status-info {
-  background-color: rgba(2, 132, 199, 0.15) !important;
-  color: #37a7df !important;
-  border-color: #37a7df !important;
+  background-color: var(--nq-status-info-bg);
+  color: var(--nq-status-info-text);
+  border-color: var(--nq-status-info-border);
 }
 
 .nq-status-default {
-  background-color: var(--nq-secondary-background) !important;
-  color: var(--nq-muted) !important;
-  border-color: var(--nq-border-color) !important;
+  background-color: var(--nq-status-default-bg);
+  color: var(--nq-status-default-text);
+  border-color: var(--nq-status-default-border);
 }

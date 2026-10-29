@@ -325,6 +325,46 @@ export type BulkActionVariant = ValueOf<typeof BULK_ACTION_VARIANT>;
 
 /** `NO_TEXT_PLACEHOLDER` is what an empty cell shows. */
 export const NO_TEXT_PLACEHOLDER = "-";
+
+// ─── Status cells ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The tone classes a `status` cell can carry. Each one's colours are three custom properties,
+ * `--nq-status-<tone>-bg` / `-text` / `-border` (src/styles/tokens.css) — override those to re-theme
+ * a tone, or put your own class in `config.statuses` to add one.
+ */
+export const STATUS_CLASS = {
+  SUCCESS: "nq-status-success",
+  DANGER: "nq-status-danger",
+  WARNING: "nq-status-warning",
+  INFO: "nq-status-info",
+  DEFAULT: "nq-status-default",
+} as const;
+export type StatusClass = ValueOf<typeof STATUS_CLASS>;
+
+/**
+ * The built-in tone for each status a `status` column knows, by the status as the table matches it
+ * (trimmed, lower-case). A status that is not here gets `STATUS_CLASS.DEFAULT`. These are only the
+ * defaults: `config.statuses` / `<Table statuses>` / `column.statuses` replace or add to them.
+ */
+export const DEFAULT_STATUS_STYLES: Readonly<Record<string, StatusClass>> = {
+  active: STATUS_CLASS.SUCCESS,
+  true: STATUS_CLASS.SUCCESS,
+  approved: STATUS_CLASS.SUCCESS,
+  completed: STATUS_CLASS.SUCCESS,
+  resolved: STATUS_CLASS.SUCCESS,
+
+  inactive: STATUS_CLASS.DANGER,
+  false: STATUS_CLASS.DANGER,
+  rejected: STATUS_CLASS.DANGER,
+  cancelled: STATUS_CLASS.DANGER,
+  failed: STATUS_CLASS.DANGER,
+
+  pending: STATUS_CLASS.WARNING,
+  queued: STATUS_CLASS.WARNING,
+
+  "in progress": STATUS_CLASS.INFO,
+};
 export const DATE_FORMAT = "DD/MM/YYYY";
 export const DATE_TIME_FORMAT = "DD/MM/YYYY hh:mm A";
 export const TIME_FORMAT = "hh:mm A";
